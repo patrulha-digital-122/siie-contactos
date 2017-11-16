@@ -1,4 +1,4 @@
-package scouts.pt.cne.contactImporter;
+package src.main.java.scouts.pt.cne;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

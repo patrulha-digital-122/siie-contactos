@@ -1,4 +1,4 @@
-package scouts.pt.cne.contactImporter;
+package java.scouts.pt.cne.contactImporter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

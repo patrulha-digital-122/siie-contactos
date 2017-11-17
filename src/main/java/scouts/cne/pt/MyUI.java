@@ -23,7 +23,12 @@ import com.vaadin.ui.VerticalLayout;
 @SpringUI
 public class MyUI extends UI {
 
-    @Override
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8505226283440302479L;
+
+	@Override
     protected void init(VaadinRequest vaadinRequest) {
         final VerticalLayout layout = new VerticalLayout();
         

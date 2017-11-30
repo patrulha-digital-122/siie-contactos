@@ -191,14 +191,7 @@
 			<build>
 				<finalName>siie-contacts</finalName>
 				<plugins>
-				<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<finalName>siie-contact</finalName>
-				</configuration>
-			</plugin>
-					<!-- <plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
 						<version>2.3</version>
@@ -207,7 +200,7 @@
 							<outputDirectory>deployments</outputDirectory>
 							<warName>ROOT</warName>
 						</configuration>
-					</plugin> -->
+					</plugin>
 				</plugins>
 			</build>
 		</profile>

@@ -37,7 +37,7 @@ public class MyUI extends UI {
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
-		logger.info("Start app on " + vaadinRequest.getContextPath());
+		logger.info("Start app on " + vaadinRequest.getRemoteAddr());
 		final VerticalLayout layout = new VerticalLayout();
 
 		final TextField name = new TextField();

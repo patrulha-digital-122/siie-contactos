@@ -6,7 +6,7 @@
 	<groupId>scouts.cne.pt</groupId>
 	<artifactId>siie-importer-app</artifactId>
 	<packaging>war</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>siie-importer-app</name>
 
 	<prerequisites>
@@ -17,19 +17,18 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.5.3.RELEASE</version>
-		<relativePath/>
+		<relativePath />
 	</parent>
 
 	<properties>
 		<vaadin.version>8.1.6</vaadin.version>
 		<vaadin.plugin.version>8.1.6</vaadin.plugin.version>
-		<jetty.plugin.version>9.3.9.v20160517</jetty.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<!-- If there are no local customizations, this can also be "fetch" or 
 			"cdn" -->
-		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
+		<vaadin.widgetset.mode>cdn</vaadin.widgetset.mode>
 	</properties>
 
 	<repositories>
@@ -134,17 +133,6 @@
 							</includes>
 						</fileset>
 					</filesets>
-				</configuration>
-			</plugin>
-
-			<!-- The Jetty plugin allows us to easily test the development build by 
-				running jetty:run on the command line. -->
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.plugin.version}</version>
-				<configuration>
-					<scanIntervalSeconds>2</scanIntervalSeconds>
 				</configuration>
 			</plugin>
 		</plugins>

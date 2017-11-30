@@ -5,7 +5,6 @@ import javax.servlet.annotation.WebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -25,7 +24,6 @@ import com.vaadin.ui.VerticalLayout;
  * intended to be overridden to add component to the user interface and
  * initialize non-component functionality.
  */
-@Theme("mytheme")
 @SpringUI
 public class MyUI extends UI {
 

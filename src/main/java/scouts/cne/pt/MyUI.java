@@ -2,7 +2,8 @@ package scouts.cne.pt;
 
 import javax.servlet.annotation.WebServlet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -16,11 +17,13 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 /**
- * This UI is the application entry point. A UI may either represent a browser window
- * (or tab) or some part of an HTML page where a Vaadin application is embedded.
+ * This UI is the application entry point. A UI may either represent a browser
+ * window (or tab) or some part of an HTML page where a Vaadin application is
+ * embedded.
  * <p>
- * The UI is initialized using {@link #init(VaadinRequest)}. This method is intended to be
- * overridden to add component to the user interface and initialize non-component functionality.
+ * The UI is initialized using {@link #init(VaadinRequest)}. This method is
+ * intended to be overridden to add component to the user interface and
+ * initialize non-component functionality.
  */
 @Theme("mytheme")
 @SpringUI
@@ -30,7 +33,7 @@ public class MyUI extends UI {
 	 *
 	 */
 	private static final long serialVersionUID = -8505226283440302479L;
-	static Logger logger = Logger.getLogger(MyUI.class);
+	private static Logger logger = LoggerFactory.getLogger(MyUI.class);
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
@@ -42,8 +45,7 @@ public class MyUI extends UI {
 
 		Button button = new Button("Click Me");
 		button.addClickListener(e -> {
-			layout.addComponent(new Label("Thanks " + name.getValue()
-			+ ", it works!"));
+			layout.addComponent(new Label("Thanks " + name.getValue() + ", it works!"));
 		});
 
 		layout.addComponents(name, button);

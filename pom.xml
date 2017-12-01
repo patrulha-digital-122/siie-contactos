@@ -5,7 +5,7 @@
 
 	<groupId>scouts.cne.pt</groupId>
 	<artifactId>siie-importer-app</artifactId>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>siie-importer-app</name>
 
@@ -82,18 +82,63 @@
 		</dependency>
 
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>5.1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>1.22.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-java6 -->
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client-java6</artifactId>
+			<version>1.22.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty -->
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client-jetty</artifactId>
+			<version>1.22.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.google.gdata/core -->
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>core</artifactId>
+			<version>1.47.1</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>com.heroku.sdk</groupId>
+				<artifactId>heroku-maven-plugin</artifactId>
+				<version>2.0.1</version>
+				<configuration>
+					<jdkVersion>1.8</jdkVersion>
+					<appName>cnhefe122</appName>
+					<buildpacks>
+						<buildpack>heroku/exec</buildpack>
+						<buildpack>heroku/metrics</buildpack>
+						<buildpack>heroku/jvm</buildpack>
+					</buildpacks>
+					<processTypes>
+						<web>java $JAVA_OPTS -cp target/classes:target/dependency/* Main</web>
+					</processTypes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -190,7 +235,7 @@
 			<id>heroku</id>
 			<activation>
 				<property>
-					<name>heroku</name>
+					<name>cnhefe122</name>
 				</property>
 			</activation>
 			<build>
@@ -198,9 +243,9 @@
 					<plugin>
 						<groupId>com.heroku.sdk</groupId>
 						<artifactId>heroku-maven-plugin</artifactId>
-						<version>1.1.1</version>
+						<version>2.0.2</version>
 						<configuration>
-							<appName>exampledriven-springboot-dev</appName>
+							<appName>siie-contacs</appName>
 							<includeTarget>false</includeTarget>
 							<includes>
 								<include>${basedir}/${full-artifact-name}</include>

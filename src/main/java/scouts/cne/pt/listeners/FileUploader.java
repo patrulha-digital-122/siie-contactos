@@ -10,36 +10,40 @@ import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.Upload.SucceededListener;
 
-public class FileUploader implements Receiver, SucceededListener
-{
+import scouts.cne.pt.MyUI;
+import scouts.cne.pt.services.SIIEService;
+
+public class FileUploader implements Receiver, SucceededListener {
 	/**
 	 *
 	 */
-	private static final long	serialVersionUID	= 3751542749493613243L;
-	public File file;
+	private static final long serialVersionUID = 3751542749493613243L;
+	private File file;
+	MyUI myUI;
 
-	public FileUploader( File file )
-	{
+	private SIIEService siieService;
+
+	public FileUploader(MyUI myUI, SIIEService siieService) {
 		super();
-		this.file = file;
+		this.myUI = myUI;
+		this.siieService = siieService;
 	}
 
 	@Override
-	public void uploadSucceeded( SucceededEvent event )
-	{
-		Notification.show( "Upload finalizado: " + event.getMIMEType(), Notification.Type.HUMANIZED_MESSAGE );
+	public void uploadSucceeded(SucceededEvent event) {
+		Notification.show("Upload finalizado: " + event.getMIMEType(), Notification.Type.HUMANIZED_MESSAGE);
+		this.siieService.setFile(file);
+		this.myUI.showMenus();
 	}
+
 	@Override
-	public OutputStream receiveUpload( String filename, String mimeType )
-	{
+	public OutputStream receiveUpload(String filename, String mimeType) {
 		OutputStream outputStream = null;
-		try
-		{
+		try {
+			file = File.createTempFile("stuff", ".xlsx");
 
-			outputStream = new FileOutputStream( file );
-		}
-		catch ( IOException e )
-		{
+			outputStream = new FileOutputStream(file);
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -56,6 +56,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<!-- <exclusions> <exclusion> <groupId>org.springframework.boot</groupId> 
+				<artifactId>spring-boot-starter-tomcat</artifactId> </exclusion> </exclusions> -->
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
@@ -117,6 +123,17 @@
 			<groupId>com.google.gdata</groupId>
 			<artifactId>core</artifactId>
 			<version>1.47.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.11-beta2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.11-beta2</version>
 		</dependency>
 	</dependencies>
 
@@ -245,7 +262,7 @@
 						<artifactId>heroku-maven-plugin</artifactId>
 						<version>2.0.2</version>
 						<configuration>
-							<appName>siie-contacs</appName>
+							<appName>siie-contact</appName>
 							<includeTarget>false</includeTarget>
 							<includes>
 								<include>${basedir}/${full-artifact-name}</include>
@@ -254,6 +271,7 @@
 							<processTypes>
 								<web>java $JAVA_OPTS -jar ${full-artifact-name}
 									--spring.profiles.active=heroku</web>
+									<!-- <web>java -jar target/siie-contact.war</web> -->
 							</processTypes>
 						</configuration>
 						<executions>

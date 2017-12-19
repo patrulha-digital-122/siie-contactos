@@ -135,6 +135,12 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.11-beta2</version>
 		</dependency>
+		<!-- ez-vcard -->
+		<dependency>
+			<groupId>com.googlecode.ez-vcard</groupId>
+			<artifactId>ez-vcard</artifactId>
+			<version>0.10.3</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -183,7 +189,7 @@
 							<goal>update-widgetset</goal>
 							<goal>compile</goal>
 							<!-- Comment out compile-theme goal to use on-the-fly theme compilation -->
-							<goal>compile-theme</goal>
+							<!-- <goal>compile-theme</goal> -->
 						</goals>
 					</execution>
 				</executions>
@@ -271,7 +277,7 @@
 							<processTypes>
 								<web>java $JAVA_OPTS -jar ${full-artifact-name}
 									--spring.profiles.active=heroku</web>
-									<!-- <web>java -jar target/siie-contact.war</web> -->
+								<!-- <web>java -jar target/siie-contact.war</web> -->
 							</processTypes>
 						</configuration>
 						<executions>

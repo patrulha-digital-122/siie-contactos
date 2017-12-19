@@ -1,14 +1,24 @@
 package scouts.cne.pt;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.Resource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
@@ -17,10 +27,13 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
-
+import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.property.Categories;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
 
 /**
@@ -147,6 +160,60 @@ public class MyUI extends UI {
 		grid.setSelectionMode(SelectionMode.SINGLE);
 		rootLayout.addComponent(new Label("Encontrados:" + loadExploradoresSIIE.size()));
 		rootLayout.addComponent(grid);
+		
+		Button button1 = new Button("Download vCard");
+		
+		FileDownloader fileDownloader = new FileDownloader( createVCard() );
+		fileDownloader.extend( button1 );
+		
+		rootLayout.addComponent( button1 );
+	}
+
+	/**
+	 * The <b>createVCard</b> method returns {@link Resource}
+	 * <br><br><b>author</b> anco62000465 2017-12-19
+	 * @return 
+	 */
+	private StreamResource createVCard()
+	{
+		return new StreamResource(new StreamSource() {
+            @Override
+            public InputStream getStream() {
+                String text = "My image";
+
+                Collection<VCard> agrupamentoVCard = new ArrayList<>();
+                
+                HashMap< String, Explorador > loadExploradoresSIIE = siieService.loadExploradoresSIIE();
+                
+                Categories exploradores = new Categories();
+                exploradores.setGroup( SECCAO.EXPLORADORES.getDescricao() );
+				for ( Entry< String, Explorador > entry : loadExploradoresSIIE.entrySet() )
+				{
+					String key = entry.getKey();
+					Explorador explorador = entry.getValue();
+					
+					if(explorador.getCategoria() == SECCAO.EXPLORADORES) {
+						 VCard exploradoreVCard = new VCard();
+						 exploradoreVCard.setFormattedName( explorador.getNome() );
+						 
+						 exploradoreVCard.addCategories( exploradores );
+						 
+						 agrupamentoVCard.add( exploradoreVCard );
+					}
+				}
+				
+				try
+				{
+					File file = new File("vcards.vcf");
+					Ezvcard.write(agrupamentoVCard).go(file);
+                    return new FileInputStream( file );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+
+            }
+        }, "contacts.vcf");
 	}
 
 	public void showSecondPhaseOptions() {

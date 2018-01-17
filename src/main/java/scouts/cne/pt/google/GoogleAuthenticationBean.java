@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.net.Authenticator;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.api.client.googleapis.GoogleUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
@@ -60,20 +55,7 @@ public class GoogleAuthenticationBean implements Serializable  {
 
 	public NetHttpTransport getHttpTransport() throws GeneralSecurityException, IOException {
 		NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
-		builder.trustCertificates(GoogleUtils.getCertificateTrustStore());
-		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy", 8080));
-		Authenticator.setDefault(
-				new Authenticator() {
-					@Override
-					public PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(
-								"62000465", "Thales_1".toCharArray());
-					}
-				}
-				);
-		System.setProperty("http.proxyUser", "62000465");
-		System.setProperty("http.proxyPassword", "Thales_1");
-		builder.setProxy(proxy);
+
 		return builder.build();
 	}
 

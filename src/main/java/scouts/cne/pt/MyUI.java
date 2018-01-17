@@ -1,14 +1,48 @@
 package scouts.cne.pt;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
+import com.vaadin.server.BrowserWindowOpener;
+=======
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+=======
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import com.vaadin.server.FileDownloader;
+import com.vaadin.server.Resource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
+<<<<<<< HEAD
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
+=======
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
@@ -17,10 +51,13 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
-
+import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.property.Categories;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
 
 /**
@@ -39,7 +76,6 @@ public class MyUI extends UI {
 	 *
 	 */
 	private static final long serialVersionUID = -8505226283440302479L;
-	private static Logger logger = LoggerFactory.getLogger(MyUI.class);
 
 	@Autowired
 	SIIEService siieService;
@@ -59,6 +95,7 @@ public class MyUI extends UI {
 		rootLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		rootLayout.addComponent(getUploadSIIEFileMenu());
 		setContent(rootLayout);
+		getPage().setTitle("SIIE - importer");
 
 		// Button btAuthentication = new Button("Conceder autorização");
 		//
@@ -145,8 +182,105 @@ public class MyUI extends UI {
 		grid.setItems(loadExploradoresSIIE.values());
 		grid.setSizeFull();
 		grid.setSelectionMode(SelectionMode.SINGLE);
-		rootLayout.addComponent(new Label("Encontrados:" + loadExploradoresSIIE.size()));
+		rootLayout.addComponent(new Label("Encontrados: " + loadExploradoresSIIE.size() + " elementos"));
 		rootLayout.addComponent(grid);
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+		Button btAuthentication = new Button("Conceder autorização");
+		try {
+			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl = googleAuthentication.getGoogleAuthorizationCodeRequestUrl();
+			//getUI().getPage().open(googleAuthorizationCodeRequestUrl.build(), "_blank", true);
+
+			BrowserWindowOpener browserWindowOpener = new BrowserWindowOpener(googleAuthorizationCodeRequestUrl.build());
+			browserWindowOpener.setFeatures("height=600,width=600");
+			browserWindowOpener.extend(btAuthentication);
+		} catch (GeneralSecurityException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//		btAuthentication.addClickListener(new ClickListener() {
+		//
+		//			@Override
+		//			public void buttonClick(ClickEvent event) {
+		//
+		//
+		//				GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl;
+		//				try {
+		//					googleAuthorizationCodeRequestUrl = googleAuthentication.getGoogleAuthorizationCodeRequestUrl();
+		//					//getUI().getPage().open(googleAuthorizationCodeRequestUrl.build(), "_blank", true);
+		//
+		//					BrowserWindowOpener browserWindowOpener = new BrowserWindowOpener(googleAuthorizationCodeRequestUrl.build());
+		//
+		//				} catch (GeneralSecurityException | IOException e) {
+		//					// TODO Auto-generated catch block
+		//					e.printStackTrace();
+		//				}
+		//			}
+		//		});
+
+		rootLayout.addComponent(btAuthentication);
+=======
+=======
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
+		
+		Button button1 = new Button("Download vCard");
+		
+		FileDownloader fileDownloader = new FileDownloader( createVCard() );
+		fileDownloader.extend( button1 );
+		
+		rootLayout.addComponent( button1 );
+	}
+
+	/**
+	 * The <b>createVCard</b> method returns {@link Resource}
+	 * <br><br><b>author</b> anco62000465 2017-12-19
+	 * @return 
+	 */
+	private StreamResource createVCard()
+	{
+		return new StreamResource(new StreamSource() {
+            @Override
+            public InputStream getStream() {
+                String text = "My image";
+
+                Collection<VCard> agrupamentoVCard = new ArrayList<>();
+                
+                HashMap< String, Explorador > loadExploradoresSIIE = siieService.loadExploradoresSIIE();
+                
+                Categories exploradores = new Categories();
+                exploradores.setGroup( SECCAO.EXPLORADORES.getDescricao() );
+				for ( Entry< String, Explorador > entry : loadExploradoresSIIE.entrySet() )
+				{
+					String key = entry.getKey();
+					Explorador explorador = entry.getValue();
+					
+					if(explorador.getCategoria() == SECCAO.EXPLORADORES) {
+						 VCard exploradoreVCard = new VCard();
+						 exploradoreVCard.setFormattedName( explorador.getNome() );
+						 
+						 exploradoreVCard.addCategories( exploradores );
+						 
+						 agrupamentoVCard.add( exploradoreVCard );
+					}
+				}
+				
+				try
+				{
+					File file = new File("vcards.vcf");
+					Ezvcard.write(agrupamentoVCard).go(file);
+                    return new FileInputStream( file );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+
+            }
+        }, "contacts.vcf");
+<<<<<<< HEAD
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
+=======
+>>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
 	}
 
 	public void showSecondPhaseOptions() {

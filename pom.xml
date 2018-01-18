@@ -130,12 +130,6 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.11-beta2</version>
 		</dependency>
-		<!-- ez-vcard -->
-		<dependency>
-			<groupId>com.googlecode.ez-vcard</groupId>
-			<artifactId>ez-vcard</artifactId>
-			<version>0.10.3</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -205,7 +199,7 @@
 							<goal>update-widgetset</goal>
 							<goal>compile</goal>
 							<!-- Comment out compile-theme goal to use on-the-fly theme compilation -->
-							<!-- <goal>compile-theme</goal> -->
+							<goal>compile-theme</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -229,88 +223,4 @@
 		</plugins>
 	</build>
 
-<<<<<<< HEAD
-=======
-	<profiles>
-		<profile>
-			<!-- Vaadin pre-release repositories -->
-			<id>vaadin-prerelease</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-
-			<repositories>
-				<repository>
-					<id>vaadin-prereleases</id>
-					<url>http://maven.vaadin.com/vaadin-prereleases</url>
-				</repository>
-				<repository>
-					<id>vaadin-snapshots</id>
-					<url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-				</repository>
-			</repositories>
-			<pluginRepositories>
-				<pluginRepository>
-					<id>vaadin-prereleases</id>
-					<url>http://maven.vaadin.com/vaadin-prereleases</url>
-				</pluginRepository>
-				<pluginRepository>
-					<id>vaadin-snapshots</id>
-					<url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-				</pluginRepository>
-			</pluginRepositories>
-		</profile>
-		<profile>
-			<id>heroku</id>
-			<activation>
-				<property>
-					<name>cnhefe122</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.heroku.sdk</groupId>
-						<artifactId>heroku-maven-plugin</artifactId>
-						<version>2.0.2</version>
-						<configuration>
-							<appName>siie-contact</appName>
-							<includeTarget>false</includeTarget>
-							<includes>
-								<include>${basedir}/${full-artifact-name}</include>
-							</includes>
-							<jdkVersion>1.8</jdkVersion>
-							<processTypes>
-								<web>java $JAVA_OPTS -jar ${full-artifact-name}
-									--spring.profiles.active=heroku</web>
-								<!-- <web>java -jar target/siie-contact.war</web> -->
-							</processTypes>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>verify</phase>
-								<goals>
-									<goal>deploy</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
->>>>>>> f49035cd9417198593e9d002f17b66fdae1a5f6c
 </project>

@@ -4,37 +4,40 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
-
 import javax.mail.internet.InternetAddress;
 
 /**
  * Created by Andr� on 03/10/2015.
  */
-public class ElementoOLD {
-
-	HashMap<String, Object> listaAtributos;
+public class ElementoOLD
+{
+	HashMap< String, Object > listaAtributos;
 
 	/**
 	 *
 	 */
-	public ElementoOLD() {
+	public ElementoOLD()
+	{
 		listaAtributos = new HashMap<>();
 	}
 
 	/**
 	 * @return the nome
 	 */
-	public String getNome() {
-		return getAtributo("nome").toString();
+	public String getNome()
+	{
+		return getAtributo( "nome" ).toString();
 	}
 
 	/**
 	 * @return the nome
 	 */
-	public String getNomeProprio() {
-		LinkedList<String> l = new LinkedList<>();
-		for (String string : getAtributo("nome").toString().split(" ")) {
-			l.add(string);
+	public String getNomeProprio()
+	{
+		LinkedList< String > l = new LinkedList<>();
+		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		{
+			l.add( string );
 		}
 		return l.getFirst();
 	}
@@ -42,10 +45,12 @@ public class ElementoOLD {
 	/**
 	 * @return the nome
 	 */
-	public String getNomeApelido() {
-		LinkedList<String> l = new LinkedList<>();
-		for (String string : getAtributo("nome").toString().split(" ")) {
-			l.add(string);
+	public String getNomeApelido()
+	{
+		LinkedList< String > l = new LinkedList<>();
+		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		{
+			l.add( string );
 		}
 		return l.getLast();
 	}
@@ -53,59 +58,69 @@ public class ElementoOLD {
 	/**
 	 * @return the morada
 	 */
-	public String getMorada() {
-		return getAtributo("morada").toString();
+	public String getMorada()
+	{
+		return getAtributo( "morada" ).toString();
 	}
 
 	/**
 	 * @return the localidade
 	 */
-	public String getLocalidade() {
-		return getAtributo("localidade").toString();
+	public String getLocalidade()
+	{
+		return getAtributo( "localidade" ).toString();
 	}
 
 	/**
 	 * @return the localidade
 	 */
-	public boolean isActivo() {
-		return getAtributo("situacao").toString().equals("Activo");
+	public boolean isActivo()
+	{
+		return getAtributo( "situacao" ).toString().equals( "Activo" );
 	}
 
 	/**
 	 * @return the telefone
 	 */
-	public String getTelefone() {
-		return getAtributo("telefone").toString();
+	public String getTelefone()
+	{
+		return getAtributo( "telefone" ).toString();
 	}
 
 	/**
 	 * @return the telefone
 	 */
-	public SECCAO getCategoria() {
-		return SECCAO.findSeccao(getAtributo("seccao").toString());
+	public SECCAO getCategoria()
+	{
+		return SECCAO.findSeccao( getAtributo( "seccao" ).toString() );
 	}
 
 	/**
 	 * @return the codigoPostal
 	 */
-	public String getCodigoPostal() {
+	public String getCodigoPostal()
+	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(getAtributo("cp1").toString());
-		sb.append("-");
-		sb.append(getAtributo("cp2").toString());
-		sb.append(" ");
-		sb.append(getAtributo("codigopostal").toString());
+		sb.append( getAtributo( "cp1" ).toString() );
+		sb.append( "-" );
+		sb.append( getAtributo( "cp2" ).toString() );
+		sb.append( " " );
+		sb.append( getAtributo( "codigopostal" ).toString() );
 		return sb.toString();
 	}
 
 	/**
 	 * @return the dataNascimento
 	 */
-	public Date getDataNascimento() {
-		Object dataNascimento = getAtributo("datanascimento");
-		if (dataNascimento instanceof Date) {
-			return (Date) dataNascimento;
-		} else {
+	public Date getDataNascimento()
+	{
+		Object dataNascimento = getAtributo( "datanascimento" );
+		if ( dataNascimento instanceof Date )
+		{
+			return ( Date ) dataNascimento;
+		}
+		else
+		{
 			return null;
 		}
 	}
@@ -113,25 +128,30 @@ public class ElementoOLD {
 	/**
 	 * @return the telemovel
 	 */
-	public String getTelemovel() {
-		return getAtributo("telemovel").toString();
+	public String getTelemovel()
+	{
+		return getAtributo( "telemovel" ).toString();
 	}
 
 	/**
 	 * @return the email
 	 */
-	public String getEmail() {
-		return (String) getAtributo("email");
+	public String getEmail()
+	{
+		return ( String ) getAtributo( "email" );
 	}
 
 	/**
 	 * @return the email
 	 */
-	public String getEmailPrincipal() {
-		String email = (String) getAtributo("email");
-		if (email == null) {
+	public String getEmailPrincipal()
+	{
+		String email = ( String ) getAtributo( "email" );
+		if ( email == null )
+		{
 			email = getEmailMae();
-			if (email == null) {
+			if ( email == null )
+			{
 				email = getEmailPai();
 			}
 		}
@@ -141,23 +161,27 @@ public class ElementoOLD {
 	/**
 	 * @return the naturalidade
 	 */
-	public String getNaturalidade() {
-		return getAtributo("naturalidade").toString();
+	public String getNaturalidade()
+	{
+		return getAtributo( "naturalidade" ).toString();
 	}
 
 	/**
 	 * @return the profissao
 	 */
-	public String getProfissao() {
-		return getAtributo("profissao").toString();
+	public String getProfissao()
+	{
+		return getAtributo( "profissao" ).toString();
 	}
 
 	/**
 	 * @return the nomePai
 	 */
-	public Object getNomePai() {
-		Object object = getAtributo("pai");
-		if (object == null) {
+	public Object getNomePai()
+	{
+		Object object = getAtributo( "pai" );
+		if ( object == null )
+		{
 			return "";
 		}
 		return object;
@@ -166,10 +190,14 @@ public class ElementoOLD {
 	/**
 	 * @return the telefonePai
 	 */
-	public String getTelefonePai() {
-		try {
-			return getAtributo("telefonepai").toString();
-		} catch (Exception e) {
+	public String getTelefonePai()
+	{
+		try
+		{
+			return getAtributo( "telefonepai" ).toString();
+		}
+		catch ( Exception e )
+		{
 			return null;
 		}
 	}
@@ -177,58 +205,67 @@ public class ElementoOLD {
 	/**
 	 * @return the emailPai
 	 */
-	public String getEmailPai() {
-		return (String) getAtributo("emailpai");
+	public String getEmailPai()
+	{
+		return ( String ) getAtributo( "emailpai" );
 	}
 
 	/**
 	 * @return the nomeMae
 	 */
-	public Object getNomeMae() {
-		return getAtributo("mae");
+	public Object getNomeMae()
+	{
+		return getAtributo( "mae" );
 	}
 
 	/**
 	 * @return the telefoneMae
 	 */
-	public String getTelefoneMae() {
-		return getAtributo("telefonemae").toString();
+	public String getTelefoneMae()
+	{
+		return getAtributo( "telefonemae" ).toString();
 	}
 
 	/**
 	 * @return the emailMae
 	 */
-	public String getEmailMae() {
-		return (String) getAtributo("emailmae");
+	public String getEmailMae()
+	{
+		return ( String ) getAtributo( "emailmae" );
 	}
 
 	/**
 	 * @return the nif
 	 */
-	public String getNif() {
-		return getAtributo("nif").toString();
+	public String getNif()
+	{
+		return getAtributo( "nif" ).toString();
 	}
 
 	/**
 	 * @return the nin
 	 */
-	public String getNin() {
-		return getAtributo("nin").toString();
+	public String getNin()
+	{
+		return getAtributo( "nin" ).toString();
 	}
 
 	/**
 	 * @return the listaAtributos
 	 */
-	public HashMap<String, Object> getListaAtributos() {
+	public HashMap< String, Object > getListaAtributos()
+	{
 		return listaAtributos;
 	}
 
 	/**
 	 * @return the listaAtributos
 	 */
-	public Object getAtributo(String tag) {
-		Object object = listaAtributos.get(tag);
-		if (object == null) {
+	public Object getAtributo( String tag )
+	{
+		Object object = listaAtributos.get( tag );
+		if ( object == null )
+		{
 			return "";
 		}
 		return object;
@@ -240,7 +277,8 @@ public class ElementoOLD {
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return "Explorador [listaAtributos=" + listaAtributos + "]";
 	}
 
@@ -248,12 +286,16 @@ public class ElementoOLD {
 	 *
 	 * @return
 	 */
-	public InternetAddress getInternetAddressEmail() {
-		if ((getEmail() != null) && getEmail().contains("@")) {
-			try {
-				return new InternetAddress(getEmail(), getNome());
-			} catch (UnsupportedEncodingException e) {
-
+	public InternetAddress getInternetAddressEmail()
+	{
+		if ( ( getEmail() != null ) && getEmail().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmail(), getNome() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
 			}
 		}
 		return null;
@@ -263,12 +305,16 @@ public class ElementoOLD {
 	 *
 	 * @return
 	 */
-	public InternetAddress getInternetAddressEmailPai() {
-		if ((getEmailPai() != null) && getEmailPai().contains("@")) {
-			try {
-				return new InternetAddress(getEmailPai(), getNomePai().toString());
-			} catch (UnsupportedEncodingException e) {
-
+	public InternetAddress getInternetAddressEmailPai()
+	{
+		if ( ( getEmailPai() != null ) && getEmailPai().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmailPai(), getNomePai().toString() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
 			}
 		}
 		return null;
@@ -278,48 +324,51 @@ public class ElementoOLD {
 	 *
 	 * @return
 	 */
-	public InternetAddress getInternetAddressEmailMae() {
-		if ((getEmailMae() != null) && getEmailMae().contains("@")) {
-			try {
-				return new InternetAddress(getEmailMae(), getNomeMae().toString());
-			} catch (UnsupportedEncodingException e) {
-
+	public InternetAddress getInternetAddressEmailMae()
+	{
+		if ( ( getEmailMae() != null ) && getEmailMae().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmailMae(), getNomeMae().toString() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
 			}
 		}
 		return null;
 	}
-
-	//	public String toHTML() {
+	// public String toHTML() {
 	//
-	//		String html = ResourceFileManager.getInstance().getFile("templates/mailContactos.html");
+	// String html = ResourceFileManager.getInstance().getFile("templates/mailContactos.html");
 	//
-	//		for (Entry<String, Object> entry : listaAtributos.entrySet()) {
-	//			String key = entry.getKey();
-	//			key = "%" + key + "%";
-	//			Object value = entry.getValue();
-	//			String replaceString;
-	//			if (value == null) {
-	//				value = "";
-	//			}
-	//			if (value instanceof String) {
-	//				if (key.equalsIgnoreCase("%nif%")) {
-	//					replaceString = value.toString().length() > 0 ? value.toString()
-	//							: "<span style='font-size:18px;'><strong><span style='color:#ff0000;'>N&atilde;o foi preenchido mas &eacute; obrigat&oacute;rio!</span></strong></span>";
-	//				} else {
-	//					replaceString = value.toString().length() > 0 ? value.toString()
-	//							: "<em><span style='background-color:#faebd7;'>N&atilde;o foi prenchido</span></em>";
-	//				}
+	// for (Entry<String, Object> entry : listaAtributos.entrySet()) {
+	// String key = entry.getKey();
+	// key = "%" + key + "%";
+	// Object value = entry.getValue();
+	// String replaceString;
+	// if (value == null) {
+	// value = "";
+	// }
+	// if (value instanceof String) {
+	// if (key.equalsIgnoreCase("%nif%")) {
+	// replaceString = value.toString().length() > 0 ? value.toString()
+	// : "<span style='font-size:18px;'><strong><span style='color:#ff0000;'>N&atilde;o foi preenchido mas &eacute;
+	// obrigat&oacute;rio!</span></strong></span>";
+	// } else {
+	// replaceString = value.toString().length() > 0 ? value.toString()
+	// : "<em><span style='background-color:#faebd7;'>N&atilde;o foi prenchido</span></em>";
+	// }
 	//
-	//			} else if (value instanceof Date) {
-	//				SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY");
-	//				replaceString = dateFormat.format(((Date) value));
-	//			} else {
-	//				replaceString = "?";
-	//			}
-	//			html = html.replace(key, replaceString);
-	//		}
+	// } else if (value instanceof Date) {
+	// SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY");
+	// replaceString = dateFormat.format(((Date) value));
+	// } else {
+	// replaceString = "?";
+	// }
+	// html = html.replace(key, replaceString);
+	// }
 	//
-	//		return html;
-	//	}
-
+	// return html;
+	// }
 }

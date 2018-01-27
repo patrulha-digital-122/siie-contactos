@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -13,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
 
 @SpringComponent
@@ -22,9 +26,10 @@ public class SIIEService implements Serializable
 	/**
 	 *
 	 */
-	private static final long				serialVersionUID	= 1L;
-	private File							file;
-	private HashMap< String, Explorador >	map					= null;
+	private static final long						serialVersionUID	= 1L;
+	private File									file;
+	private HashMap< String, Explorador >			map					= null;
+	private EnumMap< SECCAO, List< Explorador > >	mapSeccaoElemento	= null;
 
 	public String sayHello()
 	{
@@ -44,6 +49,11 @@ public class SIIEService implements Serializable
 		if ( map == null )
 		{
 			map = new HashMap<>();
+			mapSeccaoElemento = new EnumMap<>( SECCAO.class );
+			for ( SECCAO seccao : SECCAO.values() )
+			{
+				mapSeccaoElemento.put( seccao, new ArrayList<>() );
+			}
 			// ClassLoader classLoader = getClass().getClassLoader();
 			try ( FileInputStream fis = new FileInputStream( file ); XSSFWorkbook myWorkBook = new XSSFWorkbook( fis ) )
 			{
@@ -113,15 +123,27 @@ public class SIIEService implements Serializable
 						}
 					}
 					map.put( explorador.getNin(), explorador );
+					mapSeccaoElemento.get( explorador.getCategoria() ).add( explorador );
 				}
 			}
-			catch ( IOException e )
+			catch ( Exception e )
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
 		return map;
 	}
+
+	/**
+	 * Getter for mapSeccaoElemento
+	 * @author anco62000465 2018-01-27
+	 * @return the mapSeccaoElemento  {@link EnumMap<SECCAO,List<Explorador>>}
+	 */
+	public EnumMap< SECCAO, List< Explorador > > getMapSeccaoElemento()
+	{
+		return mapSeccaoElemento;
+	}
+	
+	
 }

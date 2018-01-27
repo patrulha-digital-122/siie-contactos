@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.Upload.SucceededListener;
-
 import scouts.cne.pt.MyUI;
 import scouts.cne.pt.services.SIIEService;
 
@@ -31,7 +28,6 @@ public class FileUploader implements Receiver, SucceededListener {
 
 	@Override
 	public void uploadSucceeded(SucceededEvent event) {
-		Notification.show("Upload finalizado: " + event.getMIMEType(), Notification.Type.HUMANIZED_MESSAGE);
 		this.siieService.setFile(file);
 		this.myUI.showMenus();
 	}

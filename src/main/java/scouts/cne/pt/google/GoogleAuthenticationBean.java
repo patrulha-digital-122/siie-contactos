@@ -81,7 +81,12 @@ public class GoogleAuthenticationBean implements Serializable
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		InputStream in = classLoader.getResourceAsStream( "client_secrets.json" );
-		return GoogleClientSecrets.load( getJsonfactry(), new InputStreamReader( in ) );
+		GoogleClientSecrets googleClientSecrets = new GoogleClientSecrets();
+		try ( InputStreamReader inputStreamReader = new InputStreamReader( in ) )
+		{
+			googleClientSecrets = GoogleClientSecrets.load( getJsonfactry(), inputStreamReader );
+		}
+		return googleClientSecrets;
 	}
 
 	public GoogleAuthorizationCodeRequestUrl getGoogleAuthorizationCodeRequestUrl( String sessionId ) throws GeneralSecurityException, IOException
@@ -97,7 +102,6 @@ public class GoogleAuthenticationBean implements Serializable
 		{
 			urlRedirect = getGoogleClientSecrets().getDetails().getRedirectUris().get( 0 );
 		}
-		
 		return urlRedirect;
 	}
 

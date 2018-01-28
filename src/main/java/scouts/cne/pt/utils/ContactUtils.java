@@ -2,11 +2,9 @@ package scouts.cne.pt.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
-import com.google.gdata.data.contacts.GroupMembershipInfo;
 import com.google.gdata.data.contacts.Relation;
 import com.google.gdata.data.extensions.City;
 import com.google.gdata.data.extensions.Country;
@@ -16,7 +14,6 @@ import com.google.gdata.data.extensions.FullName;
 import com.google.gdata.data.extensions.Name;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.PostCode;
-import com.google.gdata.data.extensions.PostalAddress;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
@@ -63,6 +60,10 @@ public class ContactUtils
 	 */
 	private static void updateMorada( ContactEntry contactEntry, String label, Explorador explorador )
 	{
+		if ( explorador.getMorada().isEmpty() )
+		{
+			return;
+		}
 		StructuredPostalAddress structuredPostalAddress = null;
 		for ( StructuredPostalAddress postalAddress : contactEntry.getStructuredPostalAddresses() )
 		{

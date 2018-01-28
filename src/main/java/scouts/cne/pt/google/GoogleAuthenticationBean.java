@@ -87,8 +87,18 @@ public class GoogleAuthenticationBean implements Serializable
 	public GoogleAuthorizationCodeRequestUrl getGoogleAuthorizationCodeRequestUrl( String sessionId ) throws GeneralSecurityException, IOException
 	{
 		// TODO Auto-generated method stub
-		String urlRedirect = getGoogleClientSecrets().getDetails().getRedirectUris().get( 0 );
-		return getGoogleAuthorizationCodeFlow().newAuthorizationUrl().setRedirectUri( urlRedirect ).setState( sessionId );
+		return getGoogleAuthorizationCodeFlow().newAuthorizationUrl().setRedirectUri( getRedicetUrl() ).setState( sessionId );
+	}
+
+	private String getRedicetUrl() throws IOException
+	{
+		String urlRedirect = System.getenv().get( "GOOGLE_REDIRECT_URL" );
+		if ( urlRedirect == null )
+		{
+			urlRedirect = getGoogleClientSecrets().getDetails().getRedirectUris().get( 0 );
+		}
+		
+		return urlRedirect;
 	}
 
 	public String getApplicationName() throws IOException
@@ -108,7 +118,6 @@ public class GoogleAuthenticationBean implements Serializable
 	public GoogleCredential getGoogleCredentials( String code ) throws IOException
 	{
 		GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
-		String urlRedirect = googleClientSecrets.getDetails().getRedirectUris().get( 0 );
 		GoogleCredential credential = null;
 		try
 		{
@@ -117,15 +126,13 @@ public class GoogleAuthenticationBean implements Serializable
 											.setClientAuthentication( new ClientParametersAuthentication(
 															googleClientSecrets.getDetails().getClientId(),
 															googleClientSecrets.getDetails().getClientSecret() ) )
-											.setRedirectUri( urlRedirect ).execute();
-			
+											.setRedirectUri( getRedicetUrl() ).execute();
 			credential = new GoogleCredential().setAccessToken( response.getAccessToken() );
 		}
 		catch ( GeneralSecurityException | IOException e )
 		{
 			e.printStackTrace();
 		}
-		
 		return credential;
 	}
 }

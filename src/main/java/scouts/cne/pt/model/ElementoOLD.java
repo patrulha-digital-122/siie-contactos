@@ -1,17 +1,24 @@
 package scouts.cne.pt.model;
 
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.mail.internet.InternetAddress;
+import com.vaadin.ui.renderers.AbstractRenderer;
 
 /**
  * Created by Andr� on 03/10/2015.
  */
 public class ElementoOLD
 {
-	HashMap< String, Object > listaAtributos;
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 5041677499210798668L;
+	HashMap< String, Object >	listaAtributos;
 
 	/**
 	 *
@@ -80,6 +87,14 @@ public class ElementoOLD
 	}
 
 	/**
+	 * @return the localidade
+	 */
+	public boolean isMasculino()
+	{
+		return getAtributo( "sexo" ).toString().equals( "M" );
+	}
+
+	/**
 	 * @return the telefone
 	 */
 	public String getTelefone()
@@ -114,15 +129,29 @@ public class ElementoOLD
 	 */
 	public Date getDataNascimento()
 	{
-		Object dataNascimento = getAtributo( "datanascimento" );
-		if ( dataNascimento instanceof Date )
+		Object dataNascimento = getAtributo( "dtnasc" );
+		if ( dataNascimento instanceof String )
+		{
+			String strData = ( String ) dataNascimento;
+			if ( strData.isEmpty() )
+			{
+				return null;
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "DD/MM/YYYY" );
+			try
+			{
+				return simpleDateFormat.parse( ( String ) dataNascimento );
+			}
+			catch ( ParseException e )
+			{
+				e.printStackTrace();
+			}
+		}
+		else if ( dataNascimento instanceof Date )
 		{
 			return ( Date ) dataNascimento;
 		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
 
 	/**
@@ -177,14 +206,14 @@ public class ElementoOLD
 	/**
 	 * @return the nomePai
 	 */
-	public Object getNomePai()
+	public String getNomePai()
 	{
 		Object object = getAtributo( "pai" );
 		if ( object == null )
 		{
 			return "";
 		}
-		return object;
+		return ( String ) object;
 	}
 
 	/**
@@ -213,9 +242,9 @@ public class ElementoOLD
 	/**
 	 * @return the nomeMae
 	 */
-	public Object getNomeMae()
+	public String getNomeMae()
 	{
-		return getAtributo( "mae" );
+		return ( String ) getAtributo( "mae" );
 	}
 
 	/**

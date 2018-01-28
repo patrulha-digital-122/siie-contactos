@@ -5,16 +5,6 @@ import java.util.LinkedList;
 
 public class Elemento {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -6597748927158118909L;
-
-	public static final String FIND_BY_NIN = "elemento.findByNin";
-	public static final String FIND_BY_NIF = "elemento.findByNif";
-	public static final String FIND_BY_NIF_OR_NIN = "elemento.findByNifOrNin";
-	public static final String FIND = "elemento.find";
-
 	private String nin;
 
 	private String nif;
@@ -50,10 +40,6 @@ public class Elemento {
 	private String observacoes;
 
 	private Agrupamento agrupamento;
-
-	public Elemento() {
-
-	}
 
 	/**
 	 * @return the nin
@@ -634,5 +620,22 @@ public class Elemento {
 			stringBuilder.append(getEmailPai());
 		}
 		return stringBuilder.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append( "Elemento [nin=" );
+		builder.append( nin );
+		builder.append( ", nome=" );
+		builder.append( nome );
+		builder.append( ", seccao=" );
+		builder.append( seccao );
+		builder.append( "]" );
+		return builder.toString();
 	}
 }

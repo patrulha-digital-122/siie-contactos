@@ -1,50 +1,52 @@
 package scouts.cne.pt;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.UUID;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gdata.client.Query;
-import com.google.gdata.client.Query.CustomParameter;
 import com.google.gdata.client.contacts.ContactsService;
+import com.google.gdata.data.PlainTextConstruct;
+import com.google.gdata.data.batch.BatchOperationType;
+import com.google.gdata.data.batch.BatchStatus;
+import com.google.gdata.data.batch.BatchUtils;
+import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.ContactFeed;
+import com.google.gdata.data.contacts.ContactGroupEntry;
+import com.google.gdata.data.contacts.ContactGroupFeed;
+import com.google.gdata.data.contacts.GroupMembershipInfo;
+import com.google.gdata.data.extensions.ExtendedProperty;
+import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
-import com.vaadin.annotations.Push;
-import com.vaadin.data.provider.DataProvider;
-import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.shared.ui.ValueChangeMode;
+import com.vaadin.shared.Position;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.components.grid.HeaderRow;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
-import scouts.cne.pt.listeners.FileUploader;
+import scouts.cne.pt.layouts.EscolherElementosLayout;
+import scouts.cne.pt.layouts.UploadFileLayout;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
+import scouts.cne.pt.utils.ContactUtils;
 
 @SpringUI
 public class MyUI extends UI
@@ -57,107 +59,19 @@ public class MyUI extends UI
 	@Autowired
 	SIIEService							siieService;
 	private TextArea					debugTextArea;
-	private Label						debugLabel;
-	private VerticalLayout				afterLoginLayout;
 	private StringBuilder				sbLog;
-	private Grid< Explorador >			gridLobitos;
-	private Grid< Explorador >			gridExploradores;
-	private Grid< Explorador >			gridPioneiros;
-	private Grid< Explorador >			gridCaminheiros;
-	private Grid< Explorador >			gridDirigentes;
 	@Autowired
 	private GoogleAuthenticationBean	googleAuthentication;
-	VerticalLayout						rootLayout;
-	private BrowserWindowOpener			browserWindowOpener;
+	private EscolherElementosLayout		elementosLayout;
 
 	@Override
 	protected void init( VaadinRequest vaadinRequest )
 	{
-		rootLayout = new VerticalLayout();
-		rootLayout.setSizeFull();
-		rootLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		rootLayout.addComponent( getUploadSIIEFileMenu() );
+		UploadFileLayout uploadFileLayout = new UploadFileLayout();
 		System.out.println( "New Session: " + getEmbedId() );
-		setContent( rootLayout );
+		setContent( uploadFileLayout.getLayout( this, siieService ) );
 		getPage().setTitle( "SIIE - importer" );
-		debugLabel = new Label();
-		debugLabel.setSizeFull();
-		// Button btAuthentication = new Button("Conceder autorização");
-		//
-		// sbLog = new StringBuilder();
-		//
-		// try {
-		// excelFile = File.createTempFile("stuff", ".xlsx");
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// afterLoginLayout = new VerticalLayout();
-		// afterLoginLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-		// if (VaadinSession.getCurrent().getAttribute("credential") == null) {
-		// afterLoginLayout.setVisible(false);
-		// }
-		// List<String> data = Arrays.asList("Lobitos", "Exploradores", "Pioneiros",
-		// "Caminheiros", "Dirigentes");
-		// CheckBoxGroup<String> checkBoxGroup = new CheckBoxGroup<>("Selecione as
-		// secções que pretende importar", data);
-		// Button btImportacao = new Button("Iniciar importação");
-		//
-		// debugTextArea = new TextArea();
-		// debugTextArea.setReadOnly(true);
-		// debugTextArea.setValueChangeMode(ValueChangeMode.LAZY);
-		// debugTextArea.setWordWrap(true);
-		//
-		// //afterLoginLayout.addComponents(upload, checkBoxGroup, btImportacao);
-		//
-		// // login.addClickListener( new LoginClickListener( afterLoginLayout,
-		// // name ) );
-		// btImportacao.addClickListener(new ImportContacts(excelFile, checkBoxGroup,
-		// this));
-		//
-		// LoginClickListener listener = new LoginClickListener(this);
-		// btAuthentication.addClickListener(new ClickListener() {
-		//
-		// /**
-		// *
-		// */
-		// private static final long serialVersionUID = -290402141178194857L;
-		//
-		// @Override
-		// public void buttonClick(ClickEvent event) {
-		// //FirebaseManager.getInstance().addLogMessage("Novo Pedido de autorização");
-		// GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl;
-		// try {
-		// googleAuthorizationCodeRequestUrl =
-		// googleAuthentication.getGoogleAuthorizationCodeRequestUrl();
-		// getUI().getPage().open(googleAuthorizationCodeRequestUrl.build(), "_blank",
-		// true);
-		// } catch (GeneralSecurityException | IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// }
-		// });
-		//
-		// //rootLayout.addComponents(btAuthentication, afterLoginLayout,
-		// debugTextArea);
-		//
-		// //setContent(rootLayout);
-		//
-		// // A request handler for generating some content
-		// VaadinSession.getCurrent().addRequestHandler(listener);
 		// FirebaseManager.getInstance().addLogMessage("App started");
-	}
-
-	private Component getUploadSIIEFileMenu()
-	{
-		FileUploader fileUploader = new FileUploader( this, siieService );
-		Upload upload = new Upload( "Upload Ficheiro .xlsx do SIIE", fileUploader );
-		upload.addSucceededListener( fileUploader );
-		upload.setImmediateMode( true );
-		return upload;
 	}
 
 	public void receiveGoogleCode( String code )
@@ -168,80 +82,201 @@ public class MyUI extends UI
 			String applicationName = googleAuthentication.getApplicationName();
 			ContactsService contactsService = new ContactsService( applicationName );
 			contactsService.setOAuth2Credentials( credential );
-			URLConnection feedUrl = new URL( "https://www.google.com/m8/feeds/contacts/default/full" ).openConnection();
-			Query myQuery = new Query( feedUrl.getURL() );
-			myQuery.addCustomParameter( new CustomParameter( "gd:phoneNumber", "918880044" ) );
-			ContactFeed resultFeed;
-			resultFeed = contactsService.getFeed( myQuery, ContactFeed.class );
+			URL feedUrl = new URL( "https://www.google.com/m8/feeds/contacts/default/full" );
+			ContactFeed resultFeed = contactsService.getFeed( feedUrl, ContactFeed.class );
 			// Print the results
-			String caption = "Olá " + resultFeed.getTitle().getPlainText();
-			Notification.show( caption, Type.HUMANIZED_MESSAGE );
-			debugLabel.setValue( caption );
-			debugLabel.markAsDirty();
-			Notification.show( "Contactos encontrados: " + resultFeed.getTotalResults() );
-			System.out.println( "Contactos encontrados: " + resultFeed.getTotalResults() );
-			System.out.println( gridLobitos.getSelectedItems().size() );
+			showDebugNotification( "Resultados recebidos: " + resultFeed.getTotalResults() );
+			// Add a normal progress bar
+			// elementosLayout.addComponent( progressBar );
+			// elementosLayout.setComponentAlignment( progressBar, Alignment.MIDDLE_CENTER );
+			Map< String, Explorador > elementosParaImportar = elementosLayout.getElementosSelecionados();
+			showDebugNotification( "Elementos para importar: " + elementosParaImportar.size() );
+			Map< String, ContactEntry > elementosExistentes = new HashMap<>();
+			List<ContactEntry> listContc = new ArrayList<>( resultFeed.getEntries() );
+			
+			while ( resultFeed.getNextLink() != null )
+			{
+				resultFeed = contactsService.getFeed( new URL( resultFeed.getNextLink().getHref() ), ContactFeed.class );
+				listContc.addAll( resultFeed.getEntries() );
+			}
+			
+			for ( ContactEntry contactEntry : listContc )
+			{
+				try
+				{
+					for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
+					{
+						if ( "NIN".equals( phoneNumber.getLabel() ) )
+						{
+							if ( elementosParaImportar.containsKey( phoneNumber.getPhoneNumber().trim() ) )
+							{
+								elementosExistentes.put( phoneNumber.getPhoneNumber(), contactEntry );
+							}
+						}
+					}
+				}
+				catch ( RuntimeException e )
+				{
+					System.err.println( e.getMessage() );
+				}
+			}
+			Map< SECCAO, ContactGroupEntry > processarGrupo = processarGrupo( contactsService );
+			List<ContactFeed> listBatchFeeds = new ArrayList<>();
+			ContactFeed requestFeed = new ContactFeed();
+			listBatchFeeds.add( requestFeed );
+			int i = 0;
+			for ( Explorador explorador : elementosParaImportar.values() )
+			{
+				if(++i > 98) {
+					requestFeed = new ContactFeed();
+					listBatchFeeds.add( requestFeed );
+				}
+				ContactEntry contEntry;
+				if ( elementosExistentes.containsKey( explorador.getNin() ) )
+				{
+					contEntry = ContactUtils.convertElementoToContactEntry( explorador, elementosExistentes.get( explorador.getNin() ) );
+					// Actualizar
+					showDebugNotification( "Actualizar: " + explorador.getNome() );
+					BatchUtils.setBatchId( contEntry, "update" );
+					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.UPDATE );
+				}
+				else
+				{
+					contEntry = ContactUtils.convertElementoToContactEntry( explorador, null );
+					// Adicionar elemento
+					showDebugNotification( "Adicionar: " + explorador.getNome() );
+					BatchUtils.setBatchId( contEntry, "create" );
+					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.INSERT );
+				}
+				Map< String, ContactGroupEntry > groupsToDelete = new HashMap<>();
+				for ( Entry< SECCAO, ContactGroupEntry > entry : processarGrupo.entrySet() )
+				{
+					SECCAO seccao = entry.getKey();
+					ContactGroupEntry groupEntry = entry.getValue();
+					if ( explorador.getCategoria() != seccao )
+					{
+						groupsToDelete.put( groupEntry.getId(), groupEntry );
+					}
+				}
+				ContactGroupEntry contactGroupEntry = processarGrupo.get( explorador.getCategoria() );
+				boolean associarGroup = true;
+				for ( GroupMembershipInfo groupMembershipInfo : contEntry.getGroupMembershipInfos() )
+				{
+					if ( groupsToDelete.containsKey( groupMembershipInfo.getHref() ) )
+					{
+						groupMembershipInfo.setDeleted( true );
+					}
+					else if ( groupMembershipInfo.getHref().equals( contactGroupEntry.getId() ) )
+					{
+						associarGroup = false;
+						break;
+					}
+				}
+				if ( associarGroup )
+				{
+					GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
+					groupMembershipInfo.setHref( contactGroupEntry.getId() );
+					contEntry.getGroupMembershipInfos().add( groupMembershipInfo );
+				}
+				requestFeed.getEntries().add( contEntry );
+				// progressBar.setValue( totalElementos / ( ++iElementosImportados ) );
+				elementosLayout.updateProgressBar();
+			}
+			for ( ContactFeed contactFeed : listBatchFeeds )
+			{
+				// Submit the batch request to the server.
+				ContactFeed responseFeed =
+								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+				// Check the status of each operation.
+				for ( ContactEntry entry : responseFeed.getEntries() )
+				{
+					String batchId = BatchUtils.getBatchId( entry );
+					BatchStatus status = BatchUtils.getBatchStatus( entry );
+					System.out.println( batchId + ": " + status.getCode() + " (" + status.getReason() + ")" );
+				}
+			}
 		}
 		catch ( IOException e )
 		{
 			e.printStackTrace();
 		}
-		catch ( ServiceException e )
+		catch ( Exception e )
 		{
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * The <b>processarGrupo</b> method returns {@link void}
+	 * 
+	 * @author anco62000465 2018-01-27
+	 * @param contactsService
+	 * @param contEntry
+	 * @param seccao
+	 * @return
+	 */
+	private Map< SECCAO, ContactGroupEntry > processarGrupo( ContactsService contactsService )
+	{
+		// Create query and submit a request
+		URL feedUrl;
+		try
+		{
+			feedUrl = new URL( "https://www.google.com/m8/feeds/groups/default/full" );
+			Query myQuery = new Query( feedUrl );
+			ContactGroupFeed resultFeed = contactsService.query( myQuery, ContactGroupFeed.class );
+			// Print the results
+			ContactGroupEntry contactGroupEntry = null;
+			Map< SECCAO, ContactGroupEntry > mapGrupos = new EnumMap<>( SECCAO.class );
+			Map< String, SECCAO > listSeccao = new HashMap<>();
+			for ( SECCAO seccao : SECCAO.getListaSeccoes() )
+			{
+				listSeccao.put( seccao.getNome(), seccao );
+			}
+			for ( ContactGroupEntry entry : resultFeed.getEntries() )
+			{
+				if ( listSeccao.containsKey( entry.getTitle().getPlainText() ) )
+				{
+					mapGrupos.put( listSeccao.get( entry.getTitle().getPlainText() ), entry );
+				}
+			}
+			for ( SECCAO seccao : SECCAO.getListaSeccoes() )
+			{
+				if ( !mapGrupos.containsKey( seccao ) )
+				{
+					// Cria um novo grupo
+					contactGroupEntry = new ContactGroupEntry();
+					contactGroupEntry.setTitle( new PlainTextConstruct( seccao.getNome() ) );
+					ExtendedProperty additionalInfo = new ExtendedProperty();
+					additionalInfo.setName( "Informações do grupo" );
+					additionalInfo.setValue( seccao.getDescricao() );
+					contactGroupEntry.addExtendedProperty( additionalInfo );
+					// Ask the service to insert the new entry
+					URL postUrl = new URL( "https://www.google.com/m8/feeds/groups/default/full" );
+					mapGrupos.put( seccao, contactsService.insert( postUrl, contactGroupEntry ) );
+				}
+			}
+			return mapGrupos;
+		}
+		catch ( IOException | ServiceException e )
+		{
+			System.err.println( e.getMessage() );
+		}
+		return null;
+	}
+
+	private void showDebugNotification( String message )
+	{
+		System.out.println( message );
+		Notification notification = new Notification( message, Type.TRAY_NOTIFICATION );
+		notification.setDelayMsec( 1000 );
+		notification.setPosition( Position.TOP_RIGHT );
+		//notification.show( getPage() );
 	}
 
 	public void showMenus()
 	{
-		TabSheet tabsheet = new TabSheet();
-		siieService.loadExploradoresSIIE();
-		for ( SECCAO seccao : SECCAO.values() )
-		{
-			// Tab dos Lobitos
-			VerticalLayout tabLobitos = new VerticalLayout();
-			gridLobitos = new Grid<>( Explorador.class );
-			gridLobitos.setSizeFull();
-			gridLobitos.setSelectionMode( SelectionMode.MULTI );
-			tabLobitos.addComponent( gridLobitos );
-			
-			// Create a header row to hold column filters
-			gridLobitos.prependHeaderRow();
-
-			gridLobitos.setDataProvider( DataProvider.fromStream( siieService.getMapSeccaoElemento().get( seccao ).stream() ) );
-			gridLobitos.setHeaderVisible( true );
-			tabsheet.addTab( tabLobitos, seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size() );
-		}
-		rootLayout.addComponent( tabsheet );
-		rootLayout.addComponent( debugLabel );
-		Button btAuthentication = new Button( "Conceder autorização" );
-		try
-		{
-			if ( googleAuthentication.getGoogleAcessCode( getCurrent().getId() ) == null )
-			{
-				GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
-								googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
-				browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
-				browserWindowOpener.setFeatures( "height=600,width=600" );
-				browserWindowOpener.extend( btAuthentication );
-			}
-		}
-		catch ( GeneralSecurityException | IOException e )
-		{
-			e.printStackTrace();
-		}
-		debugTextArea = new TextArea();
-		debugTextArea.setReadOnly( true );
-		debugTextArea.setValueChangeMode( ValueChangeMode.LAZY );
-		debugTextArea.setWordWrap( true );
-		debugTextArea.setResponsive( true );
-		rootLayout.addComponent( btAuthentication );
-		rootLayout.addComponent( debugTextArea );
-	}
-
-	public void showSecondPhaseOptions()
-	{
-		afterLoginLayout.setVisible( true );
+		elementosLayout = new EscolherElementosLayout();
+		setContent( elementosLayout.getLayout( googleAuthentication, siieService, getEmbedId() ) );
 	}
 
 	public void addDebugInfo( String text )

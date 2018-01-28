@@ -2,7 +2,6 @@ package scouts.cne.pt.services;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -15,6 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
+import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
@@ -26,15 +26,10 @@ public class SIIEService implements Serializable
 	/**
 	 *
 	 */
-	private static final long						serialVersionUID	= 1L;
-	private File									file;
+	private static final long					serialVersionUID	= 1L;
+	private File								file;
 	private HashMap< String, Explorador >			map					= null;
 	private EnumMap< SECCAO, List< Explorador > >	mapSeccaoElemento	= null;
-
-	public String sayHello()
-	{
-		return "Hello from bean " + toString();
-	}
 
 	/**
 	 * @param file the file to set
@@ -44,7 +39,7 @@ public class SIIEService implements Serializable
 		this.file = file;
 	}
 
-	public HashMap< String, Explorador > loadExploradoresSIIE()
+	public void loadExploradoresSIIE()
 	{
 		if ( map == null )
 		{
@@ -122,8 +117,11 @@ public class SIIEService implements Serializable
 								break;
 						}
 					}
-					map.put( explorador.getNin(), explorador );
-					mapSeccaoElemento.get( explorador.getCategoria() ).add( explorador );
+					if ( explorador.isActivo() )
+					{
+						map.put( explorador.getNin(), explorador );
+						mapSeccaoElemento.get( explorador.getCategoria() ).add( explorador );
+					}
 				}
 			}
 			catch ( Exception e )
@@ -132,18 +130,26 @@ public class SIIEService implements Serializable
 				e.printStackTrace();
 			}
 		}
-		return map;
 	}
 
 	/**
 	 * Getter for mapSeccaoElemento
+	 * 
 	 * @author anco62000465 2018-01-27
-	 * @return the mapSeccaoElemento  {@link EnumMap<SECCAO,List<Explorador>>}
+	 * @return the mapSeccaoElemento {@link EnumMap<SECCAO,List<Explorador>>}
 	 */
 	public EnumMap< SECCAO, List< Explorador > > getMapSeccaoElemento()
 	{
 		return mapSeccaoElemento;
 	}
-	
-	
+
+	private Elemento convert( Explorador explorador )
+	{
+		Elemento elemento = new Elemento();
+		elemento.setNome( explorador.getNome() );
+		elemento.setSeccao( explorador.getCategoria() );
+		elemento.setNin( explorador.getNin() );
+		elemento.setEmail( explorador.getEmail() );
+		return elemento;
+	}
 }

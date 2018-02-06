@@ -116,9 +116,9 @@ public class ElementoOLD
 	public String getCodigoPostal()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append( getAtributo( "cp1" ).toString() );
+		sb.append( getAtributo( "cp4" ).toString() );
 		sb.append( "-" );
-		sb.append( getAtributo( "cp2" ).toString() );
+		sb.append( getAtributo( "cp3" ).toString() );
 		sb.append( " " );
 		sb.append( getAtributo( "codigopostal" ).toString() );
 		return sb.toString();
@@ -188,11 +188,54 @@ public class ElementoOLD
 	}
 
 	/**
+	 * @return the email
+	 */
+	public String getEmailPrincipalGoogle()
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+		if ( !getEmail().isEmpty() )
+		{
+			stringBuilder.append( getEmail() );
+		}
+		if ( !getEmailMae().isEmpty() )
+		{
+			if ( stringBuilder.length() == 0 )
+			{
+				stringBuilder.append( getEmailMae() );
+			}
+			else
+			{
+				stringBuilder.append( ">; \"" );
+				stringBuilder.append( getNomeMae() );
+				stringBuilder.append( "\" <" );
+				stringBuilder.append( getEmailMae() );
+				stringBuilder.append( ">" );
+			}
+		}
+		if ( !getEmailPai().isEmpty() )
+		{
+			if ( stringBuilder.length() == 0 )
+			{
+				stringBuilder.append( getEmailPai() );
+			}
+			else
+			{
+				stringBuilder.append( "; \"" );
+				stringBuilder.append( getNomePai() );
+				stringBuilder.append( "\" <" );
+				stringBuilder.append( getEmailPai() );
+				stringBuilder.append( ">" );
+			}
+		}
+		return stringBuilder.toString();
+	}
+
+	/**
 	 * @return the naturalidade
 	 */
 	public String getNaturalidade()
 	{
-		return getAtributo( "naturalidade" ).toString();
+		return ( String ) getAtributo( "naturalidade" );
 	}
 
 	/**
@@ -200,7 +243,7 @@ public class ElementoOLD
 	 */
 	public String getProfissao()
 	{
-		return getAtributo( "profissao" ).toString();
+		return ( String ) getAtributo( "profissao" );
 	}
 
 	/**
@@ -208,12 +251,7 @@ public class ElementoOLD
 	 */
 	public String getNomePai()
 	{
-		Object object = getAtributo( "pai" );
-		if ( object == null )
-		{
-			return "";
-		}
-		return ( String ) object;
+		return ( String ) getAtributo( "nomepai" );
 	}
 
 	/**
@@ -221,14 +259,7 @@ public class ElementoOLD
 	 */
 	public String getTelefonePai()
 	{
-		try
-		{
-			return getAtributo( "telefonepai" ).toString();
-		}
-		catch ( Exception e )
-		{
-			return null;
-		}
+		return ( String ) getAtributo( "telefonepai" );
 	}
 
 	/**
@@ -236,6 +267,7 @@ public class ElementoOLD
 	 */
 	public String getEmailPai()
 	{
+		
 		return ( String ) getAtributo( "emailpai" );
 	}
 
@@ -244,7 +276,7 @@ public class ElementoOLD
 	 */
 	public String getNomeMae()
 	{
-		return ( String ) getAtributo( "mae" );
+		return ( String ) getAtributo( "nomemae" );
 	}
 
 	/**

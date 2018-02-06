@@ -1,14 +1,20 @@
 package scouts.cne.pt.layouts;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
@@ -26,23 +32,38 @@ import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
 import com.vaadin.annotations.Push;
+import com.vaadin.data.HasValue.ValueChangeEvent;
+import com.vaadin.data.HasValue.ValueChangeListener;
+import com.vaadin.event.ContextClickEvent;
+import com.vaadin.event.ContextClickEvent.ContextClickListener;
 import com.vaadin.event.selection.SelectionEvent;
 import com.vaadin.event.selection.SelectionListener;
 import com.vaadin.server.BrowserWindowOpener;
+import com.vaadin.server.ClassResource;
+import com.vaadin.server.FileResource;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResource.StreamSource;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.CheckBoxGroup;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.PopupView;
+import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -68,6 +89,9 @@ public class EscolherElementosLayout extends VerticalLayout
 	private Button								btAuthentication;
 	private String								googleCode			= null;
 	private GoogleAuthenticationBean			googleAuthentication;
+	private GoogleCredential					credential			= null;
+	@Value( "classpath:L.jpg" )
+	private Resource							resourceLobitos;
 
 	/**
 	 * constructor
@@ -108,6 +132,7 @@ public class EscolherElementosLayout extends VerticalLayout
 		tabsheetContactos = new TabSheet();
 		tabsheetContactos.setWidth( 100f, Unit.PERCENTAGE );
 		siieService.loadExploradoresSIIE();
+		String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();
 		for ( SECCAO seccao : SECCAO.getListaSeccoes() )
 		{
 			// Tab dos Lobitos
@@ -118,9 +143,6 @@ public class EscolherElementosLayout extends VerticalLayout
 			grid.setSelectionMode( SelectionMode.MULTI );
 			grid.setItems( siieService.getMapSeccaoElemento().get( seccao ) );
 			tabLobitos.addComponent( grid );
-			// grid.setDataProvider( DataProvider.fromStream( siieService.getMapSeccaoElemento().get( seccao
-			// ).stream()
-			// ) );
 			grid.addColumn( Explorador::getNome ).setCaption( "Nome" );
 			grid.addColumn( Explorador::getNin ).setCaption( "NIN" );
 			grid.addColumn( Explorador::getEmail ).setCaption( "Email" );
@@ -132,22 +154,23 @@ public class EscolherElementosLayout extends VerticalLayout
 				{
 					mapSelecionados.get( seccao ).clear();
 					mapSelecionados.get( seccao ).addAll( event.getAllSelectedItems() );
-					
 					int iSelecionados = 0;
 					for ( List< Explorador > list : mapSelecionados.values() )
 					{
 						iSelecionados += list.size();
 					}
-					
 					btImportacao.setCaption( "Iniciar Importação (" + iSelecionados + ")" );
-					btImportacao.setEnabled( iSelecionados > 0 && !btAuthentication.isVisible());
+					btImportacao.setEnabled( iSelecionados > 0 && !btAuthentication.isVisible() );
 				}
 			} );
-			tabsheetContactos.addTab( tabLobitos, seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size() );
-
+			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size();
+			FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg" ) );
+			tabsheetContactos.addTab( tabLobitos, nomeTab );
 		}
 		// rootLayout.addComponent( debugLabel );
 		btAuthentication = new Button( "Dar permissão" );
+		//btAuthentication.setVisible( false );
+		btAuthentication.setEnabled( true );
 		try
 		{
 			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
@@ -155,6 +178,7 @@ public class EscolherElementosLayout extends VerticalLayout
 			BrowserWindowOpener browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
 			browserWindowOpener.extend( btAuthentication );
+			btAuthentication.click();
 		}
 		catch ( GeneralSecurityException | IOException e )
 		{
@@ -174,6 +198,15 @@ public class EscolherElementosLayout extends VerticalLayout
 		verticalLayout.setExpandRatio( tabsheetContactos, 8 );
 		verticalLayout.addComponent( btAuthentication );
 		verticalLayout.setExpandRatio( btAuthentication, 1 );
+		Label label = new Label( "Configurações avançadas" );
+		VerticalLayout opcoesExtraLayout = new VerticalLayout();
+		List< String > data = Arrays.asList( "Importar dados dos pais em separado", "Importar dados dos pais em conjunto" );
+		CheckBoxGroup< String > chkBImportarPais = new CheckBoxGroup<>( "Opções:", data );
+		opcoesExtraLayout.addComponent( chkBImportarPais );
+
+//		verticalLayout.addComponent( label );
+//		verticalLayout.addComponent( opcoesExtraLayout );
+		//verticalLayout.setExpandRatio( opcoesExtraLayout, 1 );
 		verticalLayout.addComponent( btImportacao );
 		verticalLayout.setExpandRatio( btImportacao, 1 );
 		addComponent( verticalLayout );
@@ -222,18 +255,20 @@ public class EscolherElementosLayout extends VerticalLayout
 			{
 				return;
 			}
-			GoogleCredential credential = googleAuthentication.getGoogleCredentials( googleCode );
+			if ( credential == null )
+			{
+				credential = googleAuthentication.getGoogleCredentials( googleCode );
+			}
 			String applicationName = googleAuthentication.getApplicationName();
 			ContactsService contactsService = new ContactsService( applicationName );
 			contactsService.setOAuth2Credentials( credential );
 			URL feedUrl = new URL( "https://www.google.com/m8/feeds/contacts/default/full" );
 			ContactFeed resultFeed = contactsService.getFeed( feedUrl, ContactFeed.class );
 			// Print the results
-			showDebugNotification( "Resultados recebidos: " + resultFeed.getTotalResults() );
 			// Add a normal progress bar
 			// elementosLayout.addComponent( progressBar );
 			// elementosLayout.setComponentAlignment( progressBar, Alignment.MIDDLE_CENTER );
-			showDebugNotification( "Elementos para importar: " + elementosParaImportar.size() );
+			//showDebugNotification( "Elementos para importar: " + elementosParaImportar.size() );
 			Map< String, ContactEntry > elementosExistentes = new HashMap<>();
 			List< ContactEntry > listContc = new ArrayList<>( resultFeed.getEntries() );
 			while ( resultFeed.getNextLink() != null )
@@ -241,6 +276,7 @@ public class EscolherElementosLayout extends VerticalLayout
 				resultFeed = contactsService.getFeed( new URL( resultFeed.getNextLink().getHref() ), ContactFeed.class );
 				listContc.addAll( resultFeed.getEntries() );
 			}
+			//showDebugNotification( "Resultados recebidos: " + resultFeed.getTotalResults() + " / " + listContc.size() );
 			for ( ContactEntry contactEntry : listContc )
 			{
 				for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
@@ -290,7 +326,7 @@ public class EscolherElementosLayout extends VerticalLayout
 				{
 					SECCAO seccao = entry.getKey();
 					ContactGroupEntry groupEntry = entry.getValue();
-					if ( explorador.getCategoria() != seccao )
+					if ( explorador.getCategoria() != seccao && groupEntry.getSystemGroup() == null )
 					{
 						groupsToDelete.put( groupEntry.getId(), groupEntry );
 					}
@@ -323,11 +359,10 @@ public class EscolherElementosLayout extends VerticalLayout
 				}
 				batchRequestFeed.getEntries().add( contEntry );
 			}
-			List<ContactEntry> listOk = new ArrayList<>();
-			List<ContactEntry> listCriados = new ArrayList<>();
-			List<ContactEntry> listErro = new ArrayList<>();
-			List<ContactEntry> listNaoModificado = new ArrayList<>();
-
+			List< ContactEntry > listOk = new ArrayList<>();
+			List< ContactEntry > listCriados = new ArrayList<>();
+			List< ContactEntry > listErro = new ArrayList<>();
+			List< ContactEntry > listNaoModificado = new ArrayList<>();
 			for ( ContactFeed contactFeed : listBatchFeeds )
 			{
 				// Submit the batch request to the server.
@@ -336,7 +371,7 @@ public class EscolherElementosLayout extends VerticalLayout
 				// Check the status of each operation.
 				for ( ContactEntry entry : responseFeed.getEntries() )
 				{
-					String batchId = BatchUtils.getBatchId( entry );
+					// String batchId = BatchUtils.getBatchId( entry );
 					BatchStatus status = BatchUtils.getBatchStatus( entry );
 					switch ( status.getCode() )
 					{
@@ -350,12 +385,13 @@ public class EscolherElementosLayout extends VerticalLayout
 							listNaoModificado.add( entry );
 							break;
 						default:
+							System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
+								status.getReason() );
 							listErro.add( entry );
 							break;
 					}
 				}
 			}
-			
 			VerticalLayout verticalLayout = new VerticalLayout();
 			Label labelOk = new Label( "Contactos actualizados com sucesso" );
 			Label labelOkValue = new Label( "<center><b>" + listOk.size() + "</b></center>", ContentMode.HTML );
@@ -363,22 +399,22 @@ public class EscolherElementosLayout extends VerticalLayout
 			Label labelNovosValue = new Label( "<center><b>" + listCriados.size() + "</b></center>", ContentMode.HTML );
 			Label labelErro = new Label( "Contactos não importados" );
 			Label labelErroValue = new Label( "<font color=\"red\"><center><b>" + listErro.size() + "</b></center></font>", ContentMode.HTML );
-			
 			verticalLayout.addComponent( labelOk );
 			verticalLayout.addComponent( labelOkValue );
 			verticalLayout.addComponent( labelNovos );
 			verticalLayout.addComponent( labelNovosValue );
 			verticalLayout.addComponent( labelErro );
 			verticalLayout.addComponent( labelErroValue );
-			
+			for ( ContactEntry contactEntry : listErro )
+			{
+				verticalLayout.addComponent( new Label( contactEntry.getName().getFullName().getValue() ) );
+			}
 			Window subWindow = new Window( "Resultado" );
 			subWindow.setContent( verticalLayout );
-			
 			// Center it in the browser window
-	        subWindow.center();
-
-	        // Open it in the UI
-	        getUI().addWindow(subWindow);
+			subWindow.center();
+			// Open it in the UI
+			getUI().addWindow( subWindow );
 		}
 		catch ( IOException e )
 		{

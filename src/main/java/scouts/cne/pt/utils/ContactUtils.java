@@ -38,7 +38,7 @@ public class ContactUtils
 		updatePhoneNumber( contactEntry, "Mãe", explorador.getTelefoneMae() );
 		updatePhoneNumber( contactEntry, "Pai", explorador.getTelefonePai() );
 		updatePhoneNumber( contactEntry, "NIF", explorador.getNif() );
-		updateEmail( contactEntry, "Principal", explorador.getEmailPrincipal() );
+		updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
 		updateEmail( contactEntry, "Pessoal", explorador.getEmail() );
 		updateEmail( contactEntry, "Mãe", explorador.getEmailMae() );
 		updateEmail( contactEntry, "Pai", explorador.getEmailPai() );
@@ -112,7 +112,7 @@ public class ContactUtils
 		{
 			for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
 			{
-				if ( phoneNumber.getLabel().equals( lable ) )
+				if ( phoneNumber.getLabel() != null && phoneNumber.getLabel().equals( lable ) )
 				{
 					phoneNumber.setPhoneNumber( number );
 					return;
@@ -148,7 +148,7 @@ public class ContactUtils
 		boolean existPrincipal = false;
 		for ( Email e : contactEntry.getEmailAddresses() )
 		{
-			if ( e.getLabel().equals( lable ) )
+			if ( e.getLabel() != null && e.getLabel().equals( lable ) )
 			{
 				e.setAddress( strEmail );
 				return;
@@ -178,19 +178,21 @@ public class ContactUtils
 			contactEntry.setBirthday( birthday );
 		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-		
 		String format = dateFormat.format( date );
 		birthday.setWhen( format );
 	}
 
 	private static void updatePais( ContactEntry contactEntry, String lable, String name )
 	{
-		for ( Relation relation : contactEntry.getRelations() )
+		if ( contactEntry.getRelations() != null )
 		{
-			if ( relation.hasLabel() && relation.getLabel().equals( lable ) )
+			for ( Relation relation : contactEntry.getRelations() )
 			{
-				relation.setValue( name );
-				return;
+				if ( relation.hasLabel() && relation.getLabel().equals( lable ) )
+				{
+					relation.setValue( name );
+					return;
+				}
 			}
 		}
 		Relation relation = new Relation();

@@ -1,7 +1,13 @@
 package scouts.cne.pt;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.vaadin.annotations.Push;
+import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.UI;
@@ -22,7 +28,6 @@ public class MyUI extends UI
 	SIIEService							siieService;
 	@Autowired
 	private GoogleAuthenticationBean	googleAuthentication;
-	
 	private EscolherElementosLayout		elementosLayout;
 
 	@Override
@@ -32,6 +37,7 @@ public class MyUI extends UI
 		System.out.println( "New Session: " + getEmbedId() );
 		setContent( uploadFileLayout.getLayout( this, siieService ) );
 		getPage().setTitle( "SIIE - importer" );
+		setTheme( "mytheme" );
 		// FirebaseManager.getInstance().addLogMessage("App started");
 	}
 
@@ -45,5 +51,6 @@ public class MyUI extends UI
 	{
 		elementosLayout = new EscolherElementosLayout( googleAuthentication );
 		setContent( elementosLayout.getLayout( siieService, getEmbedId() ) );
+		
 	}
 }

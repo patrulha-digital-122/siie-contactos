@@ -4,32 +4,23 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import com.vaadin.ui.Upload.Receiver;
-import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.Upload.SucceededListener;
-import scouts.cne.pt.MyUI;
+
 import scouts.cne.pt.services.SIIEService;
 
-public class FileUploader implements Receiver, SucceededListener {
+public class FileUploader implements Receiver {
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 3751542749493613243L;
 	private File file;
-	MyUI myUI;
 
 	private SIIEService siieService;
 
-	public FileUploader(MyUI myUI, SIIEService siieService) {
+	public FileUploader(SIIEService siieService) {
 		super();
-		this.myUI = myUI;
 		this.siieService = siieService;
-	}
-
-	@Override
-	public void uploadSucceeded(SucceededEvent event) {
-		this.siieService.setFile(file);
-		this.myUI.showMenus();
 	}
 
 	@Override
@@ -43,6 +34,15 @@ public class FileUploader implements Receiver, SucceededListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("New file: " + filename);
 		return outputStream;
 	}
+
+	/**
+	 * @return the file
+	 */
+	public File getFile() {
+		return file;
+	}
+
 }

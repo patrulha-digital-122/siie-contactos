@@ -5,6 +5,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.UI;
+
 import scouts.cne.pt.MyUI;
 
 /**
@@ -15,13 +16,13 @@ import scouts.cne.pt.MyUI;
 public class GoogleCodeController extends UI
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7860796915342581862L;
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.vaadin.ui.UI#init(com.vaadin.server.VaadinRequest)
 	 */
 	@Override
@@ -29,7 +30,7 @@ public class GoogleCodeController extends UI
 	{
 		String code = request.getParameter( "code" );
 		String embedId = request.getParameter( "state" );
-		
+
 		MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
 		if ( uiByEmbedId != null )
 		{
@@ -38,7 +39,7 @@ public class GoogleCodeController extends UI
 				@Override
 				public void run()
 				{
-					uiByEmbedId.receiveGoogleCode( code );
+					uiByEmbedId.receiveGoogleCode( code, embedId );
 				}
 			} );
 		}

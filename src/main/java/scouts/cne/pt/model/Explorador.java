@@ -3,8 +3,14 @@ package scouts.cne.pt.model;
 /**
  * Created by Andr� on 03/10/2015.
  */
-public class Explorador extends ElementoOLD
+public class Explorador extends ElementoOLD implements Comparable<Explorador>
 {
+
+	@Override
+	public int compareTo(Explorador o) {
+
+		return getCategoria().compareTo(o.getCategoria());
+	}
 	// @Override
 	// public String toHTML() {
 	//

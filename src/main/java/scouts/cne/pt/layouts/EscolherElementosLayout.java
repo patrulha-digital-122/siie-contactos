@@ -17,6 +17,8 @@ import com.vaadin.event.selection.SelectionEvent;
 import com.vaadin.event.selection.SelectionListener;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CheckBoxGroup;
 import com.vaadin.ui.Grid;
@@ -27,7 +29,7 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 
-import scouts.cne.pt.google.GoogleAuthenticationBean;
+import scouts.cne.pt.MyUI;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
@@ -44,8 +46,8 @@ public class EscolherElementosLayout extends VerticalLayout {
 	private static final long serialVersionUID = 5253307196908771291L;
 	private TabSheet tabsheetContactos;
 	private Map<SECCAO, List<Explorador>> mapSelecionados;
-	private GoogleAuthenticationBean googleAuthentication;
 	private int iSelecionados = 0;
+	private String embedId;
 
 	@Value("classpath:L.jpg")
 	private Resource resourceLobitos;
@@ -55,9 +57,10 @@ public class EscolherElementosLayout extends VerticalLayout {
 	 * constructor
 	 *
 	 * @author anco62000465 2018-01-27
+	 * @param string
 	 * @param siieService
 	 */
-	public EscolherElementosLayout(GoogleAuthenticationBean googleAuthentication) {
+	public EscolherElementosLayout(String embedId) {
 		super();
 		setSizeFull();
 		setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
@@ -65,7 +68,7 @@ public class EscolherElementosLayout extends VerticalLayout {
 		for (SECCAO component : SECCAO.getListaSeccoes()) {
 			mapSelecionados.put(component, new ArrayList<>());
 		}
-		this.googleAuthentication = googleAuthentication;
+		this.embedId = embedId;
 	}
 
 	/**
@@ -81,11 +84,12 @@ public class EscolherElementosLayout extends VerticalLayout {
 	public VerticalLayout getLayout(SIIEService siieService, String embedId) {
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
-		verticalLayout.setSpacing(true);
+		verticalLayout.setSpacing(false);
+		verticalLayout.setMargin(new MarginInfo(false, true, false, true));
 		verticalLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 
 		tabsheetContactos = new TabSheet();
-		tabsheetContactos.setWidth(100f, Unit.PERCENTAGE);
+		tabsheetContactos.setSizeFull();
 
 		prencherTabela(siieService);
 
@@ -111,6 +115,7 @@ public class EscolherElementosLayout extends VerticalLayout {
 		for (SECCAO seccao : SECCAO.getListaSeccoes()) {
 			// Tab dos Lobitos
 			VerticalLayout tabLobitos = new VerticalLayout();
+			tabLobitos.setSizeFull();
 			Grid<Explorador> grid = new Grid<>();
 			grid.setSizeFull();
 			grid.removeAllColumns();
@@ -131,6 +136,19 @@ public class EscolherElementosLayout extends VerticalLayout {
 						iCount += list.size();
 					}
 					iSelecionados = iCount;
+
+					MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
+					if ( uiByEmbedId != null )
+					{
+						uiByEmbedId.access( new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								uiByEmbedId.updateSelectionados(iSelecionados);
+							}
+						} );
+					}
 				}
 			});
 			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get(seccao).size();
@@ -172,5 +190,6 @@ public class EscolherElementosLayout extends VerticalLayout {
 	public int getSelecionados() {
 		return iSelecionados;
 	}
+
 
 }

@@ -38,6 +38,13 @@ public class GoogleAuthenticationBean implements Serializable {
 		refreshToken = code;
 	}
 
+	/**
+	 * @return the refreshToken
+	 */
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
 	public GoogleAuthorizationCodeFlow getGoogleAuthorizationCodeFlow() throws GeneralSecurityException, IOException {
 		// Build flow and trigger user authorization request.
 		return new GoogleAuthorizationCodeFlow.Builder(getHttpTransport(), getJsonfactry(), getGoogleClientSecrets(),

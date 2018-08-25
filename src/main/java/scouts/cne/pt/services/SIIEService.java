@@ -8,6 +8,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -50,77 +51,81 @@ public class SIIEService implements Serializable {
 	}
 
 	public void loadExploradoresSIIE() {
-		if (map == null) {
-			map = new HashMap<>();
 
-			// ClassLoader classLoader = getClass().getClassLoader();
-			try (FileInputStream fis = new FileInputStream(file); XSSFWorkbook myWorkBook = new XSSFWorkbook(fis)) {
-				// Return first sheet from the XLSX workbook
-				XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-				// Get iterator to all the rows in current sheet
-				Iterator<Row> rowIterator = mySheet.iterator();
-				// Traversing over each row of XLSX file
-				HashMap<Integer, String> headerRow = new HashMap<>();
-				Row row = rowIterator.next();
-				Iterator<Cell> cellIterator = row.cellIterator();
+		map = new HashMap<>();
+
+
+		for (Entry<SECCAO, List<scouts.cne.pt.model.Explorador>> entry : mapSeccaoElemento.entrySet()) {
+			entry.getValue().clear();
+		}
+		// ClassLoader classLoader = getClass().getClassLoader();
+		try (FileInputStream fis = new FileInputStream(file); XSSFWorkbook myWorkBook = new XSSFWorkbook(fis)) {
+			// Return first sheet from the XLSX workbook
+			XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+			// Get iterator to all the rows in current sheet
+			Iterator<Row> rowIterator = mySheet.iterator();
+			// Traversing over each row of XLSX file
+			HashMap<Integer, String> headerRow = new HashMap<>();
+			Row row = rowIterator.next();
+			Iterator<Cell> cellIterator = row.cellIterator();
+			while (cellIterator.hasNext()) {
+				Cell cell = cellIterator.next();
+				String value = cell.getStringCellValue();
+				value = value.replace(" ", "");
+				value = value.replace("-", "");
+				value = value.replace(".", "");
+				value = value.toLowerCase();
+				value = ValidationUtils.removeAcentos(value);
+				if (headerRow.containsValue(value)) {
+					if (!headerRow.containsValue(value + "pai")) {
+						headerRow.put(cell.getColumnIndex(), value + "pai");
+					} else if (!headerRow.containsValue(value + "mae")) {
+						headerRow.put(cell.getColumnIndex(), value + "mae");
+					} else {
+						headerRow.put(cell.getColumnIndex(), value + "encedu");
+					}
+				} else {
+					headerRow.put(cell.getColumnIndex(), value);
+				}
+			}
+			while (rowIterator.hasNext()) {
+				row = rowIterator.next();
+				Explorador explorador = new Explorador();
+				cellIterator = row.cellIterator();
 				while (cellIterator.hasNext()) {
 					Cell cell = cellIterator.next();
-					String value = cell.getStringCellValue();
-					value = value.replace(" ", "");
-					value = value.replace("-", "");
-					value = value.replace(".", "");
-					value = value.toLowerCase();
-					value = ValidationUtils.removeAcentos(value);
-					if (headerRow.containsValue(value)) {
-						if (!headerRow.containsValue(value + "pai")) {
-							headerRow.put(cell.getColumnIndex(), value + "pai");
-						} else if (!headerRow.containsValue(value + "mae")) {
-							headerRow.put(cell.getColumnIndex(), value + "mae");
-						} else {
-							headerRow.put(cell.getColumnIndex(), value + "encedu");
-						}
-					} else {
-						headerRow.put(cell.getColumnIndex(), value);
+					switch (cell.getCellType()) {
+					case Cell.CELL_TYPE_BLANK:
+						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
+						break;
+					case Cell.CELL_TYPE_STRING:
+					case Cell.CELL_TYPE_FORMULA:
+						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
+								cell.getStringCellValue());
+						break;
+					case Cell.CELL_TYPE_BOOLEAN:
+						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
+								cell.getBooleanCellValue());
+						break;
+					case Cell.CELL_TYPE_NUMERIC:
+						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
+								cell.getDateCellValue());
+						break;
+					default:
+						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
+						break;
 					}
 				}
-				while (rowIterator.hasNext()) {
-					row = rowIterator.next();
-					Explorador explorador = new Explorador();
-					cellIterator = row.cellIterator();
-					while (cellIterator.hasNext()) {
-						Cell cell = cellIterator.next();
-						switch (cell.getCellType()) {
-						case Cell.CELL_TYPE_BLANK:
-							explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
-							break;
-						case Cell.CELL_TYPE_STRING:
-						case Cell.CELL_TYPE_FORMULA:
-							explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-									cell.getStringCellValue());
-							break;
-						case Cell.CELL_TYPE_BOOLEAN:
-							explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-									cell.getBooleanCellValue());
-							break;
-						case Cell.CELL_TYPE_NUMERIC:
-							explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-									cell.getDateCellValue());
-							break;
-						default:
-							explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
-							break;
-						}
-					}
-					if (explorador.isActivo()) {
-						map.put(explorador.getNin(), explorador);
-						mapSeccaoElemento.get(explorador.getCategoria()).add(explorador);
-					}
+				if (explorador.isActivo()) {
+					map.put(explorador.getNin(), explorador);
+					mapSeccaoElemento.get(explorador.getCategoria()).add(explorador);
 				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 	}
 
 	/**

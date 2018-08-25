@@ -2,6 +2,8 @@ package scouts.cne.pt.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
+
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
@@ -17,7 +19,9 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
+
 import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.SECCAO;
 
 /**
  * @author anco62000465 2018-01-27
@@ -25,7 +29,7 @@ import scouts.cne.pt.model.Explorador;
  */
 public class ContactUtils
 {
-	public static ContactEntry convertElementoToContactEntry( Explorador explorador, ContactEntry contactEntry )
+	public static ContactEntry convertElementoToContactEntry( Explorador explorador, ContactEntry contactEntry, Set<String> listTelefonesExistentes )
 	{
 		if ( contactEntry == null )
 		{
@@ -34,9 +38,21 @@ public class ContactUtils
 		}
 		updateNome( contactEntry, explorador );
 		updatePhoneNumber( contactEntry, "Telemóvel", explorador.getTelemovel() );
-		updatePhoneNumber( contactEntry, "Telefone", explorador.getTelemovel() );
-		updatePhoneNumber( contactEntry, "Mãe", explorador.getTelefoneMae() );
-		updatePhoneNumber( contactEntry, "Pai", explorador.getTelefonePai() );
+		updatePhoneNumber( contactEntry, "Telefone", explorador.getTelefone() );
+		if(explorador.getCategoria().equals(SECCAO.DIRIGENTES)) {
+			listTelefonesExistentes.add(explorador.getTelemovel());
+			listTelefonesExistentes.add(explorador.getTelefone());
+		} else {
+
+			if (!listTelefonesExistentes.contains(explorador.getTelefoneMae())) {
+				updatePhoneNumber(contactEntry, "Mãe", explorador.getTelefoneMae());
+				listTelefonesExistentes.add(explorador.getTelefoneMae());
+			}
+			if (!listTelefonesExistentes.contains(explorador.getTelefonePai())) {
+				updatePhoneNumber(contactEntry, "Pai", explorador.getTelefonePai());
+				listTelefonesExistentes.add(explorador.getTelefonePai());
+			}
+		}
 		updatePhoneNumber( contactEntry, "NIF", explorador.getNif() );
 		updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
 		updateEmail( contactEntry, "Pessoal", explorador.getEmail() );
@@ -52,7 +68,7 @@ public class ContactUtils
 
 	/**
 	 * The <b>updateMorada</b> method returns {@link void}
-	 * 
+	 *
 	 * @author anco62000465 2018-01-27
 	 * @param contactEntry
 	 * @param string
@@ -104,7 +120,7 @@ public class ContactUtils
 
 	private static void updatePhoneNumber( ContactEntry contactEntry, String lable, String number )
 	{
-		if ( number == null || number.isEmpty() )
+		if ( (number == null) || number.isEmpty() )
 		{
 			return;
 		}
@@ -112,7 +128,7 @@ public class ContactUtils
 		{
 			for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
 			{
-				if ( phoneNumber.getLabel() != null && phoneNumber.getLabel().equals( lable ) )
+				if ( (phoneNumber.getLabel() != null) && phoneNumber.getLabel().equals( lable ) )
 				{
 					phoneNumber.setPhoneNumber( number );
 					return;
@@ -141,14 +157,14 @@ public class ContactUtils
 
 	private static void updateEmail( ContactEntry contactEntry, String lable, String strEmail )
 	{
-		if ( strEmail == null || strEmail.isEmpty() )
+		if ( (strEmail == null) || strEmail.isEmpty() )
 		{
 			return;
 		}
 		boolean existPrincipal = false;
 		for ( Email e : contactEntry.getEmailAddresses() )
 		{
-			if ( e.getLabel() != null && e.getLabel().equals( lable ) )
+			if ( (e.getLabel() != null) && e.getLabel().equals( lable ) )
 			{
 				e.setAddress( strEmail );
 				return;

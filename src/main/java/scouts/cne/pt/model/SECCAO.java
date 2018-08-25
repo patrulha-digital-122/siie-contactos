@@ -4,12 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum SECCAO {
+	DIRIGENTES ("D", "Dirigentes", "dos 6 aos 10 anos"),
 	LOBITOS ("L", "Lobitos", "dos 6 aos 10 anos"),
 	EXPLORADORES ("E", "Exploradores", "dos 6 aos 10 anos"),
 	PIONEIROS ("P", "Pioneiros", "dos 6 aos 10 anos"),
 	CAMINHEIROS ("C", "Caminheiros", "dos 6 aos 10 anos"),
 	NONE ("N", "N/A", "Sem secção atribuida"),
-	DIRIGENTES ("D", "Dirigentes", "dos 6 aos 10 anos");
+	;
 
 	private String id;
 	private String nome;
@@ -61,7 +62,7 @@ public enum SECCAO {
 
 		return NONE;
 	}
-	
+
 	public static List< SECCAO > getListaSeccoes()
 	{
 		return Arrays.asList( LOBITOS, EXPLORADORES, PIONEIROS, CAMINHEIROS, DIRIGENTES );

@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +47,7 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
@@ -57,10 +59,10 @@ import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.Explorador;
-import scouts.cne.pt.model.GoogleCode;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.utils.ContactUtils;
+import scouts.cne.pt.utils.HTMLUtils;
 
 @SpringUI
 @Push
@@ -76,6 +78,7 @@ public class MyUI extends UI {
 	private Button btAuthentication;
 	public static String AUTH_COOKIE_CODE = "CODE";
 	private GoogleCredential credential = null;
+	private BrowserWindowOpener browserWindowOpener;
 
 	public static Logger getLogger() {
 		return MyUI.logger;
@@ -104,11 +107,12 @@ public class MyUI extends UI {
 
 		getLogger().info("New Session: " + getEmbedId());
 		// setContent( uploadFileLayout.getLayout( this, siieService ) );
-		elementosLayout = new EscolherElementosLayout(googleAuthentication);
+		elementosLayout = new EscolherElementosLayout(getEmbedId());
 		VerticalLayout layout = elementosLayout.getLayout(siieService, getEmbedId());
-
 		FileUploader fileUploader = new FileUploader(siieService);
 		Upload upload = new Upload("Upload Ficheiro .xlsx do SIIE", fileUploader);
+
+		upload.setDescription(HTMLUtils.strHTMLHelpFicheiroSIIE, ContentMode.HTML);
 		upload.addSucceededListener(event -> {
 
 			siieService.setFile(fileUploader.getFile());
@@ -122,60 +126,22 @@ public class MyUI extends UI {
 		btAuthentication.setEnabled(true);
 
 		btImportacao = new Button("Iniciar Importação (0)");
-		btImportacao.setEnabled(true);
+		btImportacao.setEnabled(false);
 
-		GoogleCode googleCode = FirebaseManager.getInstance().getCode(getUIId());
+		try {
+			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl = googleAuthentication
+					.getGoogleAuthorizationCodeRequestUrl(getEmbedId());
+			browserWindowOpener = new BrowserWindowOpener(googleAuthorizationCodeRequestUrl.build());
+			browserWindowOpener.setFeatures("height=600,width=600");
+			browserWindowOpener.extend(btImportacao);
 
-		if (googleCode != null) {
-			googleAuthentication.addSession(googleCode.getRefreshToken());
-			btImportacao.setEnabled(true);
-			btAuthentication.setCaption("Logout");
-			btAuthentication.addClickListener(new ClickListener() {
-
-				private static final long serialVersionUID = 1255977771115809590L;
-
-				@Override
-				public void buttonClick(ClickEvent event) {
-					GoogleCode googleCode = FirebaseManager.getInstance().getCode(getUIId());
-
-					if (googleCode != null) {
-						VaadinService.getCurrentRequest().getWrappedSession().setAttribute(AUTH_COOKIE_CODE,
-								null);
-						getLogger().info("Apagado cookie");
-					}
-					btAuthentication.setCaption("Login");
-					try {
-						GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl = googleAuthentication
-								.getGoogleAuthorizationCodeRequestUrl(getEmbedId());
-						BrowserWindowOpener browserWindowOpener = new BrowserWindowOpener(
-								googleAuthorizationCodeRequestUrl.build());
-						browserWindowOpener.setFeatures("height=600,width=600");
-						browserWindowOpener.extend(btAuthentication);
-
-					} catch (GeneralSecurityException | IOException e) {
-						e.printStackTrace();
-					}
-				}
-			});
-		} else {
-
-			btAuthentication.setCaption("Login");
-			try {
-				GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl = googleAuthentication
-						.getGoogleAuthorizationCodeRequestUrl(getEmbedId());
-				BrowserWindowOpener browserWindowOpener = new BrowserWindowOpener(
-						googleAuthorizationCodeRequestUrl.build());
-				browserWindowOpener.setFeatures("height=600,width=600");
-				browserWindowOpener.extend(btAuthentication);
-
-			} catch (GeneralSecurityException | IOException e) {
-				e.printStackTrace();
-			}
-
+		} catch (GeneralSecurityException | IOException e) {
+			e.printStackTrace();
 		}
 
 		btImportacao.addClickListener(event -> {
-			if (elementosLayout.getSelecionados() > 0) {
+
+			if ((googleAuthentication.getRefreshToken() != null) && (elementosLayout.getSelecionados() > 0)) {
 				importProcess();
 			}
 		});
@@ -183,9 +149,12 @@ public class MyUI extends UI {
 		mainLayout.addComponent(upload);
 		mainLayout.setExpandRatio(upload, 1);
 		mainLayout.addComponent(layout);
-		mainLayout.setExpandRatio(layout, 6);
-		mainLayout.addComponent(btAuthentication);
-		mainLayout.setExpandRatio(btAuthentication, 1);
+		mainLayout.setExpandRatio(layout, 10);
+		// mainLayout.addComponent(btAuthentication);
+		// mainLayout.setExpandRatio(btAuthentication, 1);
+		HorizontalLayout verticalLayout = new HorizontalLayout(btImportacao);
+		verticalLayout.setSizeFull();
+		verticalLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		mainLayout.addComponent(btImportacao);
 		mainLayout.setExpandRatio(btImportacao, 1);
 
@@ -210,12 +179,12 @@ public class MyUI extends UI {
 
 		getLogger().info("Received code: " + code + " | embedId: " + embedId);
 		googleAuthentication.addSession(code);
-		try {
-			FirebaseManager.getInstance().addCode(getUIId(), googleAuthentication.getGoogleClientId(), code);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		browserWindowOpener.remove();
+
+		if (elementosLayout.getSelecionados() > 0) {
+			importProcess();
 		}
+
 		push();
 	}
 
@@ -254,13 +223,18 @@ public class MyUI extends UI {
 			}
 			// showDebugNotification( "Resultados recebidos: " +
 			// resultFeed.getTotalResults() + " / " + listContc.size() );
+			Set<String> listTelefonesExistentes = new TreeSet<>();
 			for (ContactEntry contactEntry : listContc) {
 				for (PhoneNumber phoneNumber : contactEntry.getPhoneNumbers()) {
+					String strPhoneNumber = phoneNumber.getPhoneNumber();
+					strPhoneNumber = strPhoneNumber.replace(" ", "");
 					if ("NIN".equals(phoneNumber.getLabel())) {
-						if (elementosParaImportar.containsKey(phoneNumber.getPhoneNumber().trim())) {
-							elementosExistentes.put(phoneNumber.getPhoneNumber(), contactEntry);
+						if (elementosParaImportar.containsKey(strPhoneNumber.trim())) {
+							elementosExistentes.put(strPhoneNumber, contactEntry);
 						}
 					}
+
+					listTelefonesExistentes.add(strPhoneNumber);
 				}
 			}
 			Map<SECCAO, ContactGroupEntry> processarGrupo = processarGrupo(contactsService, elementosParaImportar);
@@ -268,22 +242,24 @@ public class MyUI extends UI {
 			ContactFeed batchRequestFeed = new ContactFeed();
 			listBatchFeeds.add(batchRequestFeed);
 			int i = 0;
-			for (Explorador explorador : elementosParaImportar.values()) {
+			List<Explorador> values = new ArrayList<>(elementosParaImportar.values());
+			Collections.sort(values);
+			for (Explorador explorador : values) {
 				if (++i > 98) {
 					batchRequestFeed = new ContactFeed();
 					listBatchFeeds.add(batchRequestFeed);
 					i = 0;
 				}
 				ContactEntry contEntry;
-				if (elementosExistentes.containsKey(explorador.getNin())) {
-					contEntry = ContactUtils.convertElementoToContactEntry(explorador,
-							elementosExistentes.get(explorador.getNin()));
+				ContactEntry elementoProcessar = elementosExistentes.get(explorador.getNin());
+				contEntry = ContactUtils.convertElementoToContactEntry(explorador,
+						elementoProcessar, listTelefonesExistentes);
+				if (elementoProcessar != null) {
 					// Actualizar
 					System.out.println("Actualizar: " + explorador.getNome());
 					BatchUtils.setBatchId(contEntry, "update");
 					BatchUtils.setBatchOperationType(contEntry, BatchOperationType.UPDATE);
 				} else {
-					contEntry = ContactUtils.convertElementoToContactEntry(explorador, null);
 					// Adicionar elemento
 					System.out.println("Adicionar: " + explorador.getNome());
 					BatchUtils.setBatchId(contEntry, "create");
@@ -439,5 +415,10 @@ public class MyUI extends UI {
 			System.err.println(e.getMessage());
 		}
 		return null;
+	}
+
+	public void updateSelectionados(int iSelecionados) {
+		btImportacao.setCaption(String.format("Iniciar Importação (%d)", iSelecionados));
+		btImportacao.setEnabled( iSelecionados > 0);
 	}
 }

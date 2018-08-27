@@ -13,9 +13,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
@@ -47,14 +45,12 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-
-import scouts.cne.pt.google.FirebaseManager;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
 import scouts.cne.pt.listeners.FileUploader;
@@ -94,7 +90,6 @@ public class MyUI extends UI {
 	protected void init(VaadinRequest vaadinRequest) {
 
 		getLogger().info("EmbedId " + getEmbedId());
-		FirebaseManager.getInstance();
 
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing(true);
@@ -107,20 +102,21 @@ public class MyUI extends UI {
 
 		getLogger().info("New Session: " + getEmbedId());
 		// setContent( uploadFileLayout.getLayout( this, siieService ) );
-		elementosLayout = new EscolherElementosLayout(getEmbedId());
-		VerticalLayout layout = elementosLayout.getLayout(siieService, getEmbedId());
+
 		FileUploader fileUploader = new FileUploader(siieService);
-		Upload upload = new Upload("Upload Ficheiro .xlsx do SIIE", fileUploader);
+		Upload upload = new Upload( HTMLUtils.strHTMLHelpFicheiroSIIE, fileUploader );
+		upload.setCaptionAsHtml( true );
+		upload.setButtonCaption( "Upload" );
+		upload.addFinishedListener( event ->
+		{
 
-		upload.setDescription(HTMLUtils.strHTMLHelpFicheiroSIIE, ContentMode.HTML);
-		upload.addSucceededListener(event -> {
-
-			siieService.setFile(fileUploader.getFile());
+			System.out.println( "finished" );
+			siieService.setFile( fileUploader.getFile() );
 			siieService.loadExploradoresSIIE();
 
 			elementosLayout.prencherTabela(siieService);
 		});
-		upload.setImmediateMode(true);
+		upload.setImmediateMode( false );
 
 		btAuthentication = new Button("Dar permissão");
 		btAuthentication.setEnabled(true);
@@ -146,17 +142,29 @@ public class MyUI extends UI {
 			}
 		});
 
-		mainLayout.addComponent(upload);
-		mainLayout.setExpandRatio(upload, 1);
-		mainLayout.addComponent(layout);
-		mainLayout.setExpandRatio(layout, 10);
+		VerticalLayout horizontalLayoutUpload = new VerticalLayout( upload );
+		Panel uploadPanel = new Panel( "Primeiro Passo - Fazer upload do ficheiro do SIIE", horizontalLayoutUpload );
+		mainLayout.addComponent( uploadPanel );
+		mainLayout.setExpandRatio( uploadPanel, 1 );
+		elementosLayout = new EscolherElementosLayout( getEmbedId() );
+		VerticalLayout verticalLayoutEscolherElementos = elementosLayout.getLayout( siieService, getEmbedId() );
+		verticalLayoutEscolherElementos.setSizeFull();
+		Panel panelEscolherElementos =
+						new Panel( "Segundo Passo - Escolher os elementos a importar para os contactos do Google", verticalLayoutEscolherElementos );
+		panelEscolherElementos.setSizeFull();
+		mainLayout.addComponent( panelEscolherElementos );
+		mainLayout.setExpandRatio( panelEscolherElementos, 4 );
 		// mainLayout.addComponent(btAuthentication);
 		// mainLayout.setExpandRatio(btAuthentication, 1);
-		HorizontalLayout verticalLayout = new HorizontalLayout(btImportacao);
-		verticalLayout.setSizeFull();
-		verticalLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-		mainLayout.addComponent(btImportacao);
-		mainLayout.setExpandRatio(btImportacao, 1);
+		Label labelFooter = new Label( "Power by: Patrulha Digital 122 - patrulha.digital.122@escutismo.pt" );
+		VerticalLayout horizontalLayoutBtnImportacao = new VerticalLayout( btImportacao, labelFooter );
+		horizontalLayoutBtnImportacao.setSizeFull();
+		horizontalLayoutBtnImportacao.setMargin( true );
+		horizontalLayoutBtnImportacao.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		Panel panelButtonImportacao = new Panel( "Terceiro Passo - Dar permissão para fazer a importação", horizontalLayoutBtnImportacao );
+		panelButtonImportacao.setSizeFull();
+		mainLayout.addComponent( panelButtonImportacao );
+		mainLayout.setExpandRatio( panelButtonImportacao, 1 );
 
 		VaadinService.getCurrent().setSystemMessagesProvider(new SystemMessagesProvider() {
 			private static final long serialVersionUID = -9118140641761605204L;

@@ -46,6 +46,7 @@ public class FileUploader implements Receiver
 		try
 		{
 			outputStream.close();
+			System.out.println( "outputStream.close()" );
 		}
 		catch ( IOException e )
 		{

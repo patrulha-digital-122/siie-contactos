@@ -46,6 +46,8 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
@@ -113,7 +115,7 @@ public class MyUI extends UI {
 			System.out.println( "finished" );
 			siieService.setFile( fileUploader.getFile() );
 			siieService.loadExploradoresSIIE();
-
+			fileUploader.getFile().delete();
 			elementosLayout.prencherTabela(siieService);
 		});
 		upload.setImmediateMode( false );
@@ -156,7 +158,7 @@ public class MyUI extends UI {
 		mainLayout.setExpandRatio( panelEscolherElementos, 4 );
 		// mainLayout.addComponent(btAuthentication);
 		// mainLayout.setExpandRatio(btAuthentication, 1);
-		Label labelFooter = new Label( "Power by: Patrulha Digital 122 - patrulha.digital.122@escutismo.pt" );
+		Label labelFooter = new Label( "Powered by: Patrulha Digital 122 - patrulha.digital.122@escutismo.pt" );
 		VerticalLayout horizontalLayoutBtnImportacao = new VerticalLayout( btImportacao, labelFooter );
 		horizontalLayoutBtnImportacao.setSizeFull();
 		horizontalLayoutBtnImportacao.setMargin( true );
@@ -358,8 +360,10 @@ public class MyUI extends UI {
 			// Open it in the UI
 			getUI().addWindow(subWindow);
 		} catch (IOException e) {
+			Notification.show( "Erro", e.getMessage(), Type.ERROR_MESSAGE );
 			e.printStackTrace();
 		} catch (Exception e) {
+			Notification.show( "Erro", e.getMessage(), Type.ERROR_MESSAGE );
 			e.printStackTrace();
 		}
 	}

@@ -3,7 +3,6 @@ package scouts.cne.pt.utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
-
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
@@ -19,7 +18,6 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
-
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 

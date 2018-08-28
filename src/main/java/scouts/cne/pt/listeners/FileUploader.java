@@ -16,6 +16,7 @@ public class FileUploader implements Receiver
 	private File file;
 
 	private SIIEService siieService;
+	private OutputStream		outputStream		= null;
 
 	public FileUploader(SIIEService siieService) {
 		super();
@@ -24,7 +25,7 @@ public class FileUploader implements Receiver
 
 	@Override
 	public OutputStream receiveUpload(String filename, String mimeType) {
-		OutputStream outputStream = null;
+
 		System.out.println( "New file: " + filename );
 		try {
 			file = File.createTempFile("stuff", ".xlsx");
@@ -42,6 +43,14 @@ public class FileUploader implements Receiver
 	 * @return the file
 	 */
 	public File getFile() {
+		try
+		{
+			outputStream.close();
+		}
+		catch ( IOException e )
+		{
+			e.printStackTrace();
+		}
 		return file;
 	}
 

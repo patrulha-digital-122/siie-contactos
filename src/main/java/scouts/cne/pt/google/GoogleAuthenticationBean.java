@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +22,11 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 
+import scouts.cne.pt.app.HasLogger;
+
 @SpringComponent
 @UIScope
-public class GoogleAuthenticationBean implements Serializable {
+public class GoogleAuthenticationBean implements Serializable, HasLogger {
 	/**
 	 *
 	 */
@@ -64,6 +67,13 @@ public class GoogleAuthenticationBean implements Serializable {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		InputStream in = classLoader.getResourceAsStream("client_secrets.json");
 		GoogleClientSecrets googleClientSecrets = new GoogleClientSecrets();
+
+		try (StringReader stringReader = new StringReader(System.getenv().get("GOOGLE_CLIENT_SECRETS"))) {
+			return GoogleClientSecrets.load(getJsonfactry(), stringReader);
+		} catch (Exception e) {
+			printError(e);
+		}
+
 		try (InputStreamReader inputStreamReader = new InputStreamReader(in)) {
 			googleClientSecrets = GoogleClientSecrets.load(getJsonfactry(), inputStreamReader);
 		}

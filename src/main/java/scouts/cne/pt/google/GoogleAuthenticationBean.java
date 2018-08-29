@@ -9,6 +9,8 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -68,14 +70,19 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger {
 		InputStream in = classLoader.getResourceAsStream("client_secrets.json");
 		GoogleClientSecrets googleClientSecrets = new GoogleClientSecrets();
 
-		try (StringReader stringReader = new StringReader(System.getenv().get("GOOGLE_CLIENT_SECRETS"))) {
-			return GoogleClientSecrets.load(getJsonfactry(), stringReader);
-		} catch (Exception e) {
-			printError(e);
+		String strGoogleClientSecrets = System.getenv().get("GOOGLE_CLIENT_SECRETS");
+		if (StringUtils.isNotBlank(strGoogleClientSecrets)) {
+			try (StringReader stringReader = new StringReader(strGoogleClientSecrets)) {
+				return GoogleClientSecrets.load(getJsonfactry(), stringReader);
+			} catch (Exception e) {
+				printError(e);
+			}
 		}
 
 		try (InputStreamReader inputStreamReader = new InputStreamReader(in)) {
 			googleClientSecrets = GoogleClientSecrets.load(getJsonfactry(), inputStreamReader);
+		} catch (Exception e) {
+			printError(e);
 		}
 		return googleClientSecrets;
 	}

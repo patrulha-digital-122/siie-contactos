@@ -2,11 +2,16 @@ package scouts.cne.pt.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
 import com.google.gdata.data.contacts.Relation;
+import com.google.gdata.data.contacts.UserDefinedField;
 import com.google.gdata.data.extensions.City;
 import com.google.gdata.data.extensions.Country;
 import com.google.gdata.data.extensions.Email;
@@ -18,6 +23,7 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
+
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 
@@ -32,7 +38,9 @@ public class ContactUtils
 		if ( contactEntry == null )
 		{
 			contactEntry = new ContactEntry();
-			updatePhoneNumber( contactEntry, "NIN", explorador.getNin() );
+			updateUserDefinedField( contactEntry, "NIN", explorador.getNin() );
+		} else {
+			removeNINandNIF(contactEntry);
 		}
 		updateNome( contactEntry, explorador );
 		updatePhoneNumber( contactEntry, "Telemóvel", explorador.getTelemovel() );
@@ -51,7 +59,7 @@ public class ContactUtils
 				listTelefonesExistentes.add(explorador.getTelefonePai());
 			}
 		}
-		updatePhoneNumber( contactEntry, "NIF", explorador.getNif() );
+		updateUserDefinedField( contactEntry, "NIF", explorador.getNif() );
 		updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
 		updateEmail( contactEntry, "Pessoal", explorador.getEmail() );
 		updateEmail( contactEntry, "Mãe", explorador.getEmailMae() );
@@ -116,6 +124,22 @@ public class ContactUtils
 		}
 	}
 
+	private static void updateUserDefinedField(ContactEntry contactEntry, String lable, String number ) {
+		if (StringUtils.isNotBlank(number)) {
+			if (contactEntry.getUserDefinedFields() != null) {
+				for (UserDefinedField userDefinedField : contactEntry.getUserDefinedFields()) {
+					if (StringUtils.equals(userDefinedField.getKey(), lable)) {
+						userDefinedField.setValue(number);
+						return;
+					}
+				}
+			}
+
+			UserDefinedField userDefinedField = new UserDefinedField(lable, number);
+			contactEntry.getUserDefinedFields().add(userDefinedField);
+		}
+	}
+
 	private static void updatePhoneNumber( ContactEntry contactEntry, String lable, String number )
 	{
 		if ( (number == null) || number.isEmpty() )
@@ -138,6 +162,17 @@ public class ContactUtils
 		phoneNumber.setPrimary( lable.equals( "NIN" ) );
 		phoneNumber.setPhoneNumber( number );
 		contactEntry.getPhoneNumbers().add( phoneNumber );
+	}
+
+	private static void removeNINandNIF(ContactEntry contactEntry) {
+		for (Iterator<PhoneNumber> iterator = contactEntry.getPhoneNumbers().iterator(); iterator.hasNext();) {
+			PhoneNumber phoneNumber = iterator.next();
+
+			if (StringUtils.equals(phoneNumber.getLabel(), "NIN")
+					|| StringUtils.equals(phoneNumber.getLabel(), "NIF")) {
+				iterator.remove();
+			}
+		}
 	}
 
 	private static void updateNome( ContactEntry contactEntry, Explorador explorador )

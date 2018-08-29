@@ -14,7 +14,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
@@ -28,6 +31,7 @@ import com.google.gdata.data.contacts.ContactFeed;
 import com.google.gdata.data.contacts.ContactGroupEntry;
 import com.google.gdata.data.contacts.ContactGroupFeed;
 import com.google.gdata.data.contacts.GroupMembershipInfo;
+import com.google.gdata.data.contacts.UserDefinedField;
 import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
@@ -58,6 +62,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
@@ -153,12 +158,12 @@ public class MyUI extends UI implements HasLogger
 				importProcess();
 			}
 		});
-		
+
 		btImportacaoVCard = new Button( "Download como VCard (0)" );
 		btImportacaoVCard.setEnabled( false );
 		StreamResource myResource = createVCardFile();
-        FileDownloader fileDownloader = new FileDownloader(myResource);
-        fileDownloader.extend(btImportacaoVCard);
+		FileDownloader fileDownloader = new FileDownloader(myResource);
+		fileDownloader.extend(btImportacaoVCard);
 
 		VerticalLayout horizontalLayoutUpload = new VerticalLayout( upload );
 		horizontalLayoutUpload.setMargin( true );
@@ -170,15 +175,15 @@ public class MyUI extends UI implements HasLogger
 		VerticalLayout verticalLayoutEscolherElementos = elementosLayout.getLayout( siieService, getEmbedId() );
 		verticalLayoutEscolherElementos.setSizeFull();
 		Panel panelEscolherElementos =
-						new Panel( "Segundo Passo - Escolher os elementos a importar para os contactos do Google", verticalLayoutEscolherElementos );
+				new Panel( "Segundo Passo - Escolher os elementos a importar para os contactos do Google", verticalLayoutEscolherElementos );
 		panelEscolherElementos.setSizeFull();
 		mainLayout.addComponent( panelEscolherElementos );
 		mainLayout.setExpandRatio( panelEscolherElementos, 4 );
 		// mainLayout.addComponent(btAuthentication);
 		// mainLayout.setExpandRatio(btAuthentication, 1);
 		Label labelFooter = new Label(
-						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
-						ContentMode.HTML );
+				"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
+				ContentMode.HTML );
 		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard );
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
@@ -212,7 +217,7 @@ public class MyUI extends UI implements HasLogger
 
 	/**
 	 * The <b>createVCardFile</b> method returns {@link StreamResource}
-	 * 
+	 *
 	 * @author anco62000465 2018-08-29
 	 * @return
 	 */
@@ -221,8 +226,8 @@ public class MyUI extends UI implements HasLogger
 		return new StreamResource( new StreamSource()
 		{
 			/**
-			* 
-			*/
+			 *
+			 */
 			private static final long serialVersionUID = 721545760831041530L;
 
 			@Override
@@ -308,6 +313,18 @@ public class MyUI extends UI implements HasLogger
 					}
 					listTelefonesExistentes.add( strPhoneNumber );
 				}
+
+				for (UserDefinedField userDefinedField : contactEntry.getUserDefinedFields()) {
+					if (StringUtils.equals(userDefinedField.getKey(), "NIN")) {
+						String strNIN = StringUtils.trimToEmpty(userDefinedField.getValue());
+						if (elementosParaImportar.containsKey(strNIN)) {
+							elementosExistentes.put(strNIN, contactEntry);
+							getLogger().info("Actualizar :: {} - {}:{}",
+									contactEntry.getName().getFullName().getValue(), userDefinedField.getKey(),
+									userDefinedField.getValue());
+						}
+					}
+				}
 			}
 			Map< SECCAO, ContactGroupEntry > processarGrupo = processarGrupo( contactsService, elementosParaImportar );
 			List< ContactFeed > listBatchFeeds = new ArrayList<>();
@@ -388,7 +405,7 @@ public class MyUI extends UI implements HasLogger
 			{
 				// Submit the batch request to the server.
 				ContactFeed responseFeed =
-								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+						contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
 				// Check the status of each operation.
 				for ( ContactEntry entry : responseFeed.getEntries() )
 				{
@@ -396,20 +413,20 @@ public class MyUI extends UI implements HasLogger
 					BatchStatus status = BatchUtils.getBatchStatus( entry );
 					switch ( status.getCode() )
 					{
-						case 200:
-							listOk.add( entry );
-							break;
-						case 201:
-							listCriados.add( entry );
-							break;
-						case 304:
-							listNaoModificado.add( entry );
-							break;
-						default:
-							System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
+					case 200:
+						listOk.add( entry );
+						break;
+					case 201:
+						listCriados.add( entry );
+						break;
+					case 304:
+						listNaoModificado.add( entry );
+						break;
+					default:
+						System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
 								status.getReason() );
-							listErro.add( entry );
-							break;
+						listErro.add( entry );
+						break;
 					}
 				}
 			}
@@ -486,7 +503,7 @@ public class MyUI extends UI implements HasLogger
 				}
 				// Adicionar aos contactos pessoais
 				if ( ( entry.getSystemGroup() != null ) && ( entry.getSystemGroup().getId() != null ) &&
-					"Contacts".equals( entry.getSystemGroup().getId() ) )
+						"Contacts".equals( entry.getSystemGroup().getId() ) )
 				{
 					myContacts = entry;
 				}

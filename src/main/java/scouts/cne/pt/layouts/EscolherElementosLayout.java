@@ -8,10 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-
 import com.vaadin.annotations.Push;
 import com.vaadin.event.selection.SelectionEvent;
 import com.vaadin.event.selection.SelectionListener;
@@ -28,8 +26,8 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
-
 import scouts.cne.pt.MyUI;
+import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
@@ -39,19 +37,18 @@ import scouts.cne.pt.services.SIIEService;
  *
  */
 @Push
-public class EscolherElementosLayout extends VerticalLayout {
+public class EscolherElementosLayout extends VerticalLayout implements HasLogger
+{
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 5253307196908771291L;
-	private TabSheet tabsheetContactos;
-	private Map<SECCAO, List<Explorador>> mapSelecionados;
-	private int iSelecionados = 0;
-	private String embedId;
-
-	@Value("classpath:L.jpg")
-	private Resource resourceLobitos;
-
+	private static final long					serialVersionUID	= 5253307196908771291L;
+	private TabSheet							tabsheetContactos;
+	private Map< SECCAO, List< Explorador > >	mapSelecionados;
+	private int									iSelecionados		= 0;
+	private String								embedId;
+	@Value( "classpath:L.jpg" )
+	private Resource							resourceLobitos;
 
 	/**
 	 * constructor
@@ -60,13 +57,15 @@ public class EscolherElementosLayout extends VerticalLayout {
 	 * @param string
 	 * @param siieService
 	 */
-	public EscolherElementosLayout(String embedId) {
+	public EscolherElementosLayout( String embedId )
+	{
 		super();
 		setSizeFull();
-		setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-		mapSelecionados = new EnumMap<>(SECCAO.class);
-		for (SECCAO component : SECCAO.getListaSeccoes()) {
-			mapSelecionados.put(component, new ArrayList<>());
+		setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		mapSelecionados = new EnumMap<>( SECCAO.class );
+		for ( SECCAO component : SECCAO.getListaSeccoes() )
+		{
+			mapSelecionados.put( component, new ArrayList<>() );
 		}
 		this.embedId = embedId;
 	}
@@ -77,34 +76,32 @@ public class EscolherElementosLayout extends VerticalLayout {
 	 * @author anco62000465 2018-01-27
 	 * @return the tabsheetContactos {@link TabSheet}
 	 */
-	public TabSheet getTabsheetContactos() {
+	public TabSheet getTabsheetContactos()
+	{
 		return tabsheetContactos;
 	}
 
-	public VerticalLayout getLayout(SIIEService siieService, String embedId) {
+	public VerticalLayout getLayout( SIIEService siieService, String embedId )
+	{
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
-		verticalLayout.setSpacing(false);
-		verticalLayout.setMargin(new MarginInfo(false, true, false, true));
-		verticalLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-
+		verticalLayout.setSpacing( false );
+		verticalLayout.setMargin( new MarginInfo( false, true, false, true ) );
+		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		tabsheetContactos = new TabSheet();
 		tabsheetContactos.setSizeFull();
-
-		prencherTabela(siieService);
-
-		verticalLayout.addComponent(tabsheetContactos);
-		verticalLayout.setExpandRatio(tabsheetContactos, 8);
-		Label label = new Label("Configurações avançadas");
+		prencherTabela( siieService );
+		verticalLayout.addComponent( tabsheetContactos );
+		verticalLayout.setExpandRatio( tabsheetContactos, 8 );
+		Label label = new Label( "Configurações avançadas" );
 		VerticalLayout opcoesExtraLayout = new VerticalLayout();
-		List<String> data = Arrays.asList("Importar dados dos pais em separado", "Importar dados dos pais em conjunto");
-		CheckBoxGroup<String> chkBImportarPais = new CheckBoxGroup<>("Opções:", data);
-		opcoesExtraLayout.addComponent(chkBImportarPais);
-
+		List< String > data = Arrays.asList( "Importar dados dos pais em separado", "Importar dados dos pais em conjunto" );
+		CheckBoxGroup< String > chkBImportarPais = new CheckBoxGroup<>( "Opções:", data );
+		opcoesExtraLayout.addComponent( chkBImportarPais );
 		// verticalLayout.addComponent( label );
 		// verticalLayout.addComponent( opcoesExtraLayout );
 		// verticalLayout.setExpandRatio( opcoesExtraLayout, 1 );
-		addComponent(verticalLayout);
+		addComponent( verticalLayout );
 		return verticalLayout;
 	}
 
@@ -152,44 +149,54 @@ public class EscolherElementosLayout extends VerticalLayout {
 				}
 			});
 			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get(seccao).size();
-			FileResource resource = new FileResource(new File(basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg"));
-			tabsheetContactos.addTab(tabLobitos, nomeTab);
+			try
+			{
+				FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg" ) );
+				tabsheetContactos.addTab( tabLobitos, nomeTab, resource );
+			}
+			catch ( Exception e )
+			{
+				getLogger().error( e.getMessage(), e );
+				tabsheetContactos.addTab( tabLobitos, nomeTab );
+			}
 		}
 	}
 
 	/**
-	 * The <b>getElementosSelecionados</b> method returns
-	 * {@link Map<String,Explorador>}
+	 * The <b>getElementosSelecionados</b> method returns {@link Map<String,Explorador>}
 	 *
 	 * @author anco62000465 2018-01-27
 	 * @return
 	 */
-	public Map<String, Explorador> getElementosSelecionados() {
-		Map<String, Explorador> map = new HashMap<>();
-		for (Entry<SECCAO, List<Explorador>> entry : mapSelecionados.entrySet()) {
-			List<Explorador> list = entry.getValue();
-			for (Explorador explorador : list) {
-				map.put(explorador.getNin().trim(), explorador);
+	public Map< String, Explorador > getElementosSelecionados()
+	{
+		Map< String, Explorador > map = new HashMap<>();
+		for ( Entry< SECCAO, List< Explorador > > entry : mapSelecionados.entrySet() )
+		{
+			List< Explorador > list = entry.getValue();
+			for ( Explorador explorador : list )
+			{
+				map.put( explorador.getNin().trim(), explorador );
 			}
 		}
 		return map;
 	}
 
-	private void showDebugNotification(String message) {
-		System.out.println(message);
+	private void showDebugNotification( String message )
+	{
+		System.out.println( message );
 		// Notification notification = new Notification( message, Type.TRAY_NOTIFICATION
 		// );
 		// notification.setDelayMsec( 1000 );
 		// notification.setPosition( Position.TOP_RIGHT );
-		Notification.show(message, Type.TRAY_NOTIFICATION);
+		Notification.show( message, Type.TRAY_NOTIFICATION );
 	}
 
 	/**
 	 * @return the iSelecionados
 	 */
-	public int getSelecionados() {
+	public int getSelecionados()
+	{
 		return iSelecionados;
 	}
-
-
 }

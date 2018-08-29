@@ -9,16 +9,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
-
-import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
@@ -50,7 +46,8 @@ public class SIIEService implements Serializable {
 		this.file = file;
 	}
 
-	public void loadExploradoresSIIE() {
+	public void loadExploradoresSIIE() throws Exception
+	{
 
 		map = new HashMap<>();
 
@@ -122,8 +119,7 @@ public class SIIEService implements Serializable {
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 
 	}
@@ -136,14 +132,5 @@ public class SIIEService implements Serializable {
 	 */
 	public EnumMap<SECCAO, List<Explorador>> getMapSeccaoElemento() {
 		return mapSeccaoElemento;
-	}
-
-	private Elemento convert(Explorador explorador) {
-		Elemento elemento = new Elemento();
-		elemento.setNome(explorador.getNome());
-		elemento.setSeccao(explorador.getCategoria());
-		elemento.setNin(explorador.getNin());
-		elemento.setEmail(explorador.getEmail());
-		return elemento;
 	}
 }

@@ -30,7 +30,9 @@ import scouts.cne.pt.model.SECCAO;
  */
 public class ContactUtils
 {
-	public static ContactEntry convertElementoToContactEntry( Explorador explorador, ContactEntry contactEntry, Set<String> listTelefonesExistentes )
+	public static ContactEntry convertElementoToContactEntry(	Explorador explorador,
+																ContactEntry contactEntry,
+																Set< String > listTelefonesExistentes )
 	{
 		if ( contactEntry == null )
 		{
@@ -38,31 +40,35 @@ public class ContactUtils
 		}
 		else
 		{
-			removeNINandNIF(contactEntry);
+			removeNINandNIF( contactEntry );
 		}
 		updateUserDefinedField( contactEntry, "NIN", explorador.getNin() );
 		updateNome( contactEntry, explorador );
 		updatePhoneNumber( contactEntry, "Telemóvel", explorador.getTelemovel() );
 		updatePhoneNumber( contactEntry, "Telefone", explorador.getTelefone() );
-		if(explorador.getCategoria().equals(SECCAO.DIRIGENTES)) {
-			listTelefonesExistentes.add(explorador.getTelemovel());
-			listTelefonesExistentes.add(explorador.getTelefone());
-		} else {
-
-			if (!listTelefonesExistentes.contains(explorador.getTelefoneMae())) {
-				updatePhoneNumber(contactEntry, "Mãe", explorador.getTelefoneMae());
-				listTelefonesExistentes.add(explorador.getTelefoneMae());
-			}
-			if (!listTelefonesExistentes.contains(explorador.getTelefonePai())) {
-				updatePhoneNumber(contactEntry, "Pai", explorador.getTelefonePai());
-				listTelefonesExistentes.add(explorador.getTelefonePai());
-			}
+		if ( explorador.getCategoria().equals( SECCAO.DIRIGENTES ) )
+		{
+			listTelefonesExistentes.add( explorador.getTelemovel() );
+			listTelefonesExistentes.add( explorador.getTelefone() );
 		}
-		updateUserDefinedField( contactEntry, "NIF", explorador.getNif() );
-		updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
+		else
+		{
+			if ( !listTelefonesExistentes.contains( explorador.getTelefoneMae() ) )
+			{
+				updatePhoneNumber( contactEntry, "Mãe", explorador.getTelefoneMae() );
+				listTelefonesExistentes.add( explorador.getTelefoneMae() );
+			}
+			if ( !listTelefonesExistentes.contains( explorador.getTelefonePai() ) )
+			{
+				updatePhoneNumber( contactEntry, "Pai", explorador.getTelefonePai() );
+				listTelefonesExistentes.add( explorador.getTelefonePai() );
+			}
+			updateEmail( contactEntry, "Mãe", explorador.getEmailMae() );
+			updateEmail( contactEntry, "Pai", explorador.getEmailPai() );
+			updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
+		}
 		updateEmail( contactEntry, "Pessoal", explorador.getEmail() );
-		updateEmail( contactEntry, "Mãe", explorador.getEmailMae() );
-		updateEmail( contactEntry, "Pai", explorador.getEmailPai() );
+		updateUserDefinedField( contactEntry, "NIF", explorador.getNif() );
 		updateAniversario( contactEntry, "Aniversário", explorador.getDataNascimento() );
 		updatePais( contactEntry, "Mãe", explorador.getNomeMae() );
 		updatePais( contactEntry, "Pai", explorador.getNomePai() );
@@ -123,25 +129,29 @@ public class ContactUtils
 		}
 	}
 
-	private static void updateUserDefinedField(ContactEntry contactEntry, String lable, String number ) {
-		if (StringUtils.isNotBlank(number)) {
-			if (contactEntry.getUserDefinedFields() != null) {
-				for (UserDefinedField userDefinedField : contactEntry.getUserDefinedFields()) {
-					if (StringUtils.equals(userDefinedField.getKey(), lable)) {
-						userDefinedField.setValue(number);
+	private static void updateUserDefinedField( ContactEntry contactEntry, String lable, String number )
+	{
+		if ( StringUtils.isNotBlank( number ) )
+		{
+			if ( contactEntry.getUserDefinedFields() != null )
+			{
+				for ( UserDefinedField userDefinedField : contactEntry.getUserDefinedFields() )
+				{
+					if ( StringUtils.equals( userDefinedField.getKey(), lable ) )
+					{
+						userDefinedField.setValue( number );
 						return;
 					}
 				}
 			}
-
-			UserDefinedField userDefinedField = new UserDefinedField(lable, number);
-			contactEntry.getUserDefinedFields().add(userDefinedField);
+			UserDefinedField userDefinedField = new UserDefinedField( lable, number );
+			contactEntry.getUserDefinedFields().add( userDefinedField );
 		}
 	}
 
 	private static void updatePhoneNumber( ContactEntry contactEntry, String lable, String number )
 	{
-		if ( (number == null) || number.isEmpty() )
+		if ( ( number == null ) || number.isEmpty() )
 		{
 			return;
 		}
@@ -149,7 +159,7 @@ public class ContactUtils
 		{
 			for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
 			{
-				if ( (phoneNumber.getLabel() != null) && phoneNumber.getLabel().equals( lable ) )
+				if ( ( phoneNumber.getLabel() != null ) && phoneNumber.getLabel().equals( lable ) )
 				{
 					phoneNumber.setPhoneNumber( number );
 					return;
@@ -163,12 +173,13 @@ public class ContactUtils
 		contactEntry.getPhoneNumbers().add( phoneNumber );
 	}
 
-	private static void removeNINandNIF(ContactEntry contactEntry) {
-		for (Iterator<PhoneNumber> iterator = contactEntry.getPhoneNumbers().iterator(); iterator.hasNext();) {
+	private static void removeNINandNIF( ContactEntry contactEntry )
+	{
+		for ( Iterator< PhoneNumber > iterator = contactEntry.getPhoneNumbers().iterator(); iterator.hasNext(); )
+		{
 			PhoneNumber phoneNumber = iterator.next();
-
-			if (StringUtils.equals(phoneNumber.getLabel(), "NIN")
-					|| StringUtils.equals(phoneNumber.getLabel(), "NIF")) {
+			if ( StringUtils.equals( phoneNumber.getLabel(), "NIN" ) || StringUtils.equals( phoneNumber.getLabel(), "NIF" ) )
+			{
 				iterator.remove();
 			}
 		}
@@ -189,14 +200,14 @@ public class ContactUtils
 
 	private static void updateEmail( ContactEntry contactEntry, String lable, String strEmail )
 	{
-		if ( (strEmail == null) || strEmail.isEmpty() )
+		if ( ( strEmail == null ) || strEmail.isEmpty() )
 		{
 			return;
 		}
 		boolean existPrincipal = false;
 		for ( Email e : contactEntry.getEmailAddresses() )
 		{
-			if ( (e.getLabel() != null) && e.getLabel().equals( lable ) )
+			if ( ( e.getLabel() != null ) && e.getLabel().equals( lable ) )
 			{
 				e.setAddress( strEmail );
 				return;

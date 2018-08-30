@@ -8,9 +8,7 @@ import java.io.StringReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -23,7 +21,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
-
 import scouts.cne.pt.app.HasLogger;
 
 @SpringComponent
@@ -132,7 +129,8 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger {
 									googleClientSecrets.getDetails().getClientSecret()))
 					.setRedirectUri(getRedicetUrl()).execute();
 			refreshToken = response.getRefreshToken();
-			FirebaseManager.getInstance().addCode(uiId, googleClientSecrets.getDetails().getClientId(), refreshToken);
+			// FirebaseManager.getInstance().addCode(uiId, googleClientSecrets.getDetails().getClientId(),
+			// refreshToken);
 			credential = new GoogleCredential().setAccessToken(response.getAccessToken());
 		} catch (GeneralSecurityException | IOException e) {
 			e.printStackTrace();

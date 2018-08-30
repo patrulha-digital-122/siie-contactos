@@ -4,9 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
@@ -23,7 +21,6 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
-
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 
@@ -38,10 +35,12 @@ public class ContactUtils
 		if ( contactEntry == null )
 		{
 			contactEntry = new ContactEntry();
-			updateUserDefinedField( contactEntry, "NIN", explorador.getNin() );
-		} else {
+		}
+		else
+		{
 			removeNINandNIF(contactEntry);
 		}
+		updateUserDefinedField( contactEntry, "NIN", explorador.getNin() );
 		updateNome( contactEntry, explorador );
 		updatePhoneNumber( contactEntry, "Telemóvel", explorador.getTelemovel() );
 		updatePhoneNumber( contactEntry, "Telefone", explorador.getTelefone() );

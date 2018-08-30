@@ -89,7 +89,7 @@ public class ContactUtils
 		StructuredPostalAddress structuredPostalAddress = null;
 		for ( StructuredPostalAddress postalAddress : contactEntry.getStructuredPostalAddresses() )
 		{
-			if ( postalAddress.getLabel().equals( label ) )
+			if ( StringUtils.equals( postalAddress.getLabel(), label ) )
 			{
 				structuredPostalAddress = postalAddress;
 				break;

@@ -15,11 +15,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.mail.internet.MimeMessage;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.model.Message;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
 import com.google.gdata.data.PlainTextConstruct;
@@ -100,6 +104,25 @@ public class MyUI extends UI implements HasLogger
 	protected void init(VaadinRequest vaadinRequest) {
 
 		getLogger().info("EmbedId " + getEmbedId());
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					Gmail service = googleAuthentication.getGmailService();
+
+					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
+					Message message = service.users().messages().send("me", HTMLUtils.createMessageWithEmail(createEmail)).execute();
+
+					System.out.println("Message id: " + message.getId());
+					System.out.println(message.toPrettyString());
+
+				} catch (Exception e) {
+					printError(e);
+				}
+			}
+		}).start();
 
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing(true);

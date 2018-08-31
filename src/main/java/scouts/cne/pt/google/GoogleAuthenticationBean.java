@@ -9,7 +9,9 @@ import java.io.StringReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
@@ -22,8 +24,10 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.GmailScopes;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
+
 import scouts.cne.pt.app.HasLogger;
 
 @SpringComponent
@@ -35,7 +39,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
 	private static final List< String >	SCOPES				= Arrays.asList( "https://www.google.com/m8/feeds/" );
-	private static final List< String >	SERVER_SCOPES		= Arrays.asList( "https://www.googleapis.com/auth/plus.me" );
+	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private String						refreshToken		= null;
 
 	public GoogleAuthenticationBean()
@@ -59,7 +63,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	{
 		// Build flow and trigger user authorization request.
 		return new GoogleAuthorizationCodeFlow.Builder( getHttpTransport(), getJsonfactry(), getGoogleClientSecrets(), SCOPES )
-						.setAccessType( "offline" ).setApprovalPrompt( "force" ).build();
+				.setAccessType( "offline" ).setApprovalPrompt( "force" ).build();
 	}
 
 	public NetHttpTransport getHttpTransport() throws GeneralSecurityException, IOException
@@ -144,11 +148,11 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 		try
 		{
 			TokenResponse response = new AuthorizationCodeTokenRequest( getHttpTransport(), getJsonfactry(),
-							new GenericUrl( googleClientSecrets.getDetails().getTokenUri() ), refreshToken )
-											.setClientAuthentication( new ClientParametersAuthentication(
-															googleClientSecrets.getDetails().getClientId(),
-															googleClientSecrets.getDetails().getClientSecret() ) )
-											.setRedirectUri( getRedicetUrl() ).execute();
+					new GenericUrl( googleClientSecrets.getDetails().getTokenUri() ), refreshToken )
+					.setClientAuthentication( new ClientParametersAuthentication(
+							googleClientSecrets.getDetails().getClientId(),
+							googleClientSecrets.getDetails().getClientSecret() ) )
+					.setRedirectUri( getRedicetUrl() ).execute();
 			refreshToken = response.getRefreshToken();
 			// FirebaseManager.getInstance().addCode(uiId, googleClientSecrets.getDetails().getClientId(),
 			// refreshToken);
@@ -176,6 +180,19 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 				printError( e );
 			}
 		}
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		try ( InputStream in = classLoader.getResourceAsStream( "server_secrets.json" ) )
+		{
+			try {
+				return GoogleCredential.fromStream( in, getHttpTransport(), getJsonfactry() )
+						.createScoped( SERVER_SCOPES );
+			} catch (IOException | GeneralSecurityException e) {
+				printError(e);
+			}
+		} catch (IOException e1) {
+			printError(e1);
+		}
+
 		return null;
 	}
 

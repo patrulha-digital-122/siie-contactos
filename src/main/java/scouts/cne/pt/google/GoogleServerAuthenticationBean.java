@@ -2,15 +2,15 @@ package scouts.cne.pt.google;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.util.IOUtils;
 import com.google.api.client.googleapis.GoogleUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -56,18 +56,17 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-		URL inputStream = classLoader.getResource( "siie-importer-server.p12" );
-		File f = null;
-		try
+		InputStream inputStream = classLoader.getResourceAsStream( "siie-importer-server.p12" );
+		File f = File.createTempFile( "temp", ".p12" );
+		try ( FileOutputStream fileOutputStream = new FileOutputStream( f ) )
 		{
-			getLogger().info( inputStream.toURI().toString() );
-			f = new File( inputStream.toURI() );
+			IOUtils.copy( inputStream, fileOutputStream );
 		}
-		catch ( URISyntaxException e )
+		catch ( Exception e )
 		{
 			printError( e );
 		}
-		getLogger().info( "P12File path: " + f.getAbsolutePath() );
+		getLogger().info( "P12File path: {} - {}", f.getAbsolutePath(), f.getTotalSpace() );
 		GoogleCredential credential = new GoogleCredential.Builder()
 	                                                .setTransport(getHttpTransport())
 	                                                .setJsonFactory(getJsonfactry())

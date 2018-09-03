@@ -2,15 +2,15 @@ package scouts.cne.pt.google;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.util.IOUtils;
 import com.google.api.client.googleapis.GoogleUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -56,13 +56,14 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-		InputStream inputStream = classLoader.getResourceAsStream( "siie-importer-server.p12" );
-		File f = File.createTempFile( "temp", "p12" );
-		try ( FileOutputStream fileOutputStream = new FileOutputStream( f ) )
+		URL inputStream = classLoader.getResource( "siie-importer-server.p12" );
+		File f = null;
+		try
 		{
-			IOUtils.copy( inputStream, fileOutputStream );
+			getLogger().info( inputStream.toURI().toString() );
+			f = new File( inputStream.toURI() );
 		}
-		catch ( Exception e )
+		catch ( URISyntaxException e )
 		{
 			printError( e );
 		}
@@ -71,7 +72,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	                                                .setTransport(getHttpTransport())
 	                                                .setJsonFactory(getJsonfactry())
 	                                                .setServiceAccountId(serviceAccountUserEmail)    // requesting the token
-						.setServiceAccountPrivateKeyFromP12File( f )
+	                                                .setServiceAccountPrivateKeyFromP12File( f )
 	                                                .setServiceAccountScopes(SCOPES)    // see https://developers.google.com/gmail/api/auth/scopes
 	                                                .setServiceAccountUser("patrulha.digital.122@escutismo.pt")
 	                                                .build();    

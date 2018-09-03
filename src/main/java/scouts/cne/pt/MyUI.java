@@ -119,8 +119,8 @@ public class MyUI extends UI implements HasLogger
 					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
 					Message message = service.users().messages().send("patrulha.digital.122@escutismo.pt", HTMLUtils.createMessageWithEmail(createEmail)).execute();
 
-					System.out.println("Message id: " + message.getId());
-					System.out.println(message.toPrettyString());
+					getLogger().info( "Message id: {}", message.getId() );
+					getLogger().info( message.toPrettyString() );
 
 				} catch (Exception e) {
 					printError(e);

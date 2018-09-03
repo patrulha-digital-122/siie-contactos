@@ -10,6 +10,7 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.util.IOUtils;
 import com.google.api.client.googleapis.GoogleUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -59,12 +60,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 		File f = File.createTempFile( "temp", "p12" );
 		try ( FileOutputStream fileOutputStream = new FileOutputStream( f ) )
 		{
-			int read = 0;
-			byte[] bytes = new byte[ 1024 ];
-			while ( ( read = inputStream.read( bytes ) ) != -1 )
-			{
-				fileOutputStream.write( bytes, 0, read );
-			}
+			IOUtils.copy( inputStream, fileOutputStream );
 		}
 		catch ( Exception e )
 		{

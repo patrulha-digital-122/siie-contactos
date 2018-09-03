@@ -100,6 +100,7 @@ public class MyUI extends UI implements HasLogger
 	SIIEService							siieService;
 	@Autowired
 	private GoogleAuthenticationBean	googleAuthentication;
+	@Autowired
 	private GoogleServerAuthenticationBean	googleServerAuthentication;
 	private EscolherElementosLayout		elementosLayout;
 

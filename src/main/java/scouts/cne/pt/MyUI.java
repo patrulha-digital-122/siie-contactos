@@ -118,7 +118,7 @@ public class MyUI extends UI implements HasLogger
 					Gmail service = googleServerAuthentication.getGmailService();
 					getLogger().info( service.getServicePath() );
 					// Print the labels in the user's account.
-					String user = "me";
+					String user = System.getenv().get( "GOOGLE_SERVER_USER_ID" );
 					ListLabelsResponse listResponse = service.users().labels().list( user ).execute();
 					List< com.google.api.services.gmail.model.Label > labels = listResponse.getLabels();
 					if ( labels.isEmpty() )

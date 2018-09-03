@@ -67,6 +67,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
+import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.Explorador;
@@ -99,6 +100,7 @@ public class MyUI extends UI implements HasLogger
 	SIIEService							siieService;
 	@Autowired
 	private GoogleAuthenticationBean	googleAuthentication;
+	private GoogleServerAuthenticationBean	googleServerAuthentication;
 	private EscolherElementosLayout		elementosLayout;
 
 	@Override
@@ -111,7 +113,7 @@ public class MyUI extends UI implements HasLogger
 			@Override
 			public void run() {
 				try {
-					Gmail service = googleAuthentication.getGmailService();
+					Gmail service = googleServerAuthentication.getGmailService();
 
 					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
 					Message message = service.users().messages().send("patrulha.digital.122@escutismo.pt", HTMLUtils.createMessageWithEmail(createEmail)).execute();

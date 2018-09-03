@@ -75,7 +75,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	                                                .setServiceAccountScopes(SCOPES)    // see https://developers.google.com/gmail/api/auth/scopes
 	                                                .setServiceAccountUser("patrulha.digital.122@escutismo.pt")
 	                                                .build();    
-		// credential.refreshToken();
+		credential.refreshToken();
 	    return credential;
 
 	}

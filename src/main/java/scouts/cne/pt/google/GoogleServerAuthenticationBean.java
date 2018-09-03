@@ -117,7 +117,14 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	{
 		GoogleCredential authorizeServer = authorizeServer();
 		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
-		getLogger().info( "GoogleCredential refresh token: {}", authorizeServer.refreshToken() );
+		if ( authorizeServer.refreshToken() )
+		{
+			GoogleCredential googleCredential = new GoogleCredential().setAccessToken( authorizeServer.getAccessToken() )
+							.setAccessToken( authorizeServer.getRefreshToken() );
+			getLogger().info( "GoogleCredential refresh token: {}", authorizeServer.getRefreshToken() );
+			getLogger().info( "GoogleCredential access token: {}", authorizeServer.getAccessToken() );
+			return new Gmail.Builder( getHttpTransport(), getJsonfactry(), googleCredential ).setApplicationName( "siie-importer-server" ).build();
+		}
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
 						.setApplicationName( "siie-importer-server" ).build();
 	}

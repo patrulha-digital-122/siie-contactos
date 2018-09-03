@@ -115,8 +115,9 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	public Gmail getGmailService() throws GeneralSecurityException, IOException
 	{
-		GoogleCredential authorizeServer = createCredentialUsingServerToken();
+		GoogleCredential authorizeServer = authorizeServer();
 		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
+		getLogger().info( "GoogleCredential refresh token: {}", authorizeServer.refreshToken() );
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
 						.setApplicationName( "siie-importer-server" ).build();
 	}

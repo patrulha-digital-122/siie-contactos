@@ -14,12 +14,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-
 import javax.mail.internet.MimeMessage;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.vaadin.leif.headertags.Meta;
+import org.vaadin.leif.headertags.MetaTags;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.gmail.Gmail;
@@ -66,7 +65,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
@@ -81,6 +79,9 @@ import scouts.cne.pt.utils.HTMLUtils;
 @SpringUI
 @Push
 @Title( "SIIE - importer" )
+// <meta name="google-site-verification" content="FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" />
+@MetaTags(
+{ @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
 public class MyUI extends UI implements HasLogger
 {
 	/**
@@ -235,7 +236,6 @@ public class MyUI extends UI implements HasLogger
 			}
 		});
 
-		// FirebaseManager.getInstance().addLogMessage("App started");
 	}
 
 	/**

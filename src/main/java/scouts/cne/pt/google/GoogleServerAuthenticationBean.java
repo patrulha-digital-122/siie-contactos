@@ -54,7 +54,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-	    String strFilePath = classLoader.getResource( "server_secrets.json" ).getFile();
+		String strFilePath = classLoader.getResource( "siie-importer-server.p12" ).getFile();
 	    getLogger().info( "P12File path: " + strFilePath );
 		GoogleCredential credential = new GoogleCredential.Builder()
 	                                                .setTransport(getHttpTransport())

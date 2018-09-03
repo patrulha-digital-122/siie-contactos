@@ -29,7 +29,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	 *
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
-	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.GMAIL_SEND );
+	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.GMAIL_SEND, GmailScopes.GMAIL_LABELS );
 
 	public GoogleServerAuthenticationBean()
 	{
@@ -117,13 +117,15 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	{
 		GoogleCredential authorizeServer = authorizeServer();
 		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
-		if ( authorizeServer.refreshToken() )
-		{
-			GoogleCredential googleCredential = new GoogleCredential().setAccessToken( authorizeServer.getAccessToken() );
-			getLogger().info( "GoogleCredential refresh token: {}", authorizeServer.getRefreshToken() );
-			getLogger().info( "GoogleCredential access token: {}", authorizeServer.getAccessToken() );
-			return new Gmail.Builder( getHttpTransport(), getJsonfactry(), googleCredential ).setApplicationName( "siie-importer-server" ).build();
-		}
+		// if ( authorizeServer.refreshToken() )
+		// {
+		// GoogleCredential googleCredential = new GoogleCredential().setAccessToken( authorizeServer.getAccessToken()
+		// );
+		// getLogger().info( "GoogleCredential refresh token: {}", authorizeServer.getRefreshToken() );
+		// getLogger().info( "GoogleCredential access token: {}", authorizeServer.getAccessToken() );
+		// return new Gmail.Builder( getHttpTransport(), getJsonfactry(), googleCredential ).setApplicationName(
+		// "siie-importer-server" ).build();
+		// }
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
 						.setApplicationName( "siie-importer-server" ).build();
 	}

@@ -22,6 +22,7 @@ import org.vaadin.leif.headertags.MetaTags;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.model.ListLabelsResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
@@ -116,6 +117,22 @@ public class MyUI extends UI implements HasLogger
 				try {
 					Gmail service = googleServerAuthentication.getGmailService();
 					getLogger().info( service.getServicePath() );
+					// Print the labels in the user's account.
+					String user = "me";
+					ListLabelsResponse listResponse = service.users().labels().list( user ).execute();
+					List< com.google.api.services.gmail.model.Label > labels = listResponse.getLabels();
+					if ( labels.isEmpty() )
+					{
+						getLogger().info( "No labels found." );
+					}
+					else
+					{
+						getLogger().info( "Labels:" );
+						for ( com.google.api.services.gmail.model.Label label : labels )
+						{
+							getLogger().info( "## {}", label.getName() );
+						}
+					}
 					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
 

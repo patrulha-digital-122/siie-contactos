@@ -119,7 +119,11 @@ public class MyUI extends UI implements HasLogger
 					getLogger().info( service.getServicePath() );
 					// Print the labels in the user's account.
 					String user = System.getenv().get( "GOOGLE_SERVER_USER_ID" );
-					getLogger().info( "GOOGLE_SERVER_USER_ID: %s", user );
+					if ( user == null )
+					{
+						user = "me";
+					}
+					getLogger().info( "GOOGLE_SERVER_USER_ID: {}", user );
 					ListLabelsResponse listResponse = service.users().labels().list( user ).execute();
 					List< com.google.api.services.gmail.model.Label > labels = listResponse.getLabels();
 					if ( labels.isEmpty() )

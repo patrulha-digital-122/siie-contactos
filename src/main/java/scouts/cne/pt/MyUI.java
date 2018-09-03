@@ -115,7 +115,7 @@ public class MyUI extends UI implements HasLogger
 			public void run() {
 				try {
 					Gmail service = googleServerAuthentication.getGmailService();
-
+					getLogger().info( service.getServicePath() );
 					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
 

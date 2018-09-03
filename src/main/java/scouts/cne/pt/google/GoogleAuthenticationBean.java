@@ -9,12 +9,9 @@ import java.io.StringReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
@@ -27,7 +24,6 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
-
 import scouts.cne.pt.app.HasLogger;
 
 @SpringComponent
@@ -165,7 +161,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 		return credential;
 	}
 
-	private Credential authorizeServer()
+	private GoogleCredential authorizeServer()
 	{
 		String strGoogleClientSecrets = System.getenv().get( "GOOGLE_SERVER_SECRETS" );
 
@@ -198,6 +194,8 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 
 	public Gmail getGmailService() throws GeneralSecurityException, IOException
 	{
-		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer() ).setApplicationName( getApplicationName() ).build();
+		GoogleCredential authorizeServer = authorizeServer();
+		getLogger().info( "TokenServerEncodedUrl: {}", authorizeServer.getTokenServerEncodedUrl() );
+		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer ).build();
 	}
 }

@@ -29,7 +29,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	 *
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
-	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.MAIL_GOOGLE_COM );
+	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.GMAIL_SEND );
 
 	public GoogleServerAuthenticationBean()
 	{
@@ -75,7 +75,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	                                                .setServiceAccountScopes(SCOPES)    // see https://developers.google.com/gmail/api/auth/scopes
 	                                                .setServiceAccountUser("patrulha.digital.122@escutismo.pt")
 	                                                .build();    
-	    credential.refreshToken();
+		// credential.refreshToken();
 	    return credential;
 
 	}

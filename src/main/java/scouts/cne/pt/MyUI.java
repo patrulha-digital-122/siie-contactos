@@ -119,6 +119,7 @@ public class MyUI extends UI implements HasLogger
 					getLogger().info( service.getServicePath() );
 					// Print the labels in the user's account.
 					String user = System.getenv().get( "GOOGLE_SERVER_USER_ID" );
+					getLogger().info( "GOOGLE_SERVER_USER_ID: %s", user );
 					ListLabelsResponse listResponse = service.users().labels().list( user ).execute();
 					List< com.google.api.services.gmail.model.Label > labels = listResponse.getLabels();
 					if ( labels.isEmpty() )
@@ -134,7 +135,7 @@ public class MyUI extends UI implements HasLogger
 						}
 					}
 					MimeMessage createEmail = HTMLUtils.createEmail("andre.conrado.0@gmail.com", "patrulha.digital.122@escutismo.pt", "subject Text", "bodyText");
-					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+					Message message = service.users().messages().send( user, HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
 
 					getLogger().info( "Message id: {}", message.getId() );
 					getLogger().info( message.toPrettyString() );

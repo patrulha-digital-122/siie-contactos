@@ -73,7 +73,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	                                                .setServiceAccountId(serviceAccountUserEmail)    // requesting the token
 	                                                .setServiceAccountPrivateKeyFromP12File( f )
 	                                                .setServiceAccountScopes(SCOPES)    // see https://developers.google.com/gmail/api/auth/scopes
-	                                                //.setServiceAccountUser(serviceAccountClientID)
+						.setServiceAccountUser( serviceAccountClientID )
 	                                                .build();    
 		getLogger().info( "refresh token? {}", credential.refreshToken() );
 	    return credential;

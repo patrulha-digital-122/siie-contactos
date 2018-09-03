@@ -2,6 +2,7 @@ package scouts.cne.pt.google;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -54,13 +55,27 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-		String strFilePath = classLoader.getResource( "siie-importer-server.p12" ).getFile();
-	    getLogger().info( "P12File path: " + strFilePath );
+		InputStream inputStream = classLoader.getResourceAsStream( "siie-importer-server.p12" );
+		File f = File.createTempFile( "temp", "p12" );
+		try ( FileOutputStream fileOutputStream = new FileOutputStream( f ) )
+		{
+			int read = 0;
+			byte[] bytes = new byte[ 1024 ];
+			while ( ( read = inputStream.read( bytes ) ) != -1 )
+			{
+				fileOutputStream.write( bytes, 0, read );
+			}
+		}
+		catch ( Exception e )
+		{
+			printError( e );
+		}
+		getLogger().info( "P12File path: " + f.getAbsolutePath() );
 		GoogleCredential credential = new GoogleCredential.Builder()
 	                                                .setTransport(getHttpTransport())
 	                                                .setJsonFactory(getJsonfactry())
 	                                                .setServiceAccountId(serviceAccountUserEmail)    // requesting the token
-	                                                .setServiceAccountPrivateKeyFromP12File(new File(strFilePath))
+						.setServiceAccountPrivateKeyFromP12File( f )
 	                                                .setServiceAccountScopes(SCOPES)    // see https://developers.google.com/gmail/api/auth/scopes
 	                                                .setServiceAccountUser("patrulha.digital.122@escutismo.pt")
 	                                                .build();    

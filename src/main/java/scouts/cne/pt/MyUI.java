@@ -70,6 +70,7 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
+import scouts.cne.pt.layouts.FAQLayout;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
@@ -237,6 +238,7 @@ public class MyUI extends UI implements HasLogger
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btImportacaoVCard, Alignment.MIDDLE_CENTER );
+		FAQLayout faqLayout = new FAQLayout();
 		VerticalLayout VerticalLayoutBtnImportacao = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		VerticalLayoutBtnImportacao.setSizeFull();
 		VerticalLayoutBtnImportacao.setMargin( true );

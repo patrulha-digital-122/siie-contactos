@@ -1,0 +1,14 @@
+{
+	"faqList": [
+		{
+			"question": "Pergunta 1?",
+			"response": " <h2>Teste</h2>",
+			"isHTML": true
+		},
+		{
+			"question": "Pergunta 2?",
+			"response": "<h2>Teste2</h2>",
+			"isHTML": false
+		}
+	]
+}

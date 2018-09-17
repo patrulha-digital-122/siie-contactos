@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.leif.headertags.Meta;
 import org.vaadin.leif.headertags.MetaTags;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
-import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.Route;
 import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.CustomizedSystemMessages;
 import com.vaadin.server.DefaultErrorHandler;
@@ -15,12 +15,10 @@ import com.vaadin.server.Responsive;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.SystemMessagesInfo;
 import com.vaadin.server.SystemMessagesProvider;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
@@ -34,13 +32,11 @@ import scouts.cne.pt.layouts.ImportarLayout;
 import scouts.cne.pt.layouts.UploadFileLayout;
 import scouts.cne.pt.services.SIIEService;
 
-@SpringUI
-@Push
+@Route( "" )
 @Title( "SIIE - importer" )
-// <meta name="google-site-verification" content="FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" />
 @MetaTags(
 { @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
-public class MyUI extends UI implements HasLogger
+public class MyUI extends VerticalLayout implements HasLogger
 {
 	/**
 	 *
@@ -58,24 +54,30 @@ public class MyUI extends UI implements HasLogger
 	private EscolherElementosLayout			elementosLayout;
 	private ImportarLayout					importarLayout;
 
-	@Override
-	protected void init( VaadinRequest vaadinRequest )
+	
+	
+	/**
+	 * constructor
+	 * @author anco62000465 2018-09-17
+	 * @param siieService
+	 */
+	public MyUI( )
 	{
-		getLogger().info( "EmbedId " + getEmbedId() );
-		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setSpacing( true );
-		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
-		mainLayout.setSizeFull();
-		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		setContent( mainLayout );
-		setTheme( "mytheme" );
-		Responsive.makeResponsive( mainLayout );
-		elementosLayout = new EscolherElementosLayout( getEmbedId(), siieService );
+		
+		getLogger().info( "EmbedId " + getId() );
+		setSpacing( true );
+		setMargin( new MarginInfo( false, true, false, true ) );
+		setSizeFull();
+		setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+
+		//setTheme( "mytheme" );
+		Responsive.makeResponsive( this );
+		elementosLayout = new EscolherElementosLayout( getId(), siieService );
 		importarLayout = new ImportarLayout( elementosLayout, googleAuthentication );
 		try
 		{
 			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
-							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
+							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getId() );
 			browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
 			browserWindowOpener.extend( importarLayout.getBtImportacao() );
@@ -86,14 +88,14 @@ public class MyUI extends UI implements HasLogger
 		}
 
 		UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
-		mainLayout.addComponent( uploadFileLayout );
-		mainLayout.setExpandRatio( uploadFileLayout, 1 );
+		addComponent( uploadFileLayout );
+		setExpandRatio( uploadFileLayout, 1 );
 
-		mainLayout.addComponent( elementosLayout );
-		mainLayout.setExpandRatio( elementosLayout, 4 );
+		addComponent( elementosLayout );
+		setExpandRatio( elementosLayout, 4 );
 
-		mainLayout.addComponent( importarLayout );
-		mainLayout.setExpandRatio( importarLayout, 1 );
+		addComponent( importarLayout );
+		setExpandRatio( importarLayout, 1 );
 
 		//
 		VaadinService.getCurrent().setSystemMessagesProvider( new SystemMessagesProvider()
@@ -148,7 +150,7 @@ public class MyUI extends UI implements HasLogger
 		getLogger().info( "Received code: " + code + " | embedId: " + embedId );
 		googleAuthentication.addSession( code );
 		browserWindowOpener.remove();
-		push();
+
 		if ( elementosLayout.getSelecionados() > 0 )
 		{
 			importarLayout.importProcess();

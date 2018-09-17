@@ -13,14 +13,12 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import com.vaadin.spring.annotation.SpringComponent;
-import com.vaadin.spring.annotation.UIScope;
+import org.springframework.stereotype.Service;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
 
-@SpringComponent
-@UIScope
+@Service
 public class SIIEService implements Serializable {
 	/**
 	 *

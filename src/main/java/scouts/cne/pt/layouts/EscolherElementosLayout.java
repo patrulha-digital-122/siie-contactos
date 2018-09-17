@@ -1,7 +1,6 @@
 package scouts.cne.pt.layouts;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
@@ -16,7 +15,6 @@ import com.vaadin.event.selection.SelectionEvent;
 import com.vaadin.event.selection.SelectionListener;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Grid;
@@ -25,8 +23,6 @@ import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.renderers.DateRenderer;
-import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.Explorador;
 import scouts.cne.pt.model.SECCAO;
@@ -106,7 +102,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			tabLobitos.setSizeFull();
 			Grid< Explorador > grid = new Grid<>();
 			grid.setSizeFull();
-			grid.removeAllColumns();
+			//grid.removeAllColumns();
 			grid.setSelectionMode( SelectionMode.MULTI );
 			grid.setItems( siieService.getMapSeccaoElemento().get( seccao ) );
 			tabLobitos.addComponent( grid );
@@ -115,7 +111,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			grid.addColumn( Explorador::getEmail ).setCaption( "Email" );
 			grid.addColumn( Explorador::getNif ).setCaption( "NIF" );
 			Column< Explorador, Date > dataNascimentoColumn = grid.addColumn( Explorador::getDataNascimento ).setCaption( "Data Nascimento" );
-			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
+			//dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
 			grid.addSelectionListener( new SelectionListener< Explorador >()
 			{
 				private static final long serialVersionUID = 1626537027266542111L;
@@ -131,18 +127,18 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 						iCount += list.size();
 					}
 					iSelecionados = iCount;
-					MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
-					if ( uiByEmbedId != null )
-					{
-						uiByEmbedId.access( new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								uiByEmbedId.updateSelectionados( iSelecionados );
-							}
-						} );
-					}
+					// MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
+					// if ( uiByEmbedId != null )
+					// {
+					// uiByEmbedId.access( new Runnable()
+					// {
+					// @Override
+					// public void run()
+					// {
+					// uiByEmbedId.updateSelectionados( iSelecionados );
+					// }
+					// } );
+					// }
 				}
 			} );
 			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size();

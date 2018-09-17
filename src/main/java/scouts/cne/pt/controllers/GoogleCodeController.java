@@ -1,15 +1,18 @@
 package scouts.cne.pt.controllers;
 
-import com.vaadin.flow.router.Route;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.UI;
+
+import scouts.cne.pt.MyUI;
 
 /**
  * @author anco62000465 2018-01-23
  *
  */
-@Route( "Callback" )
+@SpringUI( path = "/Callback" )
 public class GoogleCodeController extends UI
 {
 	/**
@@ -28,18 +31,18 @@ public class GoogleCodeController extends UI
 		String code = request.getParameter( "code" );
 		String embedId = request.getParameter( "state" );
 
-		// VerticalLayout uiByEmbedId = ( VerticalLayout ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
-		// if ( uiByEmbedId != null )
-		// {
-		// uiByEmbedId.access( new Runnable()
-		// {
-		// @Override
-		// public void run()
-		// {
-		// uiByEmbedId.receiveGoogleCode( code, embedId );
-		// }
-		// } );
-		// }
+		MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
+		if ( uiByEmbedId != null )
+		{
+			uiByEmbedId.access( new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					uiByEmbedId.receiveGoogleCode( code, embedId );
+				}
+			} );
+		}
 		// Close the popup
 		JavaScript.eval( "close()" );
 		// Detach the UI from the session

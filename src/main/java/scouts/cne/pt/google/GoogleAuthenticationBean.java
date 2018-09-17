@@ -20,10 +20,12 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.GmailScopes;
-import org.springframework.stereotype.Service;
+import com.vaadin.spring.annotation.SpringComponent;
+import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
 
-@Service
+@SpringComponent
+@UIScope
 public class GoogleAuthenticationBean implements Serializable, HasLogger
 {
 	/**

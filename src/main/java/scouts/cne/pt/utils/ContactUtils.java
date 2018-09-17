@@ -155,10 +155,6 @@ public class ContactUtils
 		{
 			return;
 		}
-		if ( !number.startsWith( "+351" ) )
-		{
-			number = "+351" + number;
-		}
 		if ( contactEntry.getPhoneNumbers() != null )
 		{
 			for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )

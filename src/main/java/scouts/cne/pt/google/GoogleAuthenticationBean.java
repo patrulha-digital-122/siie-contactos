@@ -38,6 +38,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 
 	public GoogleAuthenticationBean()
 	{
+		getLogger().info( "New GoogleAuthenticationBean :: " );
 	}
 
 	public void addSession( String code )
@@ -135,7 +136,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	public GoogleCredential getGoogleCredentials( Integer uiId ) throws IOException
+	public GoogleCredential getGoogleCredentials() throws IOException
 	{
 		GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
 		GoogleCredential credential = null;

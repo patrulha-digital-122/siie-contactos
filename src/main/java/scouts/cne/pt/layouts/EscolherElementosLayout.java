@@ -3,7 +3,6 @@ package scouts.cne.pt.layouts;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -20,13 +19,10 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.CheckBoxGroup;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.renderers.DateRenderer;
@@ -41,7 +37,7 @@ import scouts.cne.pt.services.SIIEService;
  *
  */
 @Push
-public class EscolherElementosLayout extends VerticalLayout implements HasLogger
+public class EscolherElementosLayout extends Panel implements HasLogger
 {
 	/**
 	 *
@@ -61,17 +57,17 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 	 * @param string
 	 * @param siieService
 	 */
-	public EscolherElementosLayout( String embedId )
+	public EscolherElementosLayout( String embedId, SIIEService siieService )
 	{
-		super();
+		super( "Segundo Passo - Escolher os elementos a importar para os contactos do Google" );
 		setSizeFull();
-		setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		mapSelecionados = new EnumMap<>( SECCAO.class );
 		for ( SECCAO component : SECCAO.getListaSeccoes() )
 		{
 			mapSelecionados.put( component, new ArrayList<>() );
 		}
 		this.embedId = embedId;
+		setContent( getLayout( siieService, embedId ) );
 	}
 
 	/**
@@ -85,7 +81,7 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 		return tabsheetContactos;
 	}
 
-	public VerticalLayout getLayout( SIIEService siieService, String embedId )
+	private VerticalLayout getLayout( SIIEService siieService, String embedId )
 	{
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
@@ -96,50 +92,45 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 		tabsheetContactos.setSizeFull();
 		prencherTabela( siieService );
 		verticalLayout.addComponent( tabsheetContactos );
-		verticalLayout.setExpandRatio( tabsheetContactos, 8 );
-		Label label = new Label( "Configurações avançadas" );
-		VerticalLayout opcoesExtraLayout = new VerticalLayout();
-		List< String > data = Arrays.asList( "Importar dados dos pais em separado", "Importar dados dos pais em conjunto" );
-		CheckBoxGroup< String > chkBImportarPais = new CheckBoxGroup<>( "Opções:", data );
-		opcoesExtraLayout.addComponent( chkBImportarPais );
-		// verticalLayout.addComponent( label );
-		// verticalLayout.addComponent( opcoesExtraLayout );
-		// verticalLayout.setExpandRatio( opcoesExtraLayout, 1 );
-		addComponent( verticalLayout );
 		return verticalLayout;
 	}
 
-	public void prencherTabela(SIIEService siieService) {
+	public void prencherTabela( SIIEService siieService )
+	{
 		String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();
 		tabsheetContactos.removeAllComponents();
-
-		for (SECCAO seccao : SECCAO.getListaSeccoes()) {
+		for ( SECCAO seccao : SECCAO.getListaSeccoes() )
+		{
 			// Tab dos Lobitos
 			VerticalLayout tabLobitos = new VerticalLayout();
 			tabLobitos.setSizeFull();
-			Grid<Explorador> grid = new Grid<>();
+			Grid< Explorador > grid = new Grid<>();
 			grid.setSizeFull();
 			grid.removeAllColumns();
-			grid.setSelectionMode(SelectionMode.MULTI);
-			grid.setItems(siieService.getMapSeccaoElemento().get(seccao));
-			tabLobitos.addComponent(grid);
-			grid.addColumn(Explorador::getNome).setCaption("Nome");
-			grid.addColumn(Explorador::getNin).setCaption("NIN");
-			grid.addColumn(Explorador::getEmail).setCaption("Email");
-			grid.addColumn(Explorador::getNif).setCaption("NIF");
+			grid.setSelectionMode( SelectionMode.MULTI );
+			grid.setItems( siieService.getMapSeccaoElemento().get( seccao ) );
+			tabLobitos.addComponent( grid );
+			grid.addColumn( Explorador::getNome ).setCaption( "Nome" );
+			grid.addColumn( Explorador::getNin ).setCaption( "NIN" );
+			grid.addColumn( Explorador::getEmail ).setCaption( "Email" );
+			grid.addColumn( Explorador::getNif ).setCaption( "NIF" );
 			Column< Explorador, Date > dataNascimentoColumn = grid.addColumn( Explorador::getDataNascimento ).setCaption( "Data Nascimento" );
 			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
-			grid.addSelectionListener(new SelectionListener<Explorador>() {
+			grid.addSelectionListener( new SelectionListener< Explorador >()
+			{
+				private static final long serialVersionUID = 1626537027266542111L;
+
 				@Override
-				public void selectionChange(SelectionEvent<Explorador> event) {
-					mapSelecionados.get(seccao).clear();
-					mapSelecionados.get(seccao).addAll(event.getAllSelectedItems());
+				public void selectionChange( SelectionEvent< Explorador > event )
+				{
+					mapSelecionados.get( seccao ).clear();
+					mapSelecionados.get( seccao ).addAll( event.getAllSelectedItems() );
 					int iCount = 0;
-					for (List<Explorador> list : mapSelecionados.values()) {
+					for ( List< Explorador > list : mapSelecionados.values() )
+					{
 						iCount += list.size();
 					}
 					iSelecionados = iCount;
-
 					MyUI uiByEmbedId = ( MyUI ) VaadinSession.getCurrent().getUIByEmbedId( embedId );
 					if ( uiByEmbedId != null )
 					{
@@ -148,13 +139,13 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 							@Override
 							public void run()
 							{
-								uiByEmbedId.updateSelectionados(iSelecionados);
+								uiByEmbedId.updateSelectionados( iSelecionados );
 							}
 						} );
 					}
 				}
-			});
-			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get(seccao).size();
+			} );
+			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size();
 			try
 			{
 				FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg" ) );
@@ -186,16 +177,6 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 			}
 		}
 		return map;
-	}
-
-	private void showDebugNotification( String message )
-	{
-		System.out.println( message );
-		// Notification notification = new Notification( message, Type.TRAY_NOTIFICATION
-		// );
-		// notification.setDelayMsec( 1000 );
-		// notification.setPosition( Position.TOP_RIGHT );
-		Notification.show( message, Type.TRAY_NOTIFICATION );
 	}
 
 	/**

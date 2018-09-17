@@ -1,14 +1,14 @@
 {
 	"faqList": [
 		{
-			"question": "Pergunta 1?",
-			"response": " <h2>Teste</h2>",
+			"question": "Depois de importar os contactos para a minha conta do Google, ficou pior do que estava. Como posso reverter as alterações?",
+			"response": "<p>Se eliminou, sincronizou, importou ou uniu contactos nos \u00FAltimos 30 dias, pode anular essas altera\u00E7\u00F5es para obter os seus contactos.&nbsp;</p>\r\n<p>\r\n\t<strong>Nota: </strong>quando restaura contactos para um determinado momento, como \"h\u00E1 uma semana\", n\u00E3o ir\u00E3o aparecer quaisquer contactos adicionados ap\u00F3s esse per\u00EDodo. </p>\r\n<ol>\r\n\t<li>Aceda a <a href=\"https://www.google.com/contacts\" target=\"_blank\">Contactos do Google</a>.</li>\r\n\t<li>Clique em <strong>Mais&nbsp;</strong>\r\n\t\t<img src=\"//lh3.googleusercontent.com/jNCA2i7ezvAPxhy4djjvZv1MSUVhmWZTUvYUPuFYFF9UUl6mwqmUWXRuWEPUpy6BuBk=w13-h18\" width=\"13\" height=\"18\" alt=\"e depois\" title=\"e depois\">&nbsp;<b>Anular altera\u00E7\u00F5es</b>.</li>\r\n\t\t<li>Escolha uma hora para voltar atr\u00E1s.&nbsp;</li>\r\n\t\t<li>Clique em <strong>Confirmar</strong>.</li>\r\n\t</ol>",
 			"isHTML": true
 		},
 		{
-			"question": "Pergunta 2?",
-			"response": "<h2>Teste2</h2>",
-			"isHTML": false
+			"question": "Proteção de Dados - RGPD ( Regulamento Geral Proteção de Dados )?",
+			"response": "<p>Esta aplica&ccedil;&atilde;o obedece &agrave; <strong><a title=\"Lei do Escuta\" href=\"https://www.escutismo.pt/dirigentes/associacao/lei-principios-e-promessa/lei-principios-e-promessa:78\" target=\"_blank\" rel=\"noopener\">Lei do Escuta</a></strong>.</p>",
+			"isHTML": true
 		}
 	]
 }

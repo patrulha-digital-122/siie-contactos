@@ -19,6 +19,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
@@ -63,7 +64,7 @@ public class MyUI extends UI implements HasLogger
 		getLogger().info( "EmbedId " + getEmbedId() );
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing( true );
-		// mainLayout.setMargin( false );
+		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
 		mainLayout.setSizeFull();
 		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		setContent( mainLayout );
@@ -147,11 +148,11 @@ public class MyUI extends UI implements HasLogger
 		getLogger().info( "Received code: " + code + " | embedId: " + embedId );
 		googleAuthentication.addSession( code );
 		browserWindowOpener.remove();
+		push();
 		if ( elementosLayout.getSelecionados() > 0 )
 		{
 			importarLayout.importProcess();
 		}
-		push();
 	}
 
 	public void updateSelectionados( int iSelecionados )

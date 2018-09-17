@@ -36,6 +36,8 @@ import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
@@ -91,14 +93,25 @@ public class ImportarLayout extends Panel implements HasLogger
 		Label labelFooter = new Label(
 		      						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
 		      						ContentMode.HTML );
-		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard );
+		Button btnFaq = new Button( "Ajuda - FAQ" );
+		btnFaq.addClickListener( new ClickListener()
+		{
+			private static final long serialVersionUID = -2312531713940582397L;
+
+			@Override
+			public void buttonClick( ClickEvent event )
+			{
+				getUI().addWindow( new FAQWindow( btnFaq.getCaption() ) );
+			}
+		} );
+		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard, btnFaq );
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btImportacaoVCard, Alignment.MIDDLE_CENTER );
+		horizontalLayoutBtn.setComponentAlignment( btnFaq, Alignment.MIDDLE_CENTER );
 		
 		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
-		verticalLayout.setSizeFull();
 		verticalLayout.setMargin( true );
 
 		setContent( verticalLayout );

@@ -31,7 +31,6 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 	public UploadFileLayout( SIIEService siieService, EscolherElementosLayout escolherElementosLayout )
 	{
 		super( "Primeiro Passo - Fazer upload do ficheiro do SIIE" );
-		setSizeFull();
 		this.siieService = siieService;
 		this.escolherElementosLayout = escolherElementosLayout;
 		this.fileUploader = new FileUploader( siieService );

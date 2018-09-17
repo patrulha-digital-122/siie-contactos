@@ -394,6 +394,9 @@ public class MyUI extends UI implements HasLogger
 				ContactEntry contEntry;
 				ContactEntry elementoProcessar = elementosExistentes.get( explorador.getNin() );
 				contEntry = ContactUtils.convertElementoToContactEntry( explorador, elementoProcessar, listTelefonesExistentes );
+				getLogger().info(	"Data de Nascimento {} - > {}",
+									explorador.getDataNascimento().toInstant().toString(),
+									elementoProcessar.getBirthday().getWhen() );
 				if ( elementoProcessar != null )
 				{
 					// Actualizar

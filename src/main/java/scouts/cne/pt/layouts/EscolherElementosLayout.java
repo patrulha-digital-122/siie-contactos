@@ -1,8 +1,10 @@
 package scouts.cne.pt.layouts;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -20,12 +22,14 @@ import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CheckBoxGroup;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.renderers.DateRenderer;
 import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.Explorador;
@@ -123,6 +127,8 @@ public class EscolherElementosLayout extends VerticalLayout implements HasLogger
 			grid.addColumn(Explorador::getNin).setCaption("NIN");
 			grid.addColumn(Explorador::getEmail).setCaption("Email");
 			grid.addColumn(Explorador::getNif).setCaption("NIF");
+			Column< Explorador, Date > dataNascimentoColumn = grid.addColumn( Explorador::getDataNascimento ).setCaption( "Data Nascimento" );
+			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
 			grid.addSelectionListener(new SelectionListener<Explorador>() {
 				@Override
 				public void selectionChange(SelectionEvent<Explorador> event) {

@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.mail.internet.InternetAddress;
-import com.vaadin.ui.renderers.AbstractRenderer;
 
 /**
  * Created by Andr� on 03/10/2015.
@@ -137,7 +136,7 @@ public class ElementoOLD
 			{
 				return null;
 			}
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "DD/MM/YYYY" );
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
 			try
 			{
 				return simpleDateFormat.parse( ( String ) dataNascimento );

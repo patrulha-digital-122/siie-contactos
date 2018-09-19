@@ -19,9 +19,9 @@ import com.google.gdata.data.extensions.Name;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
-import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
 import scouts.cne.pt.model.Elemento;
+import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
 
 /**
@@ -30,10 +30,11 @@ import scouts.cne.pt.model.SECCAO;
  */
 public class ContactUtils
 {
-	public static ContactEntry convertElementoToContactEntry(	Elemento elemento,
+	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
 																ContactEntry contactEntry,
 																Set< String > listTelefonesExistentes )
 	{
+		ImportContactReport importContactReport = new ImportContactReport();
 		if ( contactEntry == null )
 		{
 			contactEntry = new ContactEntry();
@@ -42,10 +43,10 @@ public class ContactUtils
 		{
 			removeNINandNIF( contactEntry );
 		}
-		updateUserDefinedField( contactEntry, "NIN", elemento.getNin() );
-		updateNome( contactEntry, elemento );
-		updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel() );
-		updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone() );
+		updateUserDefinedField( contactEntry, "NIN", elemento.getNin(), importContactReport );
+		updateNome( contactEntry, elemento, importContactReport );
+		updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel(), importContactReport );
+		updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone(), importContactReport );
 		if ( elemento.getCategoria().equals( SECCAO.DIRIGENTES ) )
 		{
 			listTelefonesExistentes.add( elemento.getTelemovel() );
@@ -55,26 +56,26 @@ public class ContactUtils
 		{
 			if ( !listTelefonesExistentes.contains( elemento.getTelefoneMae() ) )
 			{
-				updatePhoneNumber( contactEntry, "Mãe", elemento.getTelefoneMae() );
+				updatePhoneNumber( contactEntry, "Mãe", elemento.getTelefoneMae(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefoneMae() );
 			}
 			if ( !listTelefonesExistentes.contains( elemento.getTelefonePai() ) )
 			{
-				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai() );
+				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefonePai() );
 			}
-			updateEmail( contactEntry, "Mãe", elemento.getEmailMae() );
-			updateEmail( contactEntry, "Pai", elemento.getEmailPai() );
-			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle() );
+			updateEmail( contactEntry, "Mãe", elemento.getEmailMae(), importContactReport );
+			updateEmail( contactEntry, "Pai", elemento.getEmailPai(), importContactReport );
+			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
 		}
-		updateEmail( contactEntry, "Pessoal", elemento.getEmail() );
-		updateUserDefinedField( contactEntry, "NIF", elemento.getNif() );
-		updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento() );
-		updatePais( contactEntry, "Mãe", elemento.getNomeMae() );
-		updatePais( contactEntry, "Pai", elemento.getNomePai() );
-		updateMorada( contactEntry, "Casa", elemento );
+		updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
+		updateUserDefinedField( contactEntry, "NIF", elemento.getNif(), importContactReport );
+		updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento(), importContactReport );
+		updatePais( contactEntry, "Mãe", elemento.getNomeMae(), importContactReport );
+		updatePais( contactEntry, "Pai", elemento.getNomePai(), importContactReport );
+		updateMorada( contactEntry, "Casa", elemento, importContactReport );
 		contactEntry.setGender( elemento.isMasculino() ? new Gender( Gender.Value.MALE ) : new Gender( Gender.Value.FEMALE ) );
-		return contactEntry;
+		return new ElementoImport( contactEntry, elemento, importContactReport );
 	}
 
 	/**
@@ -84,13 +85,15 @@ public class ContactUtils
 	 * @param contactEntry
 	 * @param string
 	 * @param elemento
+	 * @param importContactReport
 	 */
-	private static void updateMorada( ContactEntry contactEntry, String label, Elemento elemento )
+	private static void updateMorada( ContactEntry contactEntry, String label, Elemento elemento, ImportContactReport importContactReport )
 	{
 		if ( elemento.getMorada().isEmpty() )
 		{
 			return;
 		}
+		boolean alreadyHave = true;
 		StructuredPostalAddress structuredPostalAddress = null;
 		for ( StructuredPostalAddress postalAddress : contactEntry.getStructuredPostalAddresses() )
 		{
@@ -105,31 +108,58 @@ public class ContactUtils
 			structuredPostalAddress = new StructuredPostalAddress();
 			structuredPostalAddress.setLabel( label );
 			contactEntry.getStructuredPostalAddresses().add( structuredPostalAddress );
+			alreadyHave = false;
+			structuredPostalAddress.setCountry( new Country( "PT", "Portugal" ) );
+			if ( StringUtils.equalsIgnoreCase( "Torres Vedras", elemento.getLocalidade() ) )
+			{
+				structuredPostalAddress.setRegion( new Region( "Lisboa" ) );
+			}
 		}
-		structuredPostalAddress.setCountry( new Country( "PT", "Portugal" ) );
-		if ( !elemento.getLocalidade().isEmpty() )
+		// Localidade
+		if ( StringUtils.isNotBlank( elemento.getLocalidade() ) )
 		{
-			structuredPostalAddress.setCity( new City( elemento.getLocalidade() ) );
+			if ( !alreadyHave || structuredPostalAddress.getCity() == null )
+			{
+				structuredPostalAddress.setCity( new City( elemento.getLocalidade() ) );
+				importContactReport.addNewField( "Cidade", elemento.getLocalidade() );
+			}
+			else if ( !StringUtils.equals( structuredPostalAddress.getCity().getValue(), elemento.getLocalidade() ) )
+			{
+				importContactReport.addUpdateField( "Localidade", structuredPostalAddress.getCity().getValue(), elemento.getLocalidade() );
+				structuredPostalAddress.getCity().setValue( elemento.getLocalidade() );
+			}
 		}
-		if ( !elemento.getMorada().isEmpty() )
+		// Morada
+		if ( StringUtils.isNotBlank( elemento.getMorada() ) )
 		{
-			structuredPostalAddress.setFormattedAddress( new FormattedAddress( elemento.getMorada() ) );
+			if ( !alreadyHave || structuredPostalAddress.getFormattedAddress() == null )
+			{
+				structuredPostalAddress.setFormattedAddress( new FormattedAddress( elemento.getMorada() ) );
+				importContactReport.addNewField( "Morada", elemento.getMorada() );
+			}
+			else if ( !StringUtils.equals( structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() ) )
+			{
+				importContactReport.addUpdateField( "Morada", structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() );
+				structuredPostalAddress.getFormattedAddress().setValue( elemento.getMorada() );
+			}
 		}
-		if ( !elemento.getCodigoPostal().isEmpty() )
+		// Codigo postal
+		if ( StringUtils.isNotBlank( elemento.getCodigoPostal() ) )
 		{
-			structuredPostalAddress.setPostcode( new PostCode( elemento.getCodigoPostal() ) );
-		}
-		if ( !elemento.getMorada().isEmpty() )
-		{
-			structuredPostalAddress.setStreet( new Street( elemento.getMorada() ) );
-		}
-		if ( "Torres Vedras".equalsIgnoreCase( elemento.getLocalidade() ) )
-		{
-			structuredPostalAddress.setRegion( new Region( "Lisboa" ) );
+			if ( !alreadyHave || structuredPostalAddress.getPostcode() == null )
+			{
+				structuredPostalAddress.setPostcode( new PostCode( elemento.getCodigoPostal() ) );
+				importContactReport.addNewField( "Código Postal", elemento.getCodigoPostal() );
+			}
+			else if ( !StringUtils.equals( structuredPostalAddress.getPostcode().getValue(), elemento.getCodigoPostal() ) )
+			{
+				importContactReport.addUpdateField( "Código Postal", structuredPostalAddress.getPostcode().getValue(), elemento.getCodigoPostal() );
+				structuredPostalAddress.getPostcode().setValue( elemento.getCodigoPostal() );
+			}
 		}
 	}
 
-	private static void updateUserDefinedField( ContactEntry contactEntry, String lable, String number )
+	private static void updateUserDefinedField( ContactEntry contactEntry, String lable, String number, ImportContactReport importContactReport )
 	{
 		if ( StringUtils.isNotBlank( number ) )
 		{
@@ -139,7 +169,11 @@ public class ContactUtils
 				{
 					if ( StringUtils.equals( userDefinedField.getKey(), lable ) )
 					{
-						userDefinedField.setValue( number );
+						if ( !StringUtils.equals( number, userDefinedField.getValue() ) )
+						{
+							importContactReport.addUpdateField( lable, userDefinedField.getValue(), number );
+							userDefinedField.setValue( number );
+						}
 						return;
 					}
 				}
@@ -149,7 +183,7 @@ public class ContactUtils
 		}
 	}
 
-	private static void updatePhoneNumber( ContactEntry contactEntry, String lable, String number )
+	private static void updatePhoneNumber( ContactEntry contactEntry, String lable, String number, ImportContactReport importContactReport )
 	{
 		if ( ( number == null ) || number.isEmpty() )
 		{
@@ -167,16 +201,21 @@ public class ContactUtils
 			{
 				if ( ( phoneNumber.getLabel() != null ) && phoneNumber.getLabel().equals( lable ) )
 				{
-					phoneNumber.setPhoneNumber( number );
+					if ( !StringUtils.equals( number, phoneNumber.getPhoneNumber() ) )
+					{
+						importContactReport.addUpdateField( lable, phoneNumber.getPhoneNumber(), number );
+						phoneNumber.setPhoneNumber( number );
+					}
 					return;
 				}
 			}
 		}
 		PhoneNumber phoneNumber = new PhoneNumber();
 		phoneNumber.setLabel( lable );
-		phoneNumber.setPrimary( lable.equals( "NIN" ) );
+		phoneNumber.setPrimary( lable.equals( "Telemóvel" ) );
 		phoneNumber.setPhoneNumber( number );
 		contactEntry.getPhoneNumbers().add( phoneNumber );
+		importContactReport.addNewField( "Número" + lable, number );
 	}
 
 	private static void removeNINandNIF( ContactEntry contactEntry )
@@ -191,20 +230,21 @@ public class ContactUtils
 		}
 	}
 
-	private static void updateNome( ContactEntry contactEntry, Elemento elemento )
+	private static void updateNome( ContactEntry contactEntry, Elemento elemento, ImportContactReport importContactReport )
 	{
 		Name name = contactEntry.getName();
 		if ( name == null )
 		{
 			name = new Name();
 			contactEntry.setName( name );
+			importContactReport.addNewField( "Nome", elemento.getNome() );
 		}
 		FullName fullName = new FullName();
 		fullName.setValue( elemento.getNome() );
 		name.setFullName( fullName );
 	}
 
-	private static void updateEmail( ContactEntry contactEntry, String lable, String strEmail )
+	private static void updateEmail( ContactEntry contactEntry, String lable, String strEmail, ImportContactReport importContactReport )
 	{
 		if ( ( strEmail == null ) || strEmail.isEmpty() )
 		{
@@ -215,7 +255,11 @@ public class ContactUtils
 		{
 			if ( ( e.getLabel() != null ) && e.getLabel().equals( lable ) )
 			{
-				e.setAddress( strEmail );
+				if ( !StringUtils.equals( strEmail, e.getAddress() ) )
+				{
+					importContactReport.addUpdateField( "email " + lable, e.getAddress(), strEmail );
+					e.setAddress( strEmail );
+				}
 				return;
 			}
 			if ( !existPrincipal && e.getPrimary() )
@@ -228,26 +272,33 @@ public class ContactUtils
 		email.setPrimary( !existPrincipal );
 		email.setAddress( strEmail );
 		contactEntry.getEmailAddresses().add( email );
+		importContactReport.addNewField( "email " + lable, strEmail );
 	}
 
-	private static void updateAniversario( ContactEntry contactEntry, String label, Date date )
+	private static void updateAniversario( ContactEntry contactEntry, String label, Date date, ImportContactReport importContactReport )
 	{
 		if ( date == null )
 		{
 			return;
 		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
+		String format = dateFormat.format( date );
 		Birthday birthday = contactEntry.getBirthday();
 		if ( birthday == null )
 		{
 			birthday = new Birthday();
 			contactEntry.setBirthday( birthday );
+			birthday.setWhen( format );
+			importContactReport.addNewField( label, format );
 		}
-		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
-		String format = dateFormat.format( date );
-		birthday.setWhen( format );
+		else if ( !StringUtils.equals( birthday.getWhen(), format ) )
+		{
+			importContactReport.addUpdateField( label, birthday.getWhen(), format );
+			birthday.setWhen( format );
+		}
 	}
 
-	private static void updatePais( ContactEntry contactEntry, String lable, String name )
+	private static void updatePais( ContactEntry contactEntry, String lable, String name, ImportContactReport importContactReport )
 	{
 		if ( contactEntry.getRelations() != null )
 		{
@@ -255,7 +306,11 @@ public class ContactUtils
 			{
 				if ( relation.hasLabel() && relation.getLabel().equals( lable ) )
 				{
-					relation.setValue( name );
+					if ( !StringUtils.equals( relation.getValue(), name ) )
+					{
+						importContactReport.addUpdateField( "Nome " + lable, relation.getValue(), name );
+						relation.setValue( name );
+					}
 					return;
 				}
 			}
@@ -264,5 +319,6 @@ public class ContactUtils
 		relation.setLabel( lable );
 		relation.setValue( name );
 		contactEntry.getRelations().add( relation );
+		importContactReport.addNewField( "Nome " + lable, name );
 	}
 }

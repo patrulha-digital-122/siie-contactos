@@ -44,11 +44,13 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.component.ImportContactsReportLayout;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.ContactVCardUtils;
+import scouts.cne.pt.utils.ElementoImport;
 
 /**
  * @author anco62000465 2018-09-17
@@ -242,6 +244,7 @@ public class ImportarLayout extends Panel implements HasLogger
 			listBatchFeeds.add( batchRequestFeed );
 			int i = 0;
 			List< Elemento > values = new ArrayList<>( elementosParaImportar.values() );
+			Map< String, ElementoImport > importReports = new HashMap<>();
 			Collections.sort( values );
 			for ( Elemento elemento : values )
 			{
@@ -251,22 +254,23 @@ public class ImportarLayout extends Panel implements HasLogger
 					listBatchFeeds.add( batchRequestFeed );
 					i = 0;
 				}
-				ContactEntry contEntry;
+				ElementoImport elementoImport;
 				ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
-				contEntry = ContactUtils.convertElementoToContactEntry( elemento, elementoProcessar, listTelefonesExistentes );
+				elementoImport = ContactUtils.convertElementoToContactEntry( elemento, elementoProcessar, listTelefonesExistentes );
+				importReports.put( elementoImport.getContactEntry().getId(), elementoImport );
 				if ( elementoProcessar != null )
 				{
 					// Actualizar
 					System.out.println( "Actualizar: " + elemento.getNome() );
-					BatchUtils.setBatchId( contEntry, "update" );
-					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.UPDATE );
+					BatchUtils.setBatchId( elementoImport.getContactEntry(), "update" );
+					BatchUtils.setBatchOperationType( elementoImport.getContactEntry(), BatchOperationType.UPDATE );
 				}
 				else
 				{
 					// Adicionar elemento
 					System.out.println( "Adicionar: " + elemento.getNome() );
-					BatchUtils.setBatchId( contEntry, "create" );
-					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.INSERT );
+					BatchUtils.setBatchId( elementoImport.getContactEntry(), "create" );
+					BatchUtils.setBatchOperationType( elementoImport.getContactEntry(), BatchOperationType.INSERT );
 				}
 				Map< String, ContactGroupEntry > groupsToDelete = new HashMap<>();
 				ContactGroupEntry myContacts = processarGrupo.get( SECCAO.NONE );
@@ -281,7 +285,7 @@ public class ImportarLayout extends Panel implements HasLogger
 				}
 				ContactGroupEntry contactGroupEntry = processarGrupo.get( elemento.getCategoria() );
 				boolean associarGroup = true;
-				for ( GroupMembershipInfo groupMembershipInfo : contEntry.getGroupMembershipInfos() )
+				for ( GroupMembershipInfo groupMembershipInfo : elementoImport.getContactEntry().getGroupMembershipInfos() )
 				{
 					if ( groupsToDelete.containsKey( groupMembershipInfo.getHref() ) )
 					{
@@ -297,20 +301,20 @@ public class ImportarLayout extends Panel implements HasLogger
 				{
 					GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
 					groupMembershipInfo.setHref( contactGroupEntry.getId() );
-					contEntry.getGroupMembershipInfos().add( groupMembershipInfo );
+					elementoImport.getContactEntry().getGroupMembershipInfos().add( groupMembershipInfo );
 				}
 				if ( myContacts != null )
 				{
 					GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
 					groupMembershipInfo.setHref( myContacts.getId() );
-					contEntry.getGroupMembershipInfos().add( groupMembershipInfo );
+					elementoImport.getContactEntry().getGroupMembershipInfos().add( groupMembershipInfo );
 				}
-				batchRequestFeed.getEntries().add( contEntry );
+				batchRequestFeed.getEntries().add( elementoImport.getContactEntry() );
 			}
-			List< ContactEntry > listOk = new ArrayList<>();
-			List< ContactEntry > listCriados = new ArrayList<>();
-			List< ContactEntry > listErro = new ArrayList<>();
-			List< ContactEntry > listNaoModificado = new ArrayList<>();
+			List< ElementoImport > listOk = new ArrayList<>();
+			List< ElementoImport > listCriados = new ArrayList<>();
+			List< ElementoImport > listErro = new ArrayList<>();
+			List< ElementoImport > listNaoModificado = new ArrayList<>();
 			for ( ContactFeed contactFeed : listBatchFeeds )
 			{
 				// Submit the batch request to the server.
@@ -321,48 +325,36 @@ public class ImportarLayout extends Panel implements HasLogger
 				{
 					// String batchId = BatchUtils.getBatchId( entry );
 					BatchStatus status = BatchUtils.getBatchStatus( entry );
+					ElementoImport e = importReports.get( entry.getId() );
 					switch ( status.getCode() )
 					{
 						case 200:
-							listOk.add( entry );
+							listOk.add( e );
 							break;
 						case 201:
-							listCriados.add( entry );
+							listCriados.add( e );
 							break;
 						case 304:
-							listNaoModificado.add( entry );
+							listNaoModificado.add( e );
 							break;
 						default:
 							System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
 								status.getReason() );
-							listErro.add( entry );
+							listErro.add( e );
 							break;
 					}
 				}
 			}
-			VerticalLayout verticalLayout = new VerticalLayout();
-			Label labelOk = new Label( "Contactos actualizados com sucesso" );
-			Label labelOkValue = new Label( "<center><b>" + listOk.size() + "</b></center>", ContentMode.HTML );
-			Label labelNovos = new Label( "Contactos criados com sucesso" );
-			Label labelNovosValue = new Label( "<center><b>" + listCriados.size() + "</b></center>", ContentMode.HTML );
-			Label labelErro = new Label( "Contactos não importados" );
-			Label labelErroValue = new Label( "<font color=\"red\"><center><b>" + listErro.size() + "</b></center></font>", ContentMode.HTML );
-			verticalLayout.addComponent( labelOk );
-			verticalLayout.addComponent( labelOkValue );
-			verticalLayout.addComponent( labelNovos );
-			verticalLayout.addComponent( labelNovosValue );
-			verticalLayout.addComponent( labelErro );
-			verticalLayout.addComponent( labelErroValue );
-			for ( ContactEntry contactEntry : listErro )
-			{
-				verticalLayout.addComponent( new Label( contactEntry.getName().getFullName().getValue() ) );
-			}
-			Window subWindow = new Window( "Resultado" );
-			subWindow.setContent( verticalLayout );
+			Window window = new Window( "Resultado" );
+			window.setContent( new ImportContactsReportLayout( listOk, listCriados, listErro, listNaoModificado ) );
 			// Center it in the browser window
-			subWindow.center();
+			window.center();
+			window.setResizable( true );
+			window.setModal( true );
+			window.setHeight( "500px" );
+			window.setWidth( "1000px" );
 			// Open it in the UI
-			getUI().addWindow( subWindow );
+			getUI().addWindow( window );
 		}
 		catch ( Exception e )
 		{

@@ -46,7 +46,10 @@ public class ImportContactsReportLayout extends VerticalLayout
 				final Label label = new Label( elementoImport.getHTMLImportContactReport(), ContentMode.HTML );
 				final VerticalLayout layout = new VerticalLayout( label );
 				layout.setMargin( true );
-				accordionOk.addTab( layout, elementoImport.getElemento().getNome() );
+				accordionOk.addTab(	layout,
+									String.format(	"<p><strong>%s</strong> - <a href=\"%s\" target=\"_blank\">LINK</a></p>",
+													elementoImport.getContactEntry().getSelfLink().getHref(),
+													elementoImport.getElemento().getNome() ) );
 			}
 			addComponent( accordionOk );
 		}

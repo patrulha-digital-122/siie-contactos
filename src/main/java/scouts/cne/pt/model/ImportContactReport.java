@@ -29,7 +29,7 @@ public class ImportContactReport
 
 	public void addUpdateField( String field, String strOldValue, String strNewValue )
 	{
-		lstLabels.add( String.format( "<p> Alteardo %s de <strong>%s</strong> para <strong>%s</strong> </p>", field, strNewValue, strOldValue ) );
+		lstLabels.add( String.format( "<p> Alterado %s de <strong>%s</strong> para <strong>%s</strong> </p>", field, strNewValue, strOldValue ) );
 	}
 
 	/**

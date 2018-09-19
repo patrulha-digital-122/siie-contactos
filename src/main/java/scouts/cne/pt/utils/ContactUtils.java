@@ -89,7 +89,7 @@ public class ContactUtils
 	 */
 	private static void updateMorada( ContactEntry contactEntry, String label, Elemento elemento, ImportContactReport importContactReport )
 	{
-		if ( elemento.getMorada().isEmpty() )
+		if ( StringUtils.isBlank( elemento.getMorada() ) )
 		{
 			return;
 		}
@@ -97,7 +97,7 @@ public class ContactUtils
 		StructuredPostalAddress structuredPostalAddress = null;
 		for ( StructuredPostalAddress postalAddress : contactEntry.getStructuredPostalAddresses() )
 		{
-			if ( StringUtils.equals( postalAddress.getLabel(), label ) )
+			if ( StringUtils.equalsIgnoreCase( postalAddress.getLabel(), label ) )
 			{
 				structuredPostalAddress = postalAddress;
 				break;
@@ -123,7 +123,7 @@ public class ContactUtils
 				structuredPostalAddress.setCity( new City( elemento.getLocalidade() ) );
 				importContactReport.addNewField( "Cidade", elemento.getLocalidade() );
 			}
-			else if ( !StringUtils.equals( structuredPostalAddress.getCity().getValue(), elemento.getLocalidade() ) )
+			else if ( !StringUtils.equalsIgnoreCase( structuredPostalAddress.getCity().getValue(), elemento.getLocalidade() ) )
 			{
 				importContactReport.addUpdateField( "Localidade", structuredPostalAddress.getCity().getValue(), elemento.getLocalidade() );
 				structuredPostalAddress.getCity().setValue( elemento.getLocalidade() );
@@ -137,7 +137,7 @@ public class ContactUtils
 				structuredPostalAddress.setFormattedAddress( new FormattedAddress( elemento.getMorada() ) );
 				importContactReport.addNewField( "Morada", elemento.getMorada() );
 			}
-			else if ( !StringUtils.equals( structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() ) )
+			else if ( !StringUtils.equalsIgnoreCase( structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() ) )
 			{
 				importContactReport.addUpdateField( "Morada", structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() );
 				structuredPostalAddress.getFormattedAddress().setValue( elemento.getMorada() );
@@ -151,7 +151,7 @@ public class ContactUtils
 				structuredPostalAddress.setPostcode( new PostCode( elemento.getCodigoPostal() ) );
 				importContactReport.addNewField( "Código Postal", elemento.getCodigoPostal() );
 			}
-			else if ( !StringUtils.equals( structuredPostalAddress.getPostcode().getValue(), elemento.getCodigoPostal() ) )
+			else if ( !StringUtils.equalsIgnoreCase( structuredPostalAddress.getPostcode().getValue(), elemento.getCodigoPostal() ) )
 			{
 				importContactReport.addUpdateField( "Código Postal", structuredPostalAddress.getPostcode().getValue(), elemento.getCodigoPostal() );
 				structuredPostalAddress.getPostcode().setValue( elemento.getCodigoPostal() );
@@ -300,6 +300,10 @@ public class ContactUtils
 
 	private static void updatePais( ContactEntry contactEntry, String lable, String name, ImportContactReport importContactReport )
 	{
+		if ( StringUtils.isBlank( name ) )
+		{
+			return;
+		}
 		if ( contactEntry.getRelations() != null )
 		{
 			for ( Relation relation : contactEntry.getRelations() )

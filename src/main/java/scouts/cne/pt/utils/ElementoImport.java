@@ -71,9 +71,6 @@ public class ElementoImport
 	public String getHTMLImportContactReport()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append( String.format(	"<p><strong>Nome</strong>: <a href=\"%s\" target=\"_blank\">%s</a></p>",
-									getElemento().getNome(),
-									getContactEntry().getSelfLink().getHref() ) );
 		getImportContactReport().getLstLabels().forEach( l -> sb.append( l ) );
 		return sb.toString();
 	}

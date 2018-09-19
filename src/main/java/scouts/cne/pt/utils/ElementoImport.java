@@ -71,6 +71,8 @@ public class ElementoImport
 	public String getHTMLImportContactReport()
 	{
 		StringBuilder sb = new StringBuilder();
+		sb.append( String.format(	"<p><strong>Google contacts:</strong> <a href=\"%s\" target=\"_blank\">LINK</a></p>",
+									getContactEntry().getSelfLink().getHref() ) );
 		getImportContactReport().getLstLabels().forEach( l -> sb.append( l ) );
 		return sb.toString();
 	}

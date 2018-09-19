@@ -325,22 +325,21 @@ public class ImportarLayout extends Panel implements HasLogger
 				{
 					// String batchId = BatchUtils.getBatchId( entry );
 					BatchStatus status = BatchUtils.getBatchStatus( entry );
-					ElementoImport e = importReports.get( entry.getId() );
 					switch ( status.getCode() )
 					{
 						case 200:
-							listOk.add( e );
+							listOk.add( importReports.get( entry.getId() ) );
 							break;
 						case 201:
-							listCriados.add( e );
+							listCriados.add( importReports.get( entry.getId() ) );
 							break;
 						case 304:
-							listNaoModificado.add( e );
+							listNaoModificado.add( importReports.get( entry.getId() ) );
 							break;
 						default:
 							System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
 								status.getReason() );
-							listErro.add( e );
+							listErro.add( importReports.get( entry.getId() ) );
 							break;
 					}
 				}

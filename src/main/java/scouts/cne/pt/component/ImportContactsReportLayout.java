@@ -1,6 +1,7 @@
 package scouts.cne.pt.component;
 
 import java.util.List;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
@@ -38,10 +39,11 @@ public class ImportContactsReportLayout extends VerticalLayout
 		{
 			Accordion accordionOk = new Accordion();
 			accordionOk.setCaption( strLabelTitle );
+			accordionOk.setCaptionAsHtml( true );
 			accordionOk.setTabCaptionsAsHtml( true );
 			for ( ElementoImport elementoImport : list )
 			{
-				final Label label = new Label( elementoImport.getHTMLImportContactReport() );
+				final Label label = new Label( elementoImport.getHTMLImportContactReport(), ContentMode.HTML );
 				final VerticalLayout layout = new VerticalLayout( label );
 				layout.setMargin( true );
 				accordionOk.addTab( layout, elementoImport.getElemento().getNome() );

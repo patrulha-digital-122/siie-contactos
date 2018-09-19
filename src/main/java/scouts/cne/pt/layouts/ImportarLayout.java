@@ -45,7 +45,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
-import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.ContactVCardUtils;
@@ -174,7 +174,7 @@ public class ImportarLayout extends Panel implements HasLogger
 	{
 		try
 		{
-			Map< String, Explorador > elementosParaImportar = elementosLayout.getElementosSelecionados();
+			Map< String, Elemento > elementosParaImportar = elementosLayout.getElementosSelecionados();
 			if ( elementosParaImportar.isEmpty() )
 			{
 				return;
@@ -241,9 +241,9 @@ public class ImportarLayout extends Panel implements HasLogger
 			ContactFeed batchRequestFeed = new ContactFeed();
 			listBatchFeeds.add( batchRequestFeed );
 			int i = 0;
-			List< Explorador > values = new ArrayList<>( elementosParaImportar.values() );
+			List< Elemento > values = new ArrayList<>( elementosParaImportar.values() );
 			Collections.sort( values );
-			for ( Explorador explorador : values )
+			for ( Elemento elemento : values )
 			{
 				if ( ++i > 98 )
 				{
@@ -252,19 +252,19 @@ public class ImportarLayout extends Panel implements HasLogger
 					i = 0;
 				}
 				ContactEntry contEntry;
-				ContactEntry elementoProcessar = elementosExistentes.get( explorador.getNin() );
-				contEntry = ContactUtils.convertElementoToContactEntry( explorador, elementoProcessar, listTelefonesExistentes );
+				ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
+				contEntry = ContactUtils.convertElementoToContactEntry( elemento, elementoProcessar, listTelefonesExistentes );
 				if ( elementoProcessar != null )
 				{
 					// Actualizar
-					System.out.println( "Actualizar: " + explorador.getNome() );
+					System.out.println( "Actualizar: " + elemento.getNome() );
 					BatchUtils.setBatchId( contEntry, "update" );
 					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.UPDATE );
 				}
 				else
 				{
 					// Adicionar elemento
-					System.out.println( "Adicionar: " + explorador.getNome() );
+					System.out.println( "Adicionar: " + elemento.getNome() );
 					BatchUtils.setBatchId( contEntry, "create" );
 					BatchUtils.setBatchOperationType( contEntry, BatchOperationType.INSERT );
 				}
@@ -274,12 +274,12 @@ public class ImportarLayout extends Panel implements HasLogger
 				{
 					SECCAO seccao = entry.getKey();
 					ContactGroupEntry groupEntry = entry.getValue();
-					if ( ( explorador.getCategoria() != seccao ) && ( groupEntry.getSystemGroup() == null ) )
+					if ( ( elemento.getCategoria() != seccao ) && ( groupEntry.getSystemGroup() == null ) )
 					{
 						groupsToDelete.put( groupEntry.getId(), groupEntry );
 					}
 				}
-				ContactGroupEntry contactGroupEntry = processarGrupo.get( explorador.getCategoria() );
+				ContactGroupEntry contactGroupEntry = processarGrupo.get( elemento.getCategoria() );
 				boolean associarGroup = true;
 				for ( GroupMembershipInfo groupMembershipInfo : contEntry.getGroupMembershipInfos() )
 				{
@@ -380,12 +380,12 @@ public class ImportarLayout extends Panel implements HasLogger
 	 * @param seccao
 	 * @return
 	 */
-	private Map< SECCAO, ContactGroupEntry > processarGrupo( ContactsService contactsService, Map< String, Explorador > elementosParaImportar )
+	private Map< SECCAO, ContactGroupEntry > processarGrupo( ContactsService contactsService, Map< String, Elemento > elementosParaImportar )
 	{
 		Map< String, SECCAO > listSeccaoNecessaris = new HashMap<>();
-		for ( Explorador explorador : elementosParaImportar.values() )
+		for ( Elemento elemento : elementosParaImportar.values() )
 		{
-			listSeccaoNecessaris.put( explorador.getCategoria().getNome(), explorador.getCategoria() );
+			listSeccaoNecessaris.put( elemento.getCategoria().getNome(), elemento.getCategoria() );
 		}
 		// Create query and submit a request
 		URL feedUrl;

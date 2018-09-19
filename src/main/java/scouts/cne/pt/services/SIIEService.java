@@ -15,113 +15,126 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
-import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
 
 @SpringComponent
 @UIScope
-public class SIIEService implements Serializable {
+public class SIIEService implements Serializable
+{
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1L;
-	private File file;
-	private HashMap<String, Explorador> map = null;
-	private EnumMap<SECCAO, List<Explorador>> mapSeccaoElemento = null;
+	private static final long					serialVersionUID	= 1L;
+	private File								file;
+	private HashMap< String, Elemento >			map					= null;
+	private EnumMap< SECCAO, List< Elemento > >	mapSeccaoElemento	= null;
 
-	public SIIEService() {
+	public SIIEService()
+	{
 		super();
-		mapSeccaoElemento = new EnumMap<>(SECCAO.class);
-		for (SECCAO seccao : SECCAO.values()) {
-			mapSeccaoElemento.put(seccao, new ArrayList<>());
+		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
+		for ( SECCAO seccao : SECCAO.values() )
+		{
+			mapSeccaoElemento.put( seccao, new ArrayList<>() );
 		}
 	}
 
 	/**
-	 * @param file
-	 *            the file to set
+	 * @param file the file to set
 	 */
-	public void setFile(File file) {
+	public void setFile( File file )
+	{
 		this.file = file;
 	}
 
 	public void loadExploradoresSIIE() throws Exception
 	{
-
 		map = new HashMap<>();
-
-
-		for (Entry<SECCAO, List<scouts.cne.pt.model.Explorador>> entry : mapSeccaoElemento.entrySet()) {
+		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		{
 			entry.getValue().clear();
 		}
 		// ClassLoader classLoader = getClass().getClassLoader();
-		try (FileInputStream fis = new FileInputStream(file); XSSFWorkbook myWorkBook = new XSSFWorkbook(fis)) {
+		try ( FileInputStream fis = new FileInputStream( file ); XSSFWorkbook myWorkBook = new XSSFWorkbook( fis ) )
+		{
 			// Return first sheet from the XLSX workbook
-			XSSFSheet mySheet = myWorkBook.getSheetAt(0);
+			XSSFSheet mySheet = myWorkBook.getSheetAt( 0 );
 			// Get iterator to all the rows in current sheet
-			Iterator<Row> rowIterator = mySheet.iterator();
+			Iterator< Row > rowIterator = mySheet.iterator();
 			// Traversing over each row of XLSX file
-			HashMap<Integer, String> headerRow = new HashMap<>();
+			HashMap< Integer, String > headerRow = new HashMap<>();
 			Row row = rowIterator.next();
-			Iterator<Cell> cellIterator = row.cellIterator();
-			while (cellIterator.hasNext()) {
+			Iterator< Cell > cellIterator = row.cellIterator();
+			while ( cellIterator.hasNext() )
+			{
 				Cell cell = cellIterator.next();
 				String value = cell.getStringCellValue();
-				value = value.replace(" ", "");
-				value = value.replace("-", "");
-				value = value.replace(".", "");
+				value = value.replace( " ", "" );
+				value = value.replace( "-", "" );
+				value = value.replace( ".", "" );
 				value = value.toLowerCase();
-				value = ValidationUtils.removeAcentos(value);
-				if (headerRow.containsValue(value)) {
-					if (!headerRow.containsValue(value + "pai")) {
-						headerRow.put(cell.getColumnIndex(), value + "pai");
-					} else if (!headerRow.containsValue(value + "mae")) {
-						headerRow.put(cell.getColumnIndex(), value + "mae");
-					} else {
-						headerRow.put(cell.getColumnIndex(), value + "encedu");
+				value = ValidationUtils.removeAcentos( value );
+				if ( headerRow.containsValue( value ) )
+				{
+					if ( !headerRow.containsValue( value + "pai" ) )
+					{
+						headerRow.put( cell.getColumnIndex(), value + "pai" );
 					}
-				} else {
-					headerRow.put(cell.getColumnIndex(), value);
+					else if ( !headerRow.containsValue( value + "mae" ) )
+					{
+						headerRow.put( cell.getColumnIndex(), value + "mae" );
+					}
+					else
+					{
+						headerRow.put( cell.getColumnIndex(), value + "encedu" );
+					}
+				}
+				else
+				{
+					headerRow.put( cell.getColumnIndex(), value );
 				}
 			}
-			while (rowIterator.hasNext()) {
+			while ( rowIterator.hasNext() )
+			{
 				row = rowIterator.next();
-				Explorador explorador = new Explorador();
+				Elemento elemento = new Elemento();
 				cellIterator = row.cellIterator();
-				while (cellIterator.hasNext()) {
+				while ( cellIterator.hasNext() )
+				{
 					Cell cell = cellIterator.next();
-					switch (cell.getCellType()) {
-					case Cell.CELL_TYPE_BLANK:
-						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
-						break;
-					case Cell.CELL_TYPE_STRING:
-					case Cell.CELL_TYPE_FORMULA:
-						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-								cell.getStringCellValue());
-						break;
-					case Cell.CELL_TYPE_BOOLEAN:
-						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-								cell.getBooleanCellValue());
-						break;
-					case Cell.CELL_TYPE_NUMERIC:
-						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()),
-								cell.getDateCellValue());
-						break;
-					default:
-						explorador.getListaAtributos().put(headerRow.get(cell.getColumnIndex()), null);
-						break;
+					switch ( cell.getCellType() )
+					{
+						case Cell.CELL_TYPE_BLANK:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
+						case Cell.CELL_TYPE_STRING:
+						case Cell.CELL_TYPE_FORMULA:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getStringCellValue() );
+							break;
+						case Cell.CELL_TYPE_BOOLEAN:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
+							break;
+						case Cell.CELL_TYPE_NUMERIC:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
+							break;
+						default:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
 					}
 				}
-				if (explorador.isActivo()) {
-					map.put(explorador.getNin(), explorador);
-					mapSeccaoElemento.get(explorador.getCategoria()).add(explorador);
+				if ( elemento.isActivo() )
+				{
+					map.put( elemento.getNin(), elemento );
+					mapSeccaoElemento.get( elemento.getCategoria() ).add( elemento );
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch ( Exception e )
+		{
 			throw e;
 		}
-
 	}
 
 	/**
@@ -130,7 +143,8 @@ public class SIIEService implements Serializable {
 	 * @author anco62000465 2018-01-27
 	 * @return the mapSeccaoElemento {@link EnumMap<SECCAO,List<Explorador>>}
 	 */
-	public EnumMap<SECCAO, List<Explorador>> getMapSeccaoElemento() {
+	public EnumMap< SECCAO, List< Elemento > > getMapSeccaoElemento()
+	{
 		return mapSeccaoElemento;
 	}
 }

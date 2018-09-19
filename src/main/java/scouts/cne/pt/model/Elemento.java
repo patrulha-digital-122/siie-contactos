@@ -1,582 +1,49 @@
 package scouts.cne.pt.model;
 
-import java.sql.Date;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
+import javax.mail.internet.InternetAddress;
 
-public class Elemento {
-
-	private String nin;
-
-	private String nif;
-	private String nome;
-	private String morada;
-	private String localidade;
-	private String codigoPostal;
-	private Integer codigoPostal1;
-	private Integer codigoPostal2;
-	private String telefone;
-	private String telemovel;
-	private SEXO sexo;
-	private String profissao;
-	private String email;
-	private String nomePai;
-	private String telefonePai;
-	private String emailPai;
-	private String nomeMae;
-	private String telefoneMae;
-	private String emailMae;
-	private String nomeEncEducacao;
-	private String telefoneEncEducacao;
-	private String emailEncEducacao;
-	private String naturalidade;
-	private String totem;
-	private Boolean activo = false;
-	private Boolean cartao = false;
-	private CATEGORIA categoria;
-	private Date dataNascimento = null;
-	private Date dataAdmissao = null;
-	private Date dataPromessa = null;
-	private SECCAO seccao = SECCAO.NONE;
-	private String observacoes;
-
-	private Agrupamento agrupamento;
+/**
+ * Created by Andr� on 03/10/2015.
+ */
+public class Elemento implements Comparable< Elemento >
+{
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 5041677499210798668L;
+	HashMap< String, Object >	listaAtributos;
 
 	/**
-	 * @return the nin
+	 *
 	 */
-	public String getNin() {
-		return nin;
-	}
-
-	/**
-	 * @param nin
-	 *            the nin to set
-	 */
-	public void setNin(String nin) {
-		this.nin = nin;
-	}
-
-	/**
-	 * @return the nif
-	 */
-	public String getNif() {
-		return nif;
-	}
-
-	/**
-	 * @param nif
-	 *            the nif to set
-	 */
-	public void setNif(String nif) {
-		this.nif = nif;
+	public Elemento()
+	{
+		listaAtributos = new HashMap<>();
 	}
 
 	/**
 	 * @return the nome
 	 */
-	public String getNome() {
-		return nome;
-	}
-
-	/**
-	 * @param nome
-	 *            the nome to set
-	 */
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	/**
-	 * @return the morada
-	 */
-	public String getMorada() {
-		return morada;
-	}
-
-	/**
-	 * @param morada
-	 *            the morada to set
-	 */
-	public void setMorada(String morada) {
-		this.morada = morada;
-	}
-
-	/**
-	 * @return the localidade
-	 */
-	public String getLocalidade() {
-		return localidade;
-	}
-
-	/**
-	 * @param localidade
-	 *            the localidade to set
-	 */
-	public void setLocalidade(String localidade) {
-		this.localidade = localidade;
-	}
-
-	/**
-	 * @return the codigoPostal
-	 */
-	public String getCodigoPostal() {
-		return codigoPostal;
-	}
-
-	/**
-	 * @return the codigoPostal
-	 */
-	public String getCodigoPostalNumerico() {
-		StringBuilder stringBuilder = new StringBuilder();
-		if ((codigoPostal1 != null) && (codigoPostal1 > 0)) {
-			stringBuilder.append(codigoPostal1);
-		}
-		if ((codigoPostal2 != null) && (codigoPostal2 > 0)) {
-			stringBuilder.append("-");
-			stringBuilder.append(codigoPostal2);
-		}
-		return stringBuilder.toString();
-	}
-
-	/**
-	 * @return the codigoPostal
-	 */
-	public String getCodigoPostalTotal() {
-		StringBuilder stringBuilder = new StringBuilder();
-		if ((codigoPostal1 != null) && (codigoPostal1 > 0)) {
-			stringBuilder.append(codigoPostal1);
-		}
-		if ((codigoPostal2 != null) && (codigoPostal2 > 0)) {
-			stringBuilder.append("-");
-			stringBuilder.append(codigoPostal2);
-		}
-		if ((codigoPostal != null) && !codigoPostal.isEmpty()) {
-			stringBuilder.append(" ");
-			stringBuilder.append(codigoPostal);
-		}
-		return stringBuilder.toString();
-	}
-
-	/**
-	 * @param codigoPostal
-	 *            the codigoPostal to set
-	 */
-	public void setCodigoPostal(String codigoPostal) {
-		this.codigoPostal = codigoPostal;
-	}
-
-	/**
-	 * @return the codigoPostal1
-	 */
-	public Integer getCodigoPostal1() {
-		return codigoPostal1;
-	}
-
-	/**
-	 * @param codigoPostal1
-	 *            the codigoPostal1 to set
-	 */
-	public void setCodigoPostal1(Integer codigoPostal1) {
-		this.codigoPostal1 = codigoPostal1;
-	}
-
-	/**
-	 * @return the codigoPostal2
-	 */
-	public Integer getCodigoPostal2() {
-		return codigoPostal2;
-	}
-
-	/**
-	 * @param codigoPostal2
-	 *            the codigoPostal2 to set
-	 */
-	public void setCodigoPostal2(Integer codigoPostal2) {
-		this.codigoPostal2 = codigoPostal2;
-	}
-
-	/**
-	 * @return the telefone
-	 */
-	public String getTelefone() {
-		return telefone;
-	}
-
-	/**
-	 * @param telefone
-	 *            the telefone to set
-	 */
-	public void setTelefone(String telefone) {
-		this.telefone = telefone;
-	}
-
-	/**
-	 * @return the telemovel
-	 */
-	public String getTelemovel() {
-		return telemovel;
-	}
-
-	/**
-	 * @param telemovel
-	 *            the telemovel to set
-	 */
-	public void setTelemovel(String telemovel) {
-		this.telemovel = telemovel;
-	}
-
-	/**
-	 * @return the sexo
-	 */
-	public SEXO getSexo() {
-		return sexo;
-	}
-
-	/**
-	 * @param sexo
-	 *            the sexo to set
-	 */
-	public void setSexo(SEXO sexo) {
-		this.sexo = sexo;
-	}
-
-	/**
-	 * @return the profissao
-	 */
-	public String getProfissao() {
-		return profissao;
-	}
-
-	/**
-	 * @param profissao
-	 *            the profissao to set
-	 */
-	public void setProfissao(String profissao) {
-		this.profissao = profissao;
-	}
-
-	/**
-	 * @return the email
-	 */
-	public String getEmail() {
-		return email;
-	}
-
-	/**
-	 * @param email
-	 *            the email to set
-	 */
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	/**
-	 * @return the nomePai
-	 */
-	public String getNomePai() {
-		return nomePai;
-	}
-
-	/**
-	 * @param nomePai
-	 *            the nomePai to set
-	 */
-	public void setNomePai(String nomePai) {
-		this.nomePai = nomePai;
-	}
-
-	/**
-	 * @return the telefonePai
-	 */
-	public String getTelefonePai() {
-		return telefonePai;
-	}
-
-	/**
-	 * @param telefonePai
-	 *            the telefonePai to set
-	 */
-	public void setTelefonePai(String telefonePai) {
-		this.telefonePai = telefonePai;
-	}
-
-	/**
-	 * @return the emailPai
-	 */
-	public String getEmailPai() {
-		return emailPai;
-	}
-
-	/**
-	 * @param emailPai
-	 *            the emailPai to set
-	 */
-	public void setEmailPai(String emailPai) {
-		this.emailPai = emailPai;
-	}
-
-	/**
-	 * @return the nomeMae
-	 */
-	public String getNomeMae() {
-		return nomeMae;
-	}
-
-	/**
-	 * @param nomeMae
-	 *            the nomeMae to set
-	 */
-	public void setNomeMae(String nomeMae) {
-		this.nomeMae = nomeMae;
-	}
-
-	/**
-	 * @return the telefoneMae
-	 */
-	public String getTelefoneMae() {
-		return telefoneMae;
-	}
-
-	/**
-	 * @param telefoneMae
-	 *            the telefoneMae to set
-	 */
-	public void setTelefoneMae(String telefoneMae) {
-		this.telefoneMae = telefoneMae;
-	}
-
-	/**
-	 * @return the emailMae
-	 */
-	public String getEmailMae() {
-		return emailMae;
-	}
-
-	/**
-	 * @param emailMae
-	 *            the emailMae to set
-	 */
-	public void setEmailMae(String emailMae) {
-		this.emailMae = emailMae;
-	}
-
-	/**
-	 * @return the nomeEncEducacao
-	 */
-	public String getNomeEncEducacao() {
-		return nomeEncEducacao;
-	}
-
-	/**
-	 * @param nomeEncEducacao
-	 *            the nomeEncEducacao to set
-	 */
-	public void setNomeEncEducacao(String nomeEncEducacao) {
-		this.nomeEncEducacao = nomeEncEducacao;
-	}
-
-	/**
-	 * @return the telefoneEncEducacao
-	 */
-	public String getTelefoneEncEducacao() {
-		return telefoneEncEducacao;
-	}
-
-	/**
-	 * @param telefoneEncEducacao
-	 *            the telefoneEncEducacao to set
-	 */
-	public void setTelefoneEncEducacao(String telefoneEncEducacao) {
-		this.telefoneEncEducacao = telefoneEncEducacao;
-	}
-
-	/**
-	 * @return the emailEncEducacao
-	 */
-	public String getEmailEncEducacao() {
-		return emailEncEducacao;
-	}
-
-	/**
-	 * @param emailEncEducacao
-	 *            the emailEncEducacao to set
-	 */
-	public void setEmailEncEducacao(String emailEncEducacao) {
-		this.emailEncEducacao = emailEncEducacao;
-	}
-
-	/**
-	 * @return the naturalidade
-	 */
-	public String getNaturalidade() {
-		return naturalidade;
-	}
-
-	/**
-	 * @param naturalidade
-	 *            the naturalidade to set
-	 */
-	public void setNaturalidade(String naturalidade) {
-		this.naturalidade = naturalidade;
-	}
-
-	/**
-	 * @return the totem
-	 */
-	public String getTotem() {
-		return totem;
-	}
-
-	/**
-	 * @param totem
-	 *            the totem to set
-	 */
-	public void setTotem(String totem) {
-		this.totem = totem;
-	}
-
-	/**
-	 * @return the activo
-	 */
-	public Boolean getActivo() {
-		return activo;
-	}
-
-	/**
-	 * @param activo
-	 *            the activo to set
-	 */
-	public void setActivo(Boolean activo) {
-		this.activo = activo;
-	}
-
-	/**
-	 * @return the cartao
-	 */
-	public Boolean getCartao() {
-		return cartao;
-	}
-
-	/**
-	 * @param cartao
-	 *            the cartao to set
-	 */
-	public void setCartao(Boolean cartao) {
-		this.cartao = cartao;
-	}
-
-	/**
-	 * @return the categoria
-	 */
-	public CATEGORIA getCategoria() {
-		return categoria;
-	}
-
-	/**
-	 * @param categoria
-	 *            the categoria to set
-	 */
-	public void setCategoria(CATEGORIA categoria) {
-		this.categoria = categoria;
-	}
-
-	/**
-	 * @return the dataNascimento
-	 */
-	public Date getDataNascimento() {
-		return dataNascimento;
-	}
-
-	/**
-	 * @param dataNascimento
-	 *            the dataNascimento to set
-	 */
-	public void setDataNascimento(Date dataNascimento) {
-		this.dataNascimento = dataNascimento;
-	}
-
-	/**
-	 * @return the dataAdmissao
-	 */
-	public Date getDataAdmissao() {
-		return dataAdmissao;
-	}
-
-	/**
-	 * @param dataAdmissao
-	 *            the dataAdmissao to set
-	 */
-	public void setDataAdmissao(Date dataAdmissao) {
-		this.dataAdmissao = dataAdmissao;
-	}
-
-	/**
-	 * @return the dataPromessa
-	 */
-	public Date getDataPromessa() {
-		return dataPromessa;
-	}
-
-	/**
-	 * @param dataPromessa
-	 *            the dataPromessa to set
-	 */
-	public void setDataPromessa(Date dataPromessa) {
-		this.dataPromessa = dataPromessa;
-	}
-
-	/**
-	 * @return the seccao
-	 */
-	public SECCAO getSeccao() {
-		return seccao;
-	}
-
-	/**
-	 * @param seccao
-	 *            the seccao to set
-	 */
-	public void setSeccao(SECCAO seccao) {
-		this.seccao = seccao;
-	}
-
-	/**
-	 * @return the observacoes
-	 */
-	public String getObservacoes() {
-		return observacoes;
-	}
-
-	/**
-	 * @param observacoes
-	 *            the observacoes to set
-	 */
-	public void setObservacoes(String observacoes) {
-		this.observacoes = observacoes;
-	}
-
-	/**
-	 * @return the agrupamento
-	 */
-	public Agrupamento getAgrupamento() {
-		return agrupamento;
-	}
-
-	/**
-	 * @param agrupamento
-	 *            the agrupamento to set
-	 */
-	public void setAgrupamento(Agrupamento agrupamento) {
-		this.agrupamento = agrupamento;
+	public String getNome()
+	{
+		return getAtributo( "nome" ).toString();
 	}
 
 	/**
 	 * @return the nome
 	 */
-	public String getNomeProprio() {
-		LinkedList<String> l = new LinkedList<>();
-		for (String string : getNome().split(" ")) {
-			l.add(string);
+	public String getNomeProprio()
+	{
+		LinkedList< String > l = new LinkedList<>();
+		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		{
+			l.add( string );
 		}
 		return l.getFirst();
 	}
@@ -584,58 +51,356 @@ public class Elemento {
 	/**
 	 * @return the nome
 	 */
-	public String getNomeApelido() {
-		LinkedList<String> l = new LinkedList<>();
-		for (String string : getNome().split(" ")) {
-			l.add(string);
+	public String getNomeApelido()
+	{
+		LinkedList< String > l = new LinkedList<>();
+		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		{
+			l.add( string );
 		}
 		return l.getLast();
 	}
 
 	/**
+	 * @return the morada
+	 */
+	public String getMorada()
+	{
+		return getAtributo( "morada" ).toString();
+	}
+
+	/**
+	 * @return the localidade
+	 */
+	public String getLocalidade()
+	{
+		return getAtributo( "localidade" ).toString();
+	}
+
+	/**
+	 * @return the localidade
+	 */
+	public boolean isActivo()
+	{
+		return getAtributo( "situacao" ).toString().equals( "Activo" );
+	}
+
+	/**
+	 * @return the localidade
+	 */
+	public boolean isMasculino()
+	{
+		return getAtributo( "sexo" ).toString().equals( "M" );
+	}
+
+	/**
+	 * @return the telefone
+	 */
+	public String getTelefone()
+	{
+		return getAtributo( "telefone" ).toString();
+	}
+
+	/**
+	 * @return the telefone
+	 */
+	public SECCAO getCategoria()
+	{
+		return SECCAO.findSeccao( getAtributo( "seccao" ).toString() );
+	}
+
+	/**
+	 * @return the codigoPostal
+	 */
+	public String getCodigoPostal()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append( getAtributo( "cp4" ).toString() );
+		sb.append( "-" );
+		sb.append( getAtributo( "cp3" ).toString() );
+		sb.append( " " );
+		sb.append( getAtributo( "codigopostal" ).toString() );
+		return sb.toString();
+	}
+
+	/**
+	 * @return the dataNascimento
+	 */
+	public Date getDataNascimento()
+	{
+		Object dataNascimento = getAtributo( "dtnasc" );
+		if ( dataNascimento instanceof String )
+		{
+			String strData = ( String ) dataNascimento;
+			if ( strData.isEmpty() )
+			{
+				return null;
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
+			try
+			{
+				return simpleDateFormat.parse( ( String ) dataNascimento );
+			}
+			catch ( ParseException e )
+			{
+				e.printStackTrace();
+			}
+		}
+		else if ( dataNascimento instanceof Date )
+		{
+			return ( Date ) dataNascimento;
+		}
+		return null;
+	}
+
+	/**
+	 * @return the telemovel
+	 */
+	public String getTelemovel()
+	{
+		return getAtributo( "telemovel" ).toString();
+	}
+
+	/**
 	 * @return the email
 	 */
-	public String getEmailComposto() {
-		StringBuilder stringBuilder = new StringBuilder();
-		if ((getEmail() != null) && !getEmail().isEmpty()) {
-			// stringBuilder.append(getNome());
-			// stringBuilder.append(" <");
-			stringBuilder.append(getEmail());
+	public String getEmail()
+	{
+		return ( String ) getAtributo( "email" );
+	}
 
-		}
-		if ((getEmailMae() != null) && !getEmailMae().isEmpty()) {
-			if (stringBuilder.length() > 0) {
-				stringBuilder.append(">, ");
-				stringBuilder.append(getNomeMae());
-				stringBuilder.append(" <");
+	/**
+	 * @return the email
+	 */
+	public String getEmailPrincipal()
+	{
+		String email = ( String ) getAtributo( "email" );
+		if ( email == null )
+		{
+			email = getEmailMae();
+			if ( email == null )
+			{
+				email = getEmailPai();
 			}
-			stringBuilder.append(getEmailMae());
 		}
-		if ((getEmailPai() != null) && !getEmailPai().isEmpty()) {
-			if (stringBuilder.length() > 0) {
-				stringBuilder.append(">, ");
-				stringBuilder.append(getNomePai());
-				stringBuilder.append(" <");
+		return email;
+	}
+
+	/**
+	 * @return the email
+	 */
+	public String getEmailPrincipalGoogle()
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+		if ( !getEmail().isEmpty() )
+		{
+			stringBuilder.append( getEmail() );
+		}
+		if ( !getEmailMae().isEmpty() )
+		{
+			if ( stringBuilder.length() == 0 )
+			{
+				stringBuilder.append( getEmailMae() );
 			}
-			stringBuilder.append(getEmailPai());
+			else
+			{
+				stringBuilder.append( ">; \"" );
+				stringBuilder.append( getNomeMae() );
+				stringBuilder.append( "\" <" );
+				stringBuilder.append( getEmailMae() );
+				stringBuilder.append( ">" );
+			}
+		}
+		if ( !getEmailPai().isEmpty() )
+		{
+			if ( stringBuilder.length() == 0 )
+			{
+				stringBuilder.append( getEmailPai() );
+			}
+			else
+			{
+				stringBuilder.append( "; \"" );
+				stringBuilder.append( getNomePai() );
+				stringBuilder.append( "\" <" );
+				stringBuilder.append( getEmailPai() );
+				stringBuilder.append( ">" );
+			}
 		}
 		return stringBuilder.toString();
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return the naturalidade
+	 */
+	public String getNaturalidade()
+	{
+		return ( String ) getAtributo( "naturalidade" );
+	}
+
+	/**
+	 * @return the profissao
+	 */
+	public String getProfissao()
+	{
+		return ( String ) getAtributo( "profissao" );
+	}
+
+	/**
+	 * @return the nomePai
+	 */
+	public String getNomePai()
+	{
+		return ( String ) getAtributo( "nomepai" );
+	}
+
+	/**
+	 * @return the telefonePai
+	 */
+	public String getTelefonePai()
+	{
+		return ( String ) getAtributo( "telefonepai" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getEmailPai()
+	{
+		return ( String ) getAtributo( "emailpai" );
+	}
+
+	/**
+	 * @return the nomeMae
+	 */
+	public String getNomeMae()
+	{
+		return ( String ) getAtributo( "nomemae" );
+	}
+
+	/**
+	 * @return the telefoneMae
+	 */
+	public String getTelefoneMae()
+	{
+		return getAtributo( "telefonemae" ).toString();
+	}
+
+	/**
+	 * @return the emailMae
+	 */
+	public String getEmailMae()
+	{
+		return ( String ) getAtributo( "emailmae" );
+	}
+
+	/**
+	 * @return the nif
+	 */
+	public String getNif()
+	{
+		return getAtributo( "nif" ).toString();
+	}
+
+	/**
+	 * @return the nin
+	 */
+	public String getNin()
+	{
+		return getAtributo( "nin" ).toString();
+	}
+
+	/**
+	 * @return the listaAtributos
+	 */
+	public HashMap< String, Object > getListaAtributos()
+	{
+		return listaAtributos;
+	}
+
+	/**
+	 * @return the listaAtributos
+	 */
+	public Object getAtributo( String tag )
+	{
+		Object object = listaAtributos.get( tag );
+		if ( object == null )
+		{
+			return "";
+		}
+		return object;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString()
 	{
-		StringBuilder builder = new StringBuilder();
-		builder.append( "Elemento [nin=" );
-		builder.append( nin );
-		builder.append( ", nome=" );
-		builder.append( nome );
-		builder.append( ", seccao=" );
-		builder.append( seccao );
-		builder.append( "]" );
-		return builder.toString();
+		return "Elemento [listaAtributos=" + listaAtributos + "]";
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public InternetAddress getInternetAddressEmail()
+	{
+		if ( ( getEmail() != null ) && getEmail().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmail(), getNome() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
+			}
+		}
+		return null;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public InternetAddress getInternetAddressEmailPai()
+	{
+		if ( ( getEmailPai() != null ) && getEmailPai().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmailPai(), getNomePai().toString() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
+			}
+		}
+		return null;
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public InternetAddress getInternetAddressEmailMae()
+	{
+		if ( ( getEmailMae() != null ) && getEmailMae().contains( "@" ) )
+		{
+			try
+			{
+				return new InternetAddress( getEmailMae(), getNomeMae().toString() );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public int compareTo( Elemento o )
+	{
+		return getCategoria().compareTo( o.getCategoria() );
 	}
 }

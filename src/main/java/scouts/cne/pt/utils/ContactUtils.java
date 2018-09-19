@@ -21,7 +21,7 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.Street;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
-import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 
 /**
@@ -30,7 +30,7 @@ import scouts.cne.pt.model.SECCAO;
  */
 public class ContactUtils
 {
-	public static ContactEntry convertElementoToContactEntry(	Explorador explorador,
+	public static ContactEntry convertElementoToContactEntry(	Elemento elemento,
 																ContactEntry contactEntry,
 																Set< String > listTelefonesExistentes )
 	{
@@ -42,38 +42,38 @@ public class ContactUtils
 		{
 			removeNINandNIF( contactEntry );
 		}
-		updateUserDefinedField( contactEntry, "NIN", explorador.getNin() );
-		updateNome( contactEntry, explorador );
-		updatePhoneNumber( contactEntry, "Telemóvel", explorador.getTelemovel() );
-		updatePhoneNumber( contactEntry, "Telefone", explorador.getTelefone() );
-		if ( explorador.getCategoria().equals( SECCAO.DIRIGENTES ) )
+		updateUserDefinedField( contactEntry, "NIN", elemento.getNin() );
+		updateNome( contactEntry, elemento );
+		updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel() );
+		updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone() );
+		if ( elemento.getCategoria().equals( SECCAO.DIRIGENTES ) )
 		{
-			listTelefonesExistentes.add( explorador.getTelemovel() );
-			listTelefonesExistentes.add( explorador.getTelefone() );
+			listTelefonesExistentes.add( elemento.getTelemovel() );
+			listTelefonesExistentes.add( elemento.getTelefone() );
 		}
 		else
 		{
-			if ( !listTelefonesExistentes.contains( explorador.getTelefoneMae() ) )
+			if ( !listTelefonesExistentes.contains( elemento.getTelefoneMae() ) )
 			{
-				updatePhoneNumber( contactEntry, "Mãe", explorador.getTelefoneMae() );
-				listTelefonesExistentes.add( explorador.getTelefoneMae() );
+				updatePhoneNumber( contactEntry, "Mãe", elemento.getTelefoneMae() );
+				listTelefonesExistentes.add( elemento.getTelefoneMae() );
 			}
-			if ( !listTelefonesExistentes.contains( explorador.getTelefonePai() ) )
+			if ( !listTelefonesExistentes.contains( elemento.getTelefonePai() ) )
 			{
-				updatePhoneNumber( contactEntry, "Pai", explorador.getTelefonePai() );
-				listTelefonesExistentes.add( explorador.getTelefonePai() );
+				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai() );
+				listTelefonesExistentes.add( elemento.getTelefonePai() );
 			}
-			updateEmail( contactEntry, "Mãe", explorador.getEmailMae() );
-			updateEmail( contactEntry, "Pai", explorador.getEmailPai() );
-			updateEmail( contactEntry, "Principal", explorador.getEmailPrincipalGoogle() );
+			updateEmail( contactEntry, "Mãe", elemento.getEmailMae() );
+			updateEmail( contactEntry, "Pai", elemento.getEmailPai() );
+			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle() );
 		}
-		updateEmail( contactEntry, "Pessoal", explorador.getEmail() );
-		updateUserDefinedField( contactEntry, "NIF", explorador.getNif() );
-		updateAniversario( contactEntry, "Aniversário", explorador.getDataNascimento() );
-		updatePais( contactEntry, "Mãe", explorador.getNomeMae() );
-		updatePais( contactEntry, "Pai", explorador.getNomePai() );
-		updateMorada( contactEntry, "Casa", explorador );
-		contactEntry.setGender( explorador.isMasculino() ? new Gender( Gender.Value.MALE ) : new Gender( Gender.Value.FEMALE ) );
+		updateEmail( contactEntry, "Pessoal", elemento.getEmail() );
+		updateUserDefinedField( contactEntry, "NIF", elemento.getNif() );
+		updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento() );
+		updatePais( contactEntry, "Mãe", elemento.getNomeMae() );
+		updatePais( contactEntry, "Pai", elemento.getNomePai() );
+		updateMorada( contactEntry, "Casa", elemento );
+		contactEntry.setGender( elemento.isMasculino() ? new Gender( Gender.Value.MALE ) : new Gender( Gender.Value.FEMALE ) );
 		return contactEntry;
 	}
 
@@ -83,11 +83,11 @@ public class ContactUtils
 	 * @author anco62000465 2018-01-27
 	 * @param contactEntry
 	 * @param string
-	 * @param explorador
+	 * @param elemento
 	 */
-	private static void updateMorada( ContactEntry contactEntry, String label, Explorador explorador )
+	private static void updateMorada( ContactEntry contactEntry, String label, Elemento elemento )
 	{
-		if ( explorador.getMorada().isEmpty() )
+		if ( elemento.getMorada().isEmpty() )
 		{
 			return;
 		}
@@ -107,23 +107,23 @@ public class ContactUtils
 			contactEntry.getStructuredPostalAddresses().add( structuredPostalAddress );
 		}
 		structuredPostalAddress.setCountry( new Country( "PT", "Portugal" ) );
-		if ( !explorador.getLocalidade().isEmpty() )
+		if ( !elemento.getLocalidade().isEmpty() )
 		{
-			structuredPostalAddress.setCity( new City( explorador.getLocalidade() ) );
+			structuredPostalAddress.setCity( new City( elemento.getLocalidade() ) );
 		}
-		if ( !explorador.getMorada().isEmpty() )
+		if ( !elemento.getMorada().isEmpty() )
 		{
-			structuredPostalAddress.setFormattedAddress( new FormattedAddress( explorador.getMorada() ) );
+			structuredPostalAddress.setFormattedAddress( new FormattedAddress( elemento.getMorada() ) );
 		}
-		if ( !explorador.getCodigoPostal().isEmpty() )
+		if ( !elemento.getCodigoPostal().isEmpty() )
 		{
-			structuredPostalAddress.setPostcode( new PostCode( explorador.getCodigoPostal() ) );
+			structuredPostalAddress.setPostcode( new PostCode( elemento.getCodigoPostal() ) );
 		}
-		if ( !explorador.getMorada().isEmpty() )
+		if ( !elemento.getMorada().isEmpty() )
 		{
-			structuredPostalAddress.setStreet( new Street( explorador.getMorada() ) );
+			structuredPostalAddress.setStreet( new Street( elemento.getMorada() ) );
 		}
-		if ( "Torres Vedras".equalsIgnoreCase( explorador.getLocalidade() ) )
+		if ( "Torres Vedras".equalsIgnoreCase( elemento.getLocalidade() ) )
 		{
 			structuredPostalAddress.setRegion( new Region( "Lisboa" ) );
 		}
@@ -191,7 +191,7 @@ public class ContactUtils
 		}
 	}
 
-	private static void updateNome( ContactEntry contactEntry, Explorador explorador )
+	private static void updateNome( ContactEntry contactEntry, Elemento elemento )
 	{
 		Name name = contactEntry.getName();
 		if ( name == null )
@@ -200,7 +200,7 @@ public class ContactUtils
 			contactEntry.setName( name );
 		}
 		FullName fullName = new FullName();
-		fullName.setValue( explorador.getNome() );
+		fullName.setValue( elemento.getNome() );
 		name.setFullName( fullName );
 	}
 

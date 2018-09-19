@@ -28,7 +28,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.renderers.DateRenderer;
 import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
-import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
 
@@ -44,7 +44,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 	 */
 	private static final long					serialVersionUID	= 5253307196908771291L;
 	private TabSheet							tabsheetContactos;
-	private Map< SECCAO, List< Explorador > >	mapSelecionados;
+	private Map< SECCAO, List< Elemento > >	mapSelecionados;
 	private int									iSelecionados		= 0;
 	private String								embedId;
 	@Value( "classpath:L.jpg" )
@@ -104,29 +104,29 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			// Tab dos Lobitos
 			VerticalLayout tabLobitos = new VerticalLayout();
 			tabLobitos.setSizeFull();
-			Grid< Explorador > grid = new Grid<>();
+			Grid< Elemento > grid = new Grid<>();
 			grid.setSizeFull();
 			grid.removeAllColumns();
 			grid.setSelectionMode( SelectionMode.MULTI );
 			grid.setItems( siieService.getMapSeccaoElemento().get( seccao ) );
 			tabLobitos.addComponent( grid );
-			grid.addColumn( Explorador::getNome ).setCaption( "Nome" );
-			grid.addColumn( Explorador::getNin ).setCaption( "NIN" );
-			grid.addColumn( Explorador::getEmail ).setCaption( "Email" );
-			grid.addColumn( Explorador::getNif ).setCaption( "NIF" );
-			Column< Explorador, Date > dataNascimentoColumn = grid.addColumn( Explorador::getDataNascimento ).setCaption( "Data Nascimento" );
+			grid.addColumn( Elemento::getNome ).setCaption( "Nome" );
+			grid.addColumn( Elemento::getNin ).setCaption( "NIN" );
+			grid.addColumn( Elemento::getEmail ).setCaption( "Email" );
+			grid.addColumn( Elemento::getNif ).setCaption( "NIF" );
+			Column< Elemento, Date > dataNascimentoColumn = grid.addColumn( Elemento::getDataNascimento ).setCaption( "Data Nascimento" );
 			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
-			grid.addSelectionListener( new SelectionListener< Explorador >()
+			grid.addSelectionListener( new SelectionListener< Elemento >()
 			{
 				private static final long serialVersionUID = 1626537027266542111L;
 
 				@Override
-				public void selectionChange( SelectionEvent< Explorador > event )
+				public void selectionChange( SelectionEvent< Elemento > event )
 				{
 					mapSelecionados.get( seccao ).clear();
 					mapSelecionados.get( seccao ).addAll( event.getAllSelectedItems() );
 					int iCount = 0;
-					for ( List< Explorador > list : mapSelecionados.values() )
+					for ( List< Elemento > list : mapSelecionados.values() )
 					{
 						iCount += list.size();
 					}
@@ -165,15 +165,15 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 	 * @author anco62000465 2018-01-27
 	 * @return
 	 */
-	public Map< String, Explorador > getElementosSelecionados()
+	public Map< String, Elemento > getElementosSelecionados()
 	{
-		Map< String, Explorador > map = new HashMap<>();
-		for ( Entry< SECCAO, List< Explorador > > entry : mapSelecionados.entrySet() )
+		Map< String, Elemento > map = new HashMap<>();
+		for ( Entry< SECCAO, List< Elemento > > entry : mapSelecionados.entrySet() )
 		{
-			List< Explorador > list = entry.getValue();
-			for ( Explorador explorador : list )
+			List< Elemento > list = entry.getValue();
+			for ( Elemento elemento : list )
 			{
-				map.put( explorador.getNin().trim(), explorador );
+				map.put( elemento.getNin().trim(), elemento );
 			}
 		}
 		return map;

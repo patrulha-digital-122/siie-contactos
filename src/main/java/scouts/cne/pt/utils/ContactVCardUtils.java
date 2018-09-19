@@ -19,7 +19,7 @@ import ezvcard.property.Email;
 import ezvcard.property.Gender;
 import ezvcard.property.Revision;
 import ezvcard.property.Telephone;
-import scouts.cne.pt.model.Explorador;
+import scouts.cne.pt.model.Elemento;
 
 /**
  * @author anco62000465 2018-01-27
@@ -27,28 +27,28 @@ import scouts.cne.pt.model.Explorador;
  */
 public class ContactVCardUtils
 {
-	public static File getVCardFile( Collection< Explorador > collection ) throws IOException
+	public static File getVCardFile( Collection< Elemento > collection ) throws IOException
 	{
 		File file = File.createTempFile( "list", ".vcard" );
 		List< VCard > listVcard = new ArrayList<>();
-		for ( Explorador explorador : collection )
+		for ( Elemento elemento : collection )
 		{
 			VCard vCard = new VCard();
-			vCard.setFormattedName( explorador.getNome() );
-			updateEmail( vCard, "Pessoal", explorador.getEmail() );
-			updateEmail( vCard, "Mãe", explorador.getEmailMae() );
-			updateEmail( vCard, "Pai", explorador.getEmailPai() );
-			updateTelefone( vCard, "Telemóvel", explorador.getTelemovel() );
-			updateTelefone( vCard, "Casa", explorador.getTelefone() );
-			updateTelefone( vCard, "Telefone Mãe", explorador.getTelefoneMae() );
-			updateTelefone( vCard, "Telefone Pai", explorador.getTelefonePai() );
-			updateDataNascimento( vCard, explorador.getDataNascimento() );
-			vCard.setGender( explorador.isMasculino() ? Gender.male() : Gender.female() );
-			updateMorada( vCard, explorador );
-			updatePais( vCard, "Mãe", explorador.getNomeMae() );
-			updatePais( vCard, "Pai", explorador.getNomePai() );
+			vCard.setFormattedName( elemento.getNome() );
+			updateEmail( vCard, "Pessoal", elemento.getEmail() );
+			updateEmail( vCard, "Mãe", elemento.getEmailMae() );
+			updateEmail( vCard, "Pai", elemento.getEmailPai() );
+			updateTelefone( vCard, "Telemóvel", elemento.getTelemovel() );
+			updateTelefone( vCard, "Casa", elemento.getTelefone() );
+			updateTelefone( vCard, "Telefone Mãe", elemento.getTelefoneMae() );
+			updateTelefone( vCard, "Telefone Pai", elemento.getTelefonePai() );
+			updateDataNascimento( vCard, elemento.getDataNascimento() );
+			vCard.setGender( elemento.isMasculino() ? Gender.male() : Gender.female() );
+			updateMorada( vCard, elemento );
+			updatePais( vCard, "Mãe", elemento.getNomeMae() );
+			updatePais( vCard, "Pai", elemento.getNomePai() );
 			vCard.addLanguage( "pt-PT" );
-			vCard.setCategories( explorador.getCategoria().getNome() );
+			vCard.setCategories( elemento.getCategoria().getNome() );
 			vCard.setRevision( Revision.now() );
 			listVcard.add( vCard );
 		}
@@ -64,16 +64,16 @@ public class ContactVCardUtils
 	 * 
 	 * @author anco62000465 2018-08-29
 	 * @param vCard
-	 * @param explorador
+	 * @param elemento
 	 */
-	private static void updateMorada( VCard vCard, Explorador explorador )
+	private static void updateMorada( VCard vCard, Elemento elemento )
 	{
-		if ( StringUtils.isNotBlank( explorador.getMorada() ) )
+		if ( StringUtils.isNotBlank( elemento.getMorada() ) )
 		{
 			Address adr = new Address();
-			adr.setStreetAddress( explorador.getMorada() );
-			adr.setLocality( explorador.getLocalidade() );
-			adr.setPostalCode( explorador.getCodigoPostal() );
+			adr.setStreetAddress( elemento.getMorada() );
+			adr.setLocality( elemento.getLocalidade() );
+			adr.setPostalCode( elemento.getCodigoPostal() );
 			adr.setCountry( "PT" );
 			adr.getTypes().add( AddressType.HOME );
 			vCard.addAddress( adr );

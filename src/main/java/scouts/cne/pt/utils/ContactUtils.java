@@ -192,7 +192,7 @@ public class ContactUtils
 		
 		if ( !number.startsWith( "+351" ) )
 		{
-			number = "+351" + number;
+			number = "+351 " + number;
 		}
 		
 		if ( contactEntry.getPhoneNumbers() != null )

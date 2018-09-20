@@ -71,9 +71,9 @@ public class ContactUtils
 				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefonePai() );
 			}
+			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
 			updateEmail( contactEntry, "Mãe", elemento.getEmailMae(), importContactReport );
 			updateEmail( contactEntry, "Pai", elemento.getEmailPai(), importContactReport );
-			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
 		}
 		updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
 		updateUserDefinedField( contactEntry, "NIF", elemento.getNif(), importContactReport );

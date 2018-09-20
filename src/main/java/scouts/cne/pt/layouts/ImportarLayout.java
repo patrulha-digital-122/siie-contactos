@@ -53,6 +53,7 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.component.ImportContactsReportLayout;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
+import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.ContactVCardUtils;
@@ -343,16 +344,16 @@ public class ImportarLayout extends Panel implements HasLogger
 						break;
 					default:
 						getLogger().error(	"Erro a processar : {} | {} :: {}",
-								e.getContactEntry().getName().getFullName(),
+								entry.getName().getFullName(),
 								status.getCode(),
 								status.getReason() );
 						ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
 								TagCreator.b( String.valueOf( status.getCode() ) ),
 								TagCreator.text( " | Motivo: " ),
 								TagCreator.b( status.getReason() ) ) );
-						e.getImportContactReport().getLstLabels().clear();
-						e.getImportContactReport().getLstLabels().add( join.render() );
-						listErro.add( e );
+						ElementoImport elementoImport = new ElementoImport(entry, null, new ImportContactReport(getNinFromContactEntry( entry.getUserDefinedFields() )));
+						elementoImport.getImportContactReport().getLstLabels().add( join.render() );
+						listErro.add( elementoImport );
 						break;
 					}
 				}

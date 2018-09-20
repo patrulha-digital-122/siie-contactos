@@ -54,6 +54,7 @@ public class ContactUtils
 		updateNome( contactEntry, elemento, importContactReport );
 		updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel(), importContactReport );
 		updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone(), importContactReport );
+		updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
 		if ( elemento.getCategoria().equals( SECCAO.DIRIGENTES ) )
 		{
 			listTelefonesExistentes.add( elemento.getTelemovel() );
@@ -71,11 +72,10 @@ public class ContactUtils
 				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefonePai() );
 			}
-			updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
+			// updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
 			updateEmail( contactEntry, "Mãe", elemento.getEmailMae(), importContactReport );
 			updateEmail( contactEntry, "Pai", elemento.getEmailPai(), importContactReport );
 		}
-		updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
 		updateUserDefinedField( contactEntry, "NIF", elemento.getNif(), importContactReport );
 		updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento(), importContactReport );
 		updatePais( contactEntry, "Mãe", elemento.getNomeMae(), importContactReport );

@@ -344,7 +344,7 @@ public class ImportarLayout extends Panel implements HasLogger
 						break;
 					default:
 						getLogger().error(	"Erro a processar : {} | {} :: {}",
-								entry.getName().getFullName(),
+								entry.getPlainTextContent(),
 								status.getCode(),
 								status.getReason() );
 						ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),

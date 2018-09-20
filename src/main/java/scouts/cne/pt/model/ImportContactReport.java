@@ -10,21 +10,32 @@ import java.util.List;
 public class ImportContactReport
 {
 	private final List< String > lstLabels;
+	private final String nin;
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 */
-	public ImportContactReport()
+	public ImportContactReport(String nin)
 	{
 		super();
 		lstLabels = new LinkedList<>();
+		this.nin = nin;
 	}
+
+	/**
+	 * @return the nin
+	 */
+	public String getNin() {
+		return nin;
+	}
+
+
 
 	public void addNewField( String field, String strNewValue )
 	{
-		lstLabels.add( String.format( "<p> Adicionado %s:<strong>%s</strong></p>", field, strNewValue ) );
+		lstLabels.add( String.format( "<p> Adicionado %s: <strong>%s</strong></p>", field, strNewValue ) );
 	}
 
 	public void addUpdateField( String field, String strOldValue, String strNewValue )
@@ -34,7 +45,7 @@ public class ImportContactReport
 
 	/**
 	 * Getter for lstLabels
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @return the lstLabels {@link List<String>}
 	 */

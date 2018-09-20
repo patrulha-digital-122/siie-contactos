@@ -9,12 +9,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
+
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.utils.ValidationUtils;
@@ -106,22 +110,22 @@ public class SIIEService implements Serializable
 					Cell cell = cellIterator.next();
 					switch ( cell.getCellType() )
 					{
-						case Cell.CELL_TYPE_BLANK:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-							break;
-						case Cell.CELL_TYPE_STRING:
-						case Cell.CELL_TYPE_FORMULA:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getStringCellValue() );
-							break;
-						case Cell.CELL_TYPE_BOOLEAN:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
-							break;
-						case Cell.CELL_TYPE_NUMERIC:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
-							break;
-						default:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-							break;
+					case Cell.CELL_TYPE_BLANK:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+						break;
+					case Cell.CELL_TYPE_STRING:
+					case Cell.CELL_TYPE_FORMULA:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), StringUtils.trimToEmpty( cell.getStringCellValue() ));
+						break;
+					case Cell.CELL_TYPE_BOOLEAN:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
+						break;
+					case Cell.CELL_TYPE_NUMERIC:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
+						break;
+					default:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+						break;
 					}
 				}
 				if ( elemento.isActivo() )

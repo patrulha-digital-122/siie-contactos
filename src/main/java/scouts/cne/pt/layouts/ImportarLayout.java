@@ -11,9 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.commons.lang3.StringUtils;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
@@ -43,6 +46,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.component.ImportContactsReportLayout;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -68,7 +72,7 @@ public class ImportarLayout extends Panel implements HasLogger
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @author anco62000465 2018-09-17
 	 * @param button
 	 */
@@ -93,8 +97,8 @@ public class ImportarLayout extends Panel implements HasLogger
 		FileDownloader fileDownloader = new FileDownloader( myResource );
 		fileDownloader.extend( btImportacaoVCard );
 		Label labelFooter = new Label(
-		      						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
-		      						ContentMode.HTML );
+				"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
+				ContentMode.HTML );
 		Button btnFaq = new Button( "Ajuda - FAQ" );
 		btnFaq.addClickListener( new ClickListener()
 		{
@@ -111,7 +115,7 @@ public class ImportarLayout extends Panel implements HasLogger
 		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btImportacaoVCard, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btnFaq, Alignment.MIDDLE_CENTER );
-		
+
 		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
 		verticalLayout.setMargin( true );
@@ -121,7 +125,7 @@ public class ImportarLayout extends Panel implements HasLogger
 
 	/**
 	 * Getter for btImportacao
-	 * 
+	 *
 	 * @author anco62000465 2018-09-17
 	 * @return the btImportacao {@link Button}
 	 */
@@ -132,7 +136,7 @@ public class ImportarLayout extends Panel implements HasLogger
 
 	/**
 	 * Getter for btImportacaoVCard
-	 * 
+	 *
 	 * @author anco62000465 2018-09-17
 	 * @return the btImportacaoVCard {@link Button}
 	 */
@@ -231,9 +235,9 @@ public class ImportarLayout extends Panel implements HasLogger
 						{
 							elementosExistentes.put( strNIN, contactEntry );
 							getLogger().info(	"Actualizar :: {} - {}:{}",
-												contactEntry.getName().getFullName().getValue(),
-												userDefinedField.getKey(),
-												userDefinedField.getValue() );
+									contactEntry.getName().getFullName().getValue(),
+									userDefinedField.getKey(),
+									userDefinedField.getValue() );
 						}
 					}
 				}
@@ -257,7 +261,7 @@ public class ImportarLayout extends Panel implements HasLogger
 				ElementoImport elementoImport;
 				ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
 				elementoImport = ContactUtils.convertElementoToContactEntry( elemento, elementoProcessar, listTelefonesExistentes );
-				importReports.put( elementoImport.getContactEntry().getId(), elementoImport );
+				importReports.put( elementoImport.getImportContactReport().getNin(), elementoImport );
 				if ( elementoProcessar != null )
 				{
 					// Actualizar
@@ -319,28 +323,32 @@ public class ImportarLayout extends Panel implements HasLogger
 			{
 				// Submit the batch request to the server.
 				ContactFeed responseFeed =
-								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+						contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
 				// Check the status of each operation.
 				for ( ContactEntry entry : responseFeed.getEntries() )
 				{
 					// String batchId = BatchUtils.getBatchId( entry );
 					BatchStatus status = BatchUtils.getBatchStatus( entry );
+					ElementoImport e = importReports.get( getNinFromContactEntry(entry.getUserDefinedFields()) );
 					switch ( status.getCode() )
 					{
-						case 200:
-							listOk.add( importReports.get( entry.getId() ) );
-							break;
-						case 201:
-							listCriados.add( importReports.get( entry.getId() ) );
-							break;
-						case 304:
-							listNaoModificado.add( importReports.get( entry.getId() ) );
-							break;
-						default:
-							System.out.println( "Erro a processar :" + entry.getPlainTextContent() + " | " + status.getCode() + ": " +
-								status.getReason() );
-							listErro.add( importReports.get( entry.getId() ) );
-							break;
+					case 200:
+						getLogger().error("Contacto actualizado: {}", entry.getName().getFullName());
+						listOk.add( e );
+						break;
+					case 201:
+						getLogger().error("Contacto criados: {}", entry.getName().getFullName());
+						e.getContactEntry().setId(entry.getId());
+						listCriados.add( e );
+						break;
+					case 304:
+						getLogger().error("Contacto não actualizados: {}", entry.getName().getFullName());
+						listNaoModificado.add( e );
+						break;
+					default:
+						getLogger().error("Erro a processar : {} | {} :: {}", entry.getPlainTextContent(), status.getCode(), status.getReason());
+						listErro.add( e );
+						break;
 					}
 				}
 			}
@@ -358,6 +366,15 @@ public class ImportarLayout extends Panel implements HasLogger
 		catch ( Exception e )
 		{
 			showError( e );
+		}
+	}
+
+	private String getNinFromContactEntry(List<UserDefinedField> userDefinedFields) {
+		Optional<UserDefinedField> findFirst = userDefinedFields.stream().filter( p ->  StringUtils.equals( p.getKey(), "NIN" )).findFirst();
+		if(findFirst.isPresent()) {
+			return findFirst.get().getValue();
+		} else {
+			return null;
 		}
 	}
 
@@ -398,7 +415,7 @@ public class ImportarLayout extends Panel implements HasLogger
 				}
 				// Adicionar aos contactos pessoais
 				if ( ( entry.getSystemGroup() != null ) && ( entry.getSystemGroup().getId() != null ) &&
-					"Contacts".equals( entry.getSystemGroup().getId() ) )
+						"Contacts".equals( entry.getSystemGroup().getId() ) )
 				{
 					myContacts = entry;
 				}

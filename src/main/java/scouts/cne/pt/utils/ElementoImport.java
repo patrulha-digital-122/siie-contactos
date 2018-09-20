@@ -1,6 +1,7 @@
 package scouts.cne.pt.utils;
 
 import com.google.gdata.data.contacts.ContactEntry;
+
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ImportContactReport;
 
@@ -16,7 +17,7 @@ public class ElementoImport
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @param contactEntry
 	 * @param elemento
@@ -31,7 +32,7 @@ public class ElementoImport
 
 	/**
 	 * Getter for contactEntry
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @return the contactEntry {@link ContactEntry}
 	 */
@@ -42,7 +43,7 @@ public class ElementoImport
 
 	/**
 	 * Getter for elemento
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @return the elemento {@link Elemento}
 	 */
@@ -53,7 +54,7 @@ public class ElementoImport
 
 	/**
 	 * Getter for importContactReport
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @return the importContactReport {@link ImportContactReport}
 	 */
@@ -64,17 +65,26 @@ public class ElementoImport
 
 	/**
 	 * The <b>getHTMLImportContactReport</b> method returns {@link String}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-19
 	 * @return
 	 */
 	public String getHTMLImportContactReport()
 	{
 		StringBuilder sb = new StringBuilder();
-		// sb.append( String.format( "<p><strong>Google contacts:</strong> <a href=\"%s\"
-		// target=\"_blank\">LINK</a></p>",
-		// getContactEntry().getSelfLink().getHref() ) );
-		getImportContactReport().getLstLabels().forEach( l -> sb.append( l ) );
+		String id = getContactEntry().getId();
+		String[] split = id.split("base/");
+		if (split.length > 1) {
+			sb.append(String.format(
+					"<p><strong>Link para Google contacts:</strong> <a href=\"https://www.google.com/contacts/?cplus=0#contact/%s\" target=\"_blank\">LINK</a></p>",
+					split[1]));
+		}
+
+		if (getImportContactReport().getLstLabels().isEmpty()) {
+			sb.append("<p><strong>Sem alterações</strong></p>");
+		} else {
+			getImportContactReport().getLstLabels().forEach(l -> sb.append(l));
+		}
 		return sb.toString();
 	}
 }

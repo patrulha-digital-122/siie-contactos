@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import javax.mail.internet.InternetAddress;
 
 /**
@@ -14,7 +15,7 @@ import javax.mail.internet.InternetAddress;
 public class Elemento implements Comparable< Elemento >
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long	serialVersionUID	= 5041677499210798668L;
 	HashMap< String, Object >	listaAtributos;
@@ -120,7 +121,7 @@ public class Elemento implements Comparable< Elemento >
 		sb.append( getAtributo( "cp3" ).toString() );
 		sb.append( " " );
 		sb.append( getAtributo( "codigopostal" ).toString() );
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	/**

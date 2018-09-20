@@ -1,10 +1,15 @@
 package scouts.cne.pt.utils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.swing.text.MaskFormatter;
+
 import org.apache.commons.lang3.StringUtils;
+
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
 import com.google.gdata.data.contacts.Gender;
@@ -20,6 +25,7 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
+
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
@@ -31,10 +37,11 @@ import scouts.cne.pt.model.SECCAO;
 public class ContactUtils
 {
 	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
-																ContactEntry contactEntry,
-																Set< String > listTelefonesExistentes )
+			ContactEntry contactEntry,
+			Set< String > listTelefonesExistentes )
 	{
-		ImportContactReport importContactReport = new ImportContactReport();
+		ImportContactReport importContactReport = new ImportContactReport(elemento.getNin());
+
 		if ( contactEntry == null )
 		{
 			contactEntry = new ContactEntry();
@@ -118,7 +125,7 @@ public class ContactUtils
 		// Localidade
 		if ( StringUtils.isNotBlank( elemento.getLocalidade() ) )
 		{
-			if ( !alreadyHave || structuredPostalAddress.getCity() == null )
+			if ( !alreadyHave || (structuredPostalAddress.getCity() == null) )
 			{
 				structuredPostalAddress.setCity( new City( elemento.getLocalidade() ) );
 				importContactReport.addNewField( "Cidade", elemento.getLocalidade() );
@@ -132,9 +139,11 @@ public class ContactUtils
 		// Morada
 		if ( StringUtils.isNotBlank( elemento.getMorada() ) )
 		{
-			if ( !alreadyHave || structuredPostalAddress.getFormattedAddress() == null )
+			if ( !alreadyHave || (structuredPostalAddress.getFormattedAddress() == null) )
 			{
-				structuredPostalAddress.setFormattedAddress( new FormattedAddress( elemento.getMorada() ) );
+				FormattedAddress formattedAddress = new FormattedAddress( elemento.getMorada() );
+				structuredPostalAddress.setFormattedAddress( formattedAddress );
+
 				importContactReport.addNewField( "Morada", elemento.getMorada() );
 			}
 			else if ( !StringUtils.equalsIgnoreCase( structuredPostalAddress.getFormattedAddress().getValue(), elemento.getMorada() ) )
@@ -146,7 +155,7 @@ public class ContactUtils
 		// Codigo postal
 		if ( StringUtils.isNotBlank( elemento.getCodigoPostal() ) )
 		{
-			if ( !alreadyHave || structuredPostalAddress.getPostcode() == null )
+			if ( !alreadyHave || (structuredPostalAddress.getPostcode() == null) )
 			{
 				structuredPostalAddress.setPostcode( new PostCode( elemento.getCodigoPostal() ) );
 				importContactReport.addNewField( "Código Postal", elemento.getCodigoPostal() );
@@ -189,21 +198,18 @@ public class ContactUtils
 		{
 			return;
 		}
-		
-		if ( !number.startsWith( "+351" ) )
-		{
-			number = "+351 " + number;
-		}
-		
+		number = convertPhoneNumber(number);
+
 		if ( contactEntry.getPhoneNumbers() != null )
 		{
 			for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
 			{
 				if ( ( phoneNumber.getLabel() != null ) && phoneNumber.getLabel().equals( lable ) )
 				{
-					if ( !StringUtils.equals( number, phoneNumber.getPhoneNumber() ) )
+					String previousPhoneNumber = convertPhoneNumber(phoneNumber.getPhoneNumber());
+					if ( !StringUtils.equals( number, previousPhoneNumber ) )
 					{
-						importContactReport.addUpdateField( lable, phoneNumber.getPhoneNumber(), number );
+						importContactReport.addUpdateField( lable, previousPhoneNumber, number );
 						phoneNumber.setPhoneNumber( number );
 					}
 					return;
@@ -237,11 +243,22 @@ public class ContactUtils
 		{
 			name = new Name();
 			contactEntry.setName( name );
+			FullName fullName = new FullName();
+			fullName.setValue( elemento.getNome() );
+			name.setFullName( fullName );
 			importContactReport.addNewField( "Nome", elemento.getNome() );
+			return;
 		}
-		FullName fullName = new FullName();
-		fullName.setValue( elemento.getNome() );
-		name.setFullName( fullName );
+
+		FullName fullName = name.getFullName();
+		if(fullName == null) {
+			name.setFullName(new FullName());
+		}
+
+		if (!StringUtils.equals(elemento.getNome().trim(), name.getFullName().getValue())) {
+			importContactReport.addUpdateField("Nome", name.getFullName().getValue(), elemento.getNome());
+			name.getFullName().setValue(elemento.getNome());
+		}
 	}
 
 	private static void updateEmail( ContactEntry contactEntry, String lable, String strEmail, ImportContactReport importContactReport )
@@ -324,5 +341,29 @@ public class ContactUtils
 		relation.setValue( name );
 		contactEntry.getRelations().add( relation );
 		importContactReport.addNewField( "Nome " + lable, name );
+	}
+
+	public static String convertPhoneNumber(String phoneNumber) {
+		if(StringUtils.isBlank(phoneNumber)) {
+			return "";
+		}
+
+		phoneNumber = phoneNumber.replace(" ", "");
+		if (phoneNumber.length() > 9) {
+			phoneNumber = phoneNumber.substring(phoneNumber.length() - 9);
+		} else if (phoneNumber.length() < 9) {
+			return "";
+		}
+
+		String phoneMask= "+351 ### ### ####";
+		MaskFormatter maskFormatter;
+		try {
+			maskFormatter = new MaskFormatter(phoneMask);
+			maskFormatter.setValueContainsLiteralCharacters(false);
+			return maskFormatter.valueToString(phoneNumber);
+		} catch (ParseException e) {
+
+		}
+		return "";
 	}
 }

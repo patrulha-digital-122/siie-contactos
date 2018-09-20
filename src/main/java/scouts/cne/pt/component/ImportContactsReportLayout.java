@@ -2,11 +2,14 @@ package scouts.cne.pt.component;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
+
+import j2html.TagCreator;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.utils.ElementoImport;
 
@@ -19,23 +22,23 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 	private static final long serialVersionUID = 6350206714629945520L;
 
 	public ImportContactsReportLayout(	List< ElementoImport > listOk,
-										List< ElementoImport > listCriados,
-										List< ElementoImport > listErro,
-										List< ElementoImport > listNaoModificado )
+			List< ElementoImport > listCriados,
+			List< ElementoImport > listErro,
+			List< ElementoImport > listNaoModificado )
 	{
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
 		verticalLayout.setSpacing( true );
 		List< ElementoImport > listSemAlteracoes =
-						listOk.stream().filter( p -> p.getImportContactReport().getLstLabels().isEmpty() ).collect( Collectors.toList() );
+				listOk.stream().filter( p -> p.getImportContactReport().getLstLabels().isEmpty() ).collect( Collectors.toList() );
 		listOk.removeAll( listSemAlteracoes );
 		processList( listOk, "Contactos actualizados com sucesso: <b>" + listOk.size() + "</b>", verticalLayout );
 		processList( listCriados, "Contactos criados com sucessos: <b>" + listCriados.size() + "</b>", verticalLayout );
 		processErrorListWithoutChanges( listErro, "Contactos com erros: <font color=\"red\"><b>" + listErro.size() + "</b></font>", verticalLayout );
 		processList(	listNaoModificado,
-						"Contactos sem alterações: <font color=\"red\"><b>" + listNaoModificado.size() + "</b></font>",
-						verticalLayout );
-		processListWithoutChanges( listSemAlteracoes, "Contactos sem alterações:" + listNaoModificado.size(), verticalLayout );
+				"Contactos sem alterações: <font color=\"red\"><b>" + listNaoModificado.size() + "</b></font>",
+				verticalLayout );
+		processListWithoutChanges( listSemAlteracoes, "Contactos sem alterações: " + listSemAlteracoes.size(), verticalLayout );
 		setContent( verticalLayout );
 	}
 
@@ -58,7 +61,7 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 			accordion.setTabCaptionsAsHtml( true );
 			for ( ElementoImport elementoImport : list )
 			{
-				if ( elementoImport != null && !elementoImport.getImportContactReport().getLstLabels().isEmpty() )
+				if ( (elementoImport != null) && !elementoImport.getImportContactReport().getLstLabels().isEmpty() )
 				{
 					final Label label = new Label( elementoImport.getHTMLImportContactReport(), ContentMode.HTML );
 					final VerticalLayout layout = new VerticalLayout( label );
@@ -76,10 +79,11 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 		{
 			Panel panel = new Panel( strLabelTitle );
 			VerticalLayout verticalLayoutWithoutChanges = new VerticalLayout();
+			panel.setContent(verticalLayoutWithoutChanges);
 			for ( ElementoImport elementoImport : list )
 			{
 				StringBuilder sb = new StringBuilder();
-				sb.append( elementoImport.getElemento().getNome() );
+				sb.append( TagCreator.b(elementoImport.getElemento().getNome()).render() );
 				sb.append( " - " );
 				sb.append( elementoImport.getHTMLGoogleContactLink() );
 				verticalLayoutWithoutChanges.addComponent( new Label( sb.toString(), ContentMode.HTML ) );
@@ -89,9 +93,9 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 	}
 
 	/**
-	 * 
+	 *
 	 * The <b>processErrorListWithoutChanges</b> method returns {@link void}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-20
 	 * @param list
 	 * @param strLabelTitle
@@ -106,7 +110,7 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 			for ( ElementoImport elementoImport : list )
 			{
 				verticalLayoutWithoutChanges
-								.addComponent( new Label( elementoImport.getImportContactReport().getLstLabels().get( 0 ), ContentMode.HTML ) );
+				.addComponent( new Label( elementoImport.getImportContactReport().getLstLabels().get( 0 ), ContentMode.HTML ) );
 			}
 			verticalLayout.addComponent( panel );
 		}

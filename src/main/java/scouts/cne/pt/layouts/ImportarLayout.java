@@ -14,7 +14,9 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.commons.lang3.StringUtils;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
@@ -44,6 +46,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
@@ -233,10 +236,6 @@ public class ImportarLayout extends Panel implements HasLogger
 						if ( elementosParaImportar.containsKey( strNIN ) )
 						{
 							elementosExistentes.put( strNIN, contactEntry );
-							getLogger().info(	"Actualizar :: {} - {}:{}",
-									contactEntry.getName().getFullName().getValue(),
-									userDefinedField.getKey(),
-									userDefinedField.getValue() );
 						}
 					}
 				}
@@ -320,7 +319,7 @@ public class ImportarLayout extends Panel implements HasLogger
 			{
 				// Submit the batch request to the server.
 				ContactFeed responseFeed =
-								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+						contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
 				// Check the status of each operation.
 				for ( ContactEntry entry : responseFeed.getEntries() )
 				{
@@ -329,32 +328,32 @@ public class ImportarLayout extends Panel implements HasLogger
 					ElementoImport e = importReports.get( getNinFromContactEntry( entry.getUserDefinedFields() ) );
 					switch ( status.getCode() )
 					{
-						case 200:
-							getLogger().error( "Contacto actualizado: {}", entry.getName().getFullName() );
-							listOk.add( e );
-							break;
-						case 201:
-							getLogger().error( "Contacto criados: {}", entry.getName().getFullName() );
-							e.getContactEntry().setId( entry.getId() );
-							listCriados.add( e );
-							break;
-						case 304:
-							getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
-							listNaoModificado.add( e );
-							break;
-						default:
-							getLogger().error(	"Erro a processar : {} | {} :: {}",
-												e.getContactEntry().getName().getFullName(),
-												status.getCode(),
-												status.getReason() );
-							ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
-																				TagCreator.b( String.valueOf( status.getCode() ) ),
-																				TagCreator.text( " | Motivo: " ),
-																				TagCreator.b( status.getReason() ) ) );
-							e.getImportContactReport().getLstLabels().clear();
-							e.getImportContactReport().getLstLabels().add( join.render() );
-							listErro.add( e );
-							break;
+					case 200:
+						getLogger().error( "Contacto actualizado: {}", entry.getName().getFullName() );
+						listOk.add( e );
+						break;
+					case 201:
+						getLogger().error( "Contacto criados: {}", entry.getName().getFullName() );
+						e.getContactEntry().setId( entry.getId() );
+						listCriados.add( e );
+						break;
+					case 304:
+						getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
+						listNaoModificado.add( e );
+						break;
+					default:
+						getLogger().error(	"Erro a processar : {} | {} :: {}",
+								e.getContactEntry().getName().getFullName(),
+								status.getCode(),
+								status.getReason() );
+						ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
+								TagCreator.b( String.valueOf( status.getCode() ) ),
+								TagCreator.text( " | Motivo: " ),
+								TagCreator.b( status.getReason() ) ) );
+						e.getImportContactReport().getLstLabels().clear();
+						e.getImportContactReport().getLstLabels().add( join.render() );
+						listErro.add( e );
+						break;
 					}
 				}
 			}

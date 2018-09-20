@@ -1,7 +1,7 @@
 package scouts.cne.pt.utils;
 
 import com.google.gdata.data.contacts.ContactEntry;
-
+import j2html.TagCreator;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ImportContactReport;
 
@@ -72,18 +72,29 @@ public class ElementoImport
 	public String getHTMLImportContactReport()
 	{
 		StringBuilder sb = new StringBuilder();
-		String id = getContactEntry().getId();
-		String[] split = id.split("base/");
-		if (split.length > 1) {
-			sb.append(String.format(
-					"<p><strong>Link para Google contacts:</strong> <a href=\"https://www.google.com/contacts/?cplus=0#contact/%s\" target=\"_blank\">LINK</a></p>",
-					split[1]));
-		}
+		sb.append( getHTMLGoogleContactLink() );
+		getImportContactReport().getLstLabels().forEach( l -> sb.append( l ) );
+		return sb.toString();
+	}
 
-		if (getImportContactReport().getLstLabels().isEmpty()) {
-			sb.append("<p><strong>Sem alterações</strong></p>");
-		} else {
-			getImportContactReport().getLstLabels().forEach(l -> sb.append(l));
+	public String getHTMLGoogleContactLink()
+	{
+		String id = getContactEntry().getId();
+		String[] split = id.split( "base/" );
+		StringBuilder sb = new StringBuilder();
+		if ( split.length > 1 )
+		{
+			sb.append( TagCreator
+							.p( TagCreator.join(	TagCreator.text( "Link para Google Contacts: " ),
+													TagCreator.a( "versão antiga" )
+																	.withHref( String.format(	"https://www.google.com/contacts/?cplus=0#contact/%s",
+																								split[ 1 ] ) )
+																	.withTarget( "_blank" ),
+													TagCreator.text( " | " ),
+													TagCreator.a( "versão nova" )
+																	.withHref( String.format( "https://contacts.google.com/contact/%s", split[ 1 ] ) )
+																	.withTarget( "_blank" ) ) )
+							.render() );
 		}
 		return sb.toString();
 	}

@@ -2,6 +2,8 @@ package scouts.cne.pt.model;
 
 import java.util.LinkedList;
 import java.util.List;
+import j2html.TagCreator;
+import j2html.tags.ContainerTag;
 
 /**
  * @author anco62000465 2018-09-19
@@ -9,15 +11,15 @@ import java.util.List;
  */
 public class ImportContactReport
 {
-	private final List< String > lstLabels;
-	private final String nin;
+	private final List< String >	lstLabels;
+	private final String			nin;
 
 	/**
 	 * constructor
 	 *
 	 * @author anco62000465 2018-09-19
 	 */
-	public ImportContactReport(String nin)
+	public ImportContactReport( String nin )
 	{
 		super();
 		lstLabels = new LinkedList<>();
@@ -27,20 +29,29 @@ public class ImportContactReport
 	/**
 	 * @return the nin
 	 */
-	public String getNin() {
+	public String getNin()
+	{
 		return nin;
 	}
 
-
-
 	public void addNewField( String field, String strNewValue )
 	{
-		lstLabels.add( String.format( "<p> Adicionado %s: <strong>%s</strong></p>", field, strNewValue ) );
+		ContainerTag p = TagCreator.p( TagCreator.join(	TagCreator.text( "Adicionado " ),
+														TagCreator.text( field ),
+														TagCreator.text( ": " ),
+														TagCreator.strong( strNewValue ) ) );
+		lstLabels.add( p.render() );
 	}
 
 	public void addUpdateField( String field, String strOldValue, String strNewValue )
 	{
-		lstLabels.add( String.format( "<p> Alterado %s de <strong>%s</strong> para <strong>%s</strong> </p>", field, strNewValue, strOldValue ) );
+		ContainerTag p = TagCreator.p( TagCreator.join(	TagCreator.text( "Alterado " ),
+														TagCreator.text( field ),
+														TagCreator.text( " de " ),
+														TagCreator.strong( strOldValue ),
+														TagCreator.text( " para " ),
+														TagCreator.strong( strNewValue ) ) );
+		lstLabels.add( p.render() );
 	}
 
 	/**

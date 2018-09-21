@@ -18,6 +18,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
@@ -30,7 +31,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 	 *
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
-	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.GMAIL_SEND, GmailScopes.GMAIL_LABELS );
+	private static final List< String >	SCOPES				= Arrays.asList( GmailScopes.GMAIL_SEND, SheetsScopes.SPREADSHEETS_READONLY );
 
 	public GoogleServerAuthenticationBean()
 	{

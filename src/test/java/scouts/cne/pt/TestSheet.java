@@ -21,7 +21,7 @@ public class TestSheet
 	public static void main( String[] args )
 	{
 		final String spreadsheetId = "1vJ8o-7JkmgpYvtd-Xx3t3ycJGbtY2iv0e4eVUpRzrQ4";
-		final String range = "Folha1!A2:E";
+		final String range = "A1:E";
 		GoogleServerAuthenticationBean googleServerAuthentication = new GoogleServerAuthenticationBean();
 		try
 		{

@@ -64,18 +64,29 @@ public class MyUI extends UI implements HasLogger
 	{
 		getLogger().info( "EmbedId " + getEmbedId() );
 
-		String parameter = vaadinRequest.getParameter( "siieFile" );
-		if ( parameter != null )
+		String siieLocalFile = vaadinRequest.getParameter( "siieFile" );
+		if ( siieLocalFile != null )
 		{
-			siieService.setFile( new File( parameter ) );
-			try
+			new Thread( () ->
 			{
-				siieService.loadExploradoresSIIE();
-			}
-			catch ( Exception e )
+				siieService.setFile( new File( siieLocalFile ) );
+				try
+				{
+					siieService.loadExploradoresSIIE();
+				}
+				catch ( Exception e )
+				{
+					showError( e );
+				}
+			} ).start();
+		}
+		String siieGDriveFile = vaadinRequest.getParameter( "sheetId" );
+		if ( siieGDriveFile != null )
+		{
+			new Thread( () ->
 			{
-				showError( e );
-			}
+				siieService.loadElementosGDrive( siieGDriveFile );
+			} ).start();
 		}
 		
 		VerticalLayout mainLayout = new VerticalLayout();
@@ -100,7 +111,7 @@ public class MyUI extends UI implements HasLogger
 		{
 			e.printStackTrace();
 		}
-		if ( parameter == null )
+		if ( siieLocalFile == null )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
 			mainLayout.addComponent( uploadFileLayout );

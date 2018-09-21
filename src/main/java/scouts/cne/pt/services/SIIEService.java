@@ -89,7 +89,7 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				googleServerAuthentication.getSheetsService();
 				Sheets service = googleServerAuthentication.getSheetsService();
-				ValueRange response = service.spreadsheets().values().get( spreadsheetId, range ).execute();
+				ValueRange response = service.spreadsheets().values().get( spreadsheetId, "" ).execute();
 				List< List< Object > > values = response.getValues();
 				if ( values == null || values.isEmpty() )
 				{

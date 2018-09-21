@@ -33,6 +33,7 @@ import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
 import scouts.cne.pt.layouts.ImportarLayout;
 import scouts.cne.pt.layouts.UploadFileLayout;
+import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.services.SIIEService;
 
 @SpringUI
@@ -49,6 +50,8 @@ public class MyUI extends UI implements HasLogger
 	private static final long				serialVersionUID	= -8505226283440302479L;
 	VaadinResponse							currentResponse;
 	public static String					AUTH_COOKIE_CODE	= "CODE";
+	public static String					parameterSIIE_FILE	= "siieFile";
+	public static String					parameterSHEET_ID	= "sheetId";
 	private BrowserWindowOpener				browserWindowOpener;
 	@Autowired
 	SIIEService								siieService;
@@ -86,7 +89,7 @@ public class MyUI extends UI implements HasLogger
 			e.printStackTrace();
 		}
 		// process parameters
-		String siieLocalFile = vaadinRequest.getParameter( "siieFile" );
+		String siieLocalFile = vaadinRequest.getParameter( parameterSIIE_FILE );
 		if ( siieLocalFile != null )
 		{
 			new Thread( () ->
@@ -103,12 +106,19 @@ public class MyUI extends UI implements HasLogger
 				}
 			} ).start();
 		}
-		String siieGDriveFile = vaadinRequest.getParameter( "sheetId" );
+		String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
 		if ( siieGDriveFile != null )
 		{
 			new Thread( () ->
 			{
-				siieService.loadElementosGDrive( siieGDriveFile );
+				try
+				{
+					siieService.loadElementosGDrive( siieGDriveFile );
+				}
+				catch ( SIIIEImporterException e )
+				{
+					showError( e );
+				}
 				elementosLayout.refreshGrids();
 			} ).start();
 		}

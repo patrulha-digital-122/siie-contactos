@@ -30,6 +30,7 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
+import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.utils.ValidationUtils;
 
 @SpringComponent
@@ -64,7 +65,7 @@ public class SIIEService implements Serializable, HasLogger
 		this.file = file;
 	}
 
-	public void loadElementosGDrive( String id )
+	public void loadElementosGDrive( String id ) throws SIIIEImporterException
 	{
 		try
 		{
@@ -78,6 +79,7 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				spreadsheetId = m.group( 1 );
 			}
+
 			/**
 			 * Sheet ID [#&]gid=([0-9]+)
 			 */
@@ -89,11 +91,25 @@ public class SIIEService implements Serializable, HasLogger
 				iSheetid = Integer.parseInt( m.group( 1 ) );
 			}
 
+			if ( StringUtils.isBlank( spreadsheetId ) || iSheetid < 1 )
+			{
+				throw new SIIIEImporterException(
+								"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
+			}
 			if ( StringUtils.isNotBlank( spreadsheetId ) )
 			{
 				googleServerAuthentication.getSheetsService();
 				Sheets service = googleServerAuthentication.getSheetsService();
-				Spreadsheet spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
+				Spreadsheet spreadsheet = null;
+				try
+				{
+					spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
+				}
+				catch ( Exception e )
+				{
+					throw new SIIIEImporterException(
+									"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
+				}
 				String strSheetName = null;
 				for ( Sheet sheet : spreadsheet.getSheets() )
 				{

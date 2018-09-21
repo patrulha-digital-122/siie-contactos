@@ -1,5 +1,6 @@
 package scouts.cne.pt;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,9 +63,24 @@ public class MyUI extends UI implements HasLogger
 	protected void init( VaadinRequest vaadinRequest )
 	{
 		getLogger().info( "EmbedId " + getEmbedId() );
+
+		String parameter = vaadinRequest.getParameter( "siieFile" );
+		if ( parameter != null )
+		{
+			siieService.setFile( new File( parameter ) );
+			try
+			{
+				siieService.loadExploradoresSIIE();
+			}
+			catch ( Exception e )
+			{
+				showError( e );
+			}
+		}
+		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing( true );
-		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
+		mainLayout.setMargin( new MarginInfo( true, true, false, true ) );
 		mainLayout.setSizeFull();
 		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		setContent( mainLayout );
@@ -84,10 +100,12 @@ public class MyUI extends UI implements HasLogger
 		{
 			e.printStackTrace();
 		}
-
-		UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
-		mainLayout.addComponent( uploadFileLayout );
-		mainLayout.setExpandRatio( uploadFileLayout, 1 );
+		if ( parameter == null )
+		{
+			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
+			mainLayout.addComponent( uploadFileLayout );
+			mainLayout.setExpandRatio( uploadFileLayout, 1 );
+		}
 
 		mainLayout.addComponent( elementosLayout );
 		mainLayout.setExpandRatio( elementosLayout, 4 );
@@ -161,5 +179,7 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtImportacao().setEnabled( iSelecionados > 0 );
 		importarLayout.getBtImportacaoVCard().setCaption( String.format( "Download como VCard (%d)", iSelecionados ) );
 		importarLayout.getBtImportacaoVCard().setEnabled( iSelecionados > 0 );
+		importarLayout.getBtnCopyMailingList().setCaption( String.format( "Mailing list (%d)", iSelecionados ) );
+		importarLayout.getBtnCopyMailingList().setEnabled( iSelecionados > 0 );
 	}
 }

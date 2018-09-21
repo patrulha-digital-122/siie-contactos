@@ -17,6 +17,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.sheets.v4.Sheets;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
@@ -80,7 +81,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	}
 	
-	private GoogleCredential authorizeServer()
+	private GoogleCredential authorizeServer( String fileName )
 	{
 		String strGoogleClientSecrets = System.getenv().get( "GOOGLE_SERVER_SECRETS" );
 		if ( StringUtils.isNotBlank( strGoogleClientSecrets ) )
@@ -95,7 +96,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 			}
 		}
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		try ( InputStream in = classLoader.getResourceAsStream( "server_secrets.json" ) )
+		try ( InputStream in = classLoader.getResourceAsStream( fileName ) )
 		{
 			try
 			{
@@ -115,7 +116,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	public Gmail getGmailService() throws GeneralSecurityException, IOException
 	{
-		GoogleCredential authorizeServer = authorizeServer();
+		GoogleCredential authorizeServer = authorizeServer( "server_secrets.json" );
 		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
 		// if ( authorizeServer.refreshToken() )
 		// {
@@ -128,5 +129,13 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 		// }
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
 						.setApplicationName( "siie-importer-server" ).build();
+	}
+
+	public Sheets getSheetsService() throws GeneralSecurityException, IOException
+	{
+		GoogleCredential authorizeServer = authorizeServer( "cnhefe-122-f7ec41cad405.json" );
+		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
+		return new Sheets.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
+						.setApplicationName( authorizeServer.getServiceAccountProjectId() ).build();
 	}
 }

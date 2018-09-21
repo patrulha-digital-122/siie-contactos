@@ -14,9 +14,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
@@ -46,11 +44,11 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.component.ImportContactsReportLayout;
+import scouts.cne.pt.component.MailingListWindow;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ImportContactReport;
@@ -68,6 +66,7 @@ public class ImportarLayout extends Panel implements HasLogger
 	private static final long	serialVersionUID	= -6763770502811814642L;
 	private Button btImportacao;
 	private Button					btImportacaoVCard;
+	private final Button				btnCopyMailingList;
 	private EscolherElementosLayout	elementosLayout;
 	private GoogleAuthenticationBean	googleAuthentication;
 
@@ -113,10 +112,25 @@ public class ImportarLayout extends Panel implements HasLogger
 				getUI().addWindow( new FAQWindow( btnFaq.getCaption() ) );
 			}
 		} );
-		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard, btnFaq );
+		
+		btnCopyMailingList = new Button( "Mailing list (0)" );
+		btnCopyMailingList.setEnabled( false );
+		btnCopyMailingList.addClickListener( new ClickListener()
+		{
+			private static final long serialVersionUID = 8916961174824919931L;
+
+			@Override
+			public void buttonClick( ClickEvent event )
+			{
+				getUI().addWindow( new MailingListWindow( elementosLayout.getElementosSelecionados().values() ) );
+			}
+		} );
+		
+		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btImportacaoVCard, Alignment.MIDDLE_CENTER );
+		horizontalLayoutBtn.setComponentAlignment( btnCopyMailingList, Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.setComponentAlignment( btnFaq, Alignment.MIDDLE_CENTER );
 
 		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
@@ -146,6 +160,17 @@ public class ImportarLayout extends Panel implements HasLogger
 	public Button getBtImportacaoVCard()
 	{
 		return btImportacaoVCard;
+	}
+
+	/**
+	 * Getter for btnCopyMailingList
+	 * 
+	 * @author anco62000465 2018-09-21
+	 * @return the btnCopyMailingList {@link Button}
+	 */
+	public Button getBtnCopyMailingList()
+	{
+		return btnCopyMailingList;
 	}
 
 	/**

@@ -109,6 +109,7 @@ public class SIIEService implements Serializable, HasLogger
 			String strSheetName = null;
 			for ( Sheet sheet : spreadsheet.getSheets() )
 			{
+				getLogger().info( "Check sheetId: {} == {}", sheet.getProperties().getSheetId(), iSheetid );
 				if ( sheet.getProperties().getSheetId() == iSheetid )
 				{
 					strSheetName = sheet.getProperties().getTitle();

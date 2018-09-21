@@ -79,7 +79,6 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				spreadsheetId = m.group( 1 );
 			}
-
 			/**
 			 * Sheet ID [#&]gid=([0-9]+)
 			 */
@@ -90,94 +89,93 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				iSheetid = Integer.parseInt( m.group( 1 ) );
 			}
-
 			if ( StringUtils.isBlank( spreadsheetId ) || iSheetid < 1 )
 			{
 				throw new SIIIEImporterException(
 								"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
 			}
-			if ( StringUtils.isNotBlank( spreadsheetId ) )
+			googleServerAuthentication.getSheetsService();
+			Sheets service = googleServerAuthentication.getSheetsService();
+			Spreadsheet spreadsheet = null;
+			try
 			{
-				googleServerAuthentication.getSheetsService();
-				Sheets service = googleServerAuthentication.getSheetsService();
-				Spreadsheet spreadsheet = null;
-				try
+				spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
+			}
+			catch ( Exception e )
+			{
+				throw new SIIIEImporterException(
+								"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
+			}
+			String strSheetName = null;
+			for ( Sheet sheet : spreadsheet.getSheets() )
+			{
+				if ( sheet.getProperties().getSheetId() == iSheetid )
 				{
-					spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
+					strSheetName = sheet.getProperties().getTitle();
+					break;
 				}
-				catch ( Exception e )
+			}
+			if ( strSheetName != null )
+			{
+				getLogger().info( "Start reading sheet {} on spreadsheet {}", strSheetName, spreadsheetId );
+				ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
+				List< List< Object > > values = response.getValues();
+				HashMap< Integer, String > headerRow = new HashMap<>();
+				Iterator< List< Object > > rowIterator = values.iterator();
+				// read header
+				List< Object > rowHeader = rowIterator.next();
+				for ( int i = 0; i < rowHeader.size(); i++ )
 				{
-					throw new SIIIEImporterException(
-									"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
-				}
-				String strSheetName = null;
-				for ( Sheet sheet : spreadsheet.getSheets() )
-				{
-					if ( sheet.getProperties().getSheetId() == iSheetid )
+					String value = Objects.toString( rowHeader.get( i ), "" );
+					value = value.replace( " ", "" );
+					value = value.replace( "-", "" );
+					value = value.replace( ".", "" );
+					value = value.toLowerCase();
+					value = ValidationUtils.removeAcentos( value );
+					if ( headerRow.containsValue( value ) )
 					{
-						strSheetName = sheet.getProperties().getTitle();
-						break;
-					}
-				}
-				if ( strSheetName != null )
-				{
-					getLogger().info( "Start reading sheet {} on spreadsheet {}", strSheetName, spreadsheetId );
-					ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
-					List< List< Object > > values = response.getValues();
-					HashMap< Integer, String > headerRow = new HashMap<>();
-					Iterator< List< Object > > rowIterator = values.iterator();
-					// read header
-					List< Object > rowHeader = rowIterator.next();
-					for ( int i = 0; i < rowHeader.size(); i++ )
-					{
-						String value = Objects.toString( rowHeader.get( i ), "" );
-						value = value.replace( " ", "" );
-						value = value.replace( "-", "" );
-						value = value.replace( ".", "" );
-						value = value.toLowerCase();
-						value = ValidationUtils.removeAcentos( value );
-						if ( headerRow.containsValue( value ) )
+						if ( !headerRow.containsValue( value + "pai" ) )
 						{
-							if ( !headerRow.containsValue( value + "pai" ) )
-							{
-								headerRow.put( i, value + "pai" );
-							}
-							else if ( !headerRow.containsValue( value + "mae" ) )
-							{
-								headerRow.put( i, value + "mae" );
-							}
-							else
-							{
-								headerRow.put( i, value + "encedu" );
-							}
+							headerRow.put( i, value + "pai" );
+						}
+						else if ( !headerRow.containsValue( value + "mae" ) )
+						{
+							headerRow.put( i, value + "mae" );
 						}
 						else
 						{
-							headerRow.put( i, value );
+							headerRow.put( i, value + "encedu" );
 						}
 					}
-					while ( rowIterator.hasNext() )
+					else
 					{
-						List< Object > row = rowIterator.next();
-						Elemento elemento = new Elemento();
-						for ( int i = 0; i < row.size(); i++ )
-						{
-							elemento.getListaAtributos().put( headerRow.get( i ), Objects.toString( row.get( i ), "" ) );
-						}
-						if ( elemento.isActivo() )
-						{
-							map.put( elemento.getNin(), elemento );
-							mapSeccaoElemento.get( elemento.getCategoria() ).add( elemento );
-						}
+						headerRow.put( i, value );
 					}
-					getLogger().info( "Readed {} contacts.", map.size() );
 				}
-
+				while ( rowIterator.hasNext() )
+				{
+					List< Object > row = rowIterator.next();
+					Elemento elemento = new Elemento();
+					for ( int i = 0; i < row.size(); i++ )
+					{
+						elemento.getListaAtributos().put( headerRow.get( i ), Objects.toString( row.get( i ), "" ) );
+					}
+					if ( elemento.isActivo() )
+					{
+						map.put( elemento.getNin(), elemento );
+						mapSeccaoElemento.get( elemento.getCategoria() ).add( elemento );
+					}
+				}
+				getLogger().info( "Readed {} contacts.", map.size() );
+			}
+			else
+			{
+				throw new SIIIEImporterException( "Folha não encontrada. " );
 			}
 		}
 		catch ( GeneralSecurityException | IOException e )
 		{
-			e.printStackTrace();
+			showError( e );
 		}
 	}
 

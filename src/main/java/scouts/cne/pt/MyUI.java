@@ -26,6 +26,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -126,15 +127,20 @@ public class MyUI extends UI implements HasLogger
 		if ( siieLocalFile == null )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
-			mainLayout.addComponent( uploadFileLayout );
-			mainLayout.setExpandRatio( uploadFileLayout, 1 );
+			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
+			verticalSplitPanel.setSplitPosition( 20 );
+			
+			VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
+			verticalSplitPanel2.setSplitPosition( 85 );
+
+			mainLayout.addComponent( verticalSplitPanel2 );
 		}
-
-		mainLayout.addComponent( elementosLayout );
-		mainLayout.setExpandRatio( elementosLayout, 4 );
-
-		mainLayout.addComponent( importarLayout );
-		mainLayout.setExpandRatio( importarLayout, 1 );
+		else
+		{
+			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( elementosLayout, importarLayout );
+			verticalSplitPanel.setSplitPosition( 85 );
+			mainLayout.addComponent( verticalSplitPanel );
+		}
 
 		//
 		VaadinService.getCurrent().setSystemMessagesProvider( new SystemMessagesProvider()

@@ -10,6 +10,7 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FinishedEvent;
@@ -76,6 +77,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
+		verticalLayout.setSpacing( false );
 		verticalLayout.setMargin( new MarginInfo( false, true ) );
 		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		verticalLayout.addComponents( label, upload );
@@ -95,7 +97,10 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		textField.setWidth( "100%" );
 		Button button = new Button( "Upload" );
 		button.setResponsive( true );
-		Label labelAjuda = new Label();
+		TextArea labelAjuda = new TextArea();
+		labelAjuda.setEnabled( false );
+		labelAjuda.setWidth( "100%" );
+		labelAjuda.setVisible( false );
 		button.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = -1136938770611062489L;
@@ -106,13 +111,16 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 				try
 				{
 					siieService.loadElementosGDrive( textField.getValue() );
+					escolherElementosLayout.refreshGrids();
+					Page.getCurrent().setUriFragment( "/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue(), false );
+					labelAjuda.setValue( "No futuro poderá utilizar este url: " + Page.getCurrent().getLocation() );
 				}
 				catch ( SIIIEImporterException e )
 				{
 					showError( e );
+					labelAjuda.setValue( e.getMessage() );
 				}
-				Page.getCurrent().setUriFragment( "/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue(), false );
-				labelAjuda.setValue( "No futuro poderá utilizar este url: " + Page.getCurrent().getLocation() );
+				labelAjuda.setVisible( true );
 			}
 		} );
 		
@@ -121,8 +129,8 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		verticalLayout.setMargin( new MarginInfo( false, true ) );
 		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		verticalLayout.addComponent( textField );
-		verticalLayout.addComponent( button );
 		verticalLayout.addComponent( labelAjuda );
+		verticalLayout.addComponent( button );
 		return verticalLayout;
 	}
 

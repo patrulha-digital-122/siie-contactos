@@ -24,6 +24,7 @@ import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.renderers.DateRenderer;
 import scouts.cne.pt.MyUI;
@@ -42,13 +43,16 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 	/**
 	 *
 	 */
-	private static final long					serialVersionUID	= 5253307196908771291L;
-	private TabSheet							tabsheetContactos;
+	private static final long				serialVersionUID	= 5253307196908771291L;
+	private TabSheet						tabsheetContactos;
 	private Map< SECCAO, List< Elemento > >	mapSelecionados;
-	private int									iSelecionados		= 0;
-	private String								embedId;
+	private int								iSelecionados		= 0;
+	private String							embedId;
 	@Value( "classpath:L.jpg" )
-	private Resource							resourceLobitos;
+	private Resource						resourceLobitos;
+	private Map< SECCAO, Grid< Elemento > >	mapGrid;
+	private Map< SECCAO, Tab >				mapTabs;
+	private SIIEService						siieService;
 
 	/**
 	 * constructor
@@ -62,12 +66,15 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 		super( "Segundo Passo - Escolher os elementos a importar para os contactos do Google" );
 		setSizeFull();
 		mapSelecionados = new EnumMap<>( SECCAO.class );
+		mapGrid = new HashMap<>();
+		mapTabs = new HashMap<>();
 		for ( SECCAO component : SECCAO.getListaSeccoes() )
 		{
 			mapSelecionados.put( component, new ArrayList<>() );
 		}
 		this.embedId = embedId;
-		setContent( getLayout( siieService, embedId ) );
+		this.siieService = siieService;
+		setContent( getLayout( embedId ) );
 	}
 
 	/**
@@ -81,7 +88,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 		return tabsheetContactos;
 	}
 
-	private VerticalLayout getLayout( SIIEService siieService, String embedId )
+	private VerticalLayout getLayout( String embedId )
 	{
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
@@ -90,26 +97,26 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		tabsheetContactos = new TabSheet();
 		tabsheetContactos.setSizeFull();
-		prencherTabela( siieService );
+		createTable();
 		verticalLayout.addComponent( tabsheetContactos );
 		return verticalLayout;
 	}
 
-	public void prencherTabela( SIIEService siieService )
+	private void createTable()
 	{
 		String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();
 		tabsheetContactos.removeAllComponents();
 		for ( SECCAO seccao : SECCAO.getListaSeccoes() )
 		{
 			// Tab dos Lobitos
-			VerticalLayout tabLobitos = new VerticalLayout();
-			tabLobitos.setSizeFull();
+			VerticalLayout verticalLayout = new VerticalLayout();
+			verticalLayout.setSizeFull();
 			Grid< Elemento > grid = new Grid<>();
+			mapGrid.put( seccao, grid );
 			grid.setSizeFull();
 			grid.removeAllColumns();
 			grid.setSelectionMode( SelectionMode.MULTI );
-			grid.setItems( siieService.getMapSeccaoElemento().get( seccao ) );
-			tabLobitos.addComponent( grid );
+			verticalLayout.addComponent( grid );
 			grid.addColumn( Elemento::getNome ).setCaption( "Nome" );
 			grid.addColumn( Elemento::getNin ).setCaption( "NIN" );
 			grid.addColumn( Elemento::getEmail ).setCaption( "Email" );
@@ -145,16 +152,33 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 					}
 				}
 			} );
-			String nomeTab = seccao.getNome() + " - " + siieService.getMapSeccaoElemento().get( seccao ).size();
+			String nomeTab = seccao.getNome() + " - 0";
 			try
 			{
 				FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg" ) );
-				tabsheetContactos.addTab( tabLobitos, nomeTab, resource );
+				mapTabs.put( seccao, tabsheetContactos.addTab( verticalLayout, nomeTab, resource ) );
 			}
 			catch ( Exception e )
 			{
 				getLogger().error( e.getMessage(), e );
-				tabsheetContactos.addTab( tabLobitos, nomeTab );
+				mapTabs.put( seccao, tabsheetContactos.addTab( verticalLayout, nomeTab ) );
+			}
+
+		}
+	}
+
+	public void refreshGrids()
+	{
+		for ( Entry< SECCAO, List< Elemento > > entry : siieService.getMapSeccaoElemento().entrySet() )
+		{
+			SECCAO seccao = entry.getKey();
+			List< Elemento > items = siieService.getMapSeccaoElemento().get( seccao );
+			Grid< Elemento > grid = mapGrid.get( seccao );
+			if ( grid != null )
+			{
+				grid.setItems( items );
+				grid.getDataProvider().refreshAll();
+				mapTabs.get( seccao ).setCaption( seccao.getNome() + " - " + items.size() );
 			}
 		}
 	}

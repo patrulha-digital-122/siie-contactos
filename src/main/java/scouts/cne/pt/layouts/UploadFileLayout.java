@@ -63,7 +63,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 			// upload.setReceiver( fileUploader );
 			siieService.setFile( fileUploader.getFile() );
 			siieService.loadExploradoresSIIE();
-			escolherElementosLayout.prencherTabela( siieService );
+			escolherElementosLayout.refreshGrids();
 		}
 		catch ( Exception e )
 		{

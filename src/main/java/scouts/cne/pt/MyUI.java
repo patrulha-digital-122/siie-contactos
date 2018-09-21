@@ -63,32 +63,6 @@ public class MyUI extends UI implements HasLogger
 	protected void init( VaadinRequest vaadinRequest )
 	{
 		getLogger().info( "EmbedId " + getEmbedId() );
-
-		String siieLocalFile = vaadinRequest.getParameter( "siieFile" );
-		if ( siieLocalFile != null )
-		{
-			new Thread( () ->
-			{
-				siieService.setFile( new File( siieLocalFile ) );
-				try
-				{
-					siieService.loadExploradoresSIIE();
-				}
-				catch ( Exception e )
-				{
-					showError( e );
-				}
-			} ).start();
-		}
-		String siieGDriveFile = vaadinRequest.getParameter( "sheetId" );
-		if ( siieGDriveFile != null )
-		{
-			new Thread( () ->
-			{
-				siieService.loadElementosGDrive( siieGDriveFile );
-			} ).start();
-		}
-		
 		VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing( true );
 		mainLayout.setMargin( new MarginInfo( true, true, false, true ) );
@@ -111,6 +85,34 @@ public class MyUI extends UI implements HasLogger
 		{
 			e.printStackTrace();
 		}
+		// process parameters
+		String siieLocalFile = vaadinRequest.getParameter( "siieFile" );
+		if ( siieLocalFile != null )
+		{
+			new Thread( () ->
+			{
+				siieService.setFile( new File( siieLocalFile ) );
+				try
+				{
+					siieService.loadExploradoresSIIE();
+					elementosLayout.refreshGrids();
+				}
+				catch ( Exception e )
+				{
+					showError( e );
+				}
+			} ).start();
+		}
+		String siieGDriveFile = vaadinRequest.getParameter( "sheetId" );
+		if ( siieGDriveFile != null )
+		{
+			new Thread( () ->
+			{
+				siieService.loadElementosGDrive( siieGDriveFile );
+				elementosLayout.refreshGrids();
+			} ).start();
+		}
+		
 		if ( siieLocalFile == null )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );

@@ -134,7 +134,7 @@ public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 
 	public Sheets getSheetsService() throws GeneralSecurityException, IOException
 	{
-		GoogleCredential authorizeServer = authorizeServer( "cnhefe-122-f7ec41cad405.json" );
+		GoogleCredential authorizeServer = authorizeServer( "server_secrets.json" );
 		getLogger().info( "App name: {}", authorizeServer.getServiceAccountProjectId() );
 		return new Sheets.Builder( getHttpTransport(), getJsonfactry(), authorizeServer )
 						.setApplicationName( authorizeServer.getServiceAccountProjectId() ).build();

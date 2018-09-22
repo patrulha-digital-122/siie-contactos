@@ -14,18 +14,21 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
+
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
@@ -67,6 +70,11 @@ public class SIIEService implements Serializable, HasLogger
 
 	public void loadElementosGDrive( String id ) throws SIIIEImporterException
 	{
+		map = new HashMap<>();
+		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		{
+			entry.getValue().clear();
+		}
 		try
 		{
 			/**
@@ -89,10 +97,10 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				iSheetid = Integer.parseInt( m.group( 1 ) );
 			}
-			if ( StringUtils.isBlank( spreadsheetId ) || iSheetid < 1 )
+			if ( StringUtils.isBlank( spreadsheetId ) || (iSheetid < 1) )
 			{
 				throw new SIIIEImporterException(
-								"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
+						"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
 			}
 			googleServerAuthentication.getSheetsService();
 			Sheets service = googleServerAuthentication.getSheetsService();
@@ -104,13 +112,13 @@ public class SIIEService implements Serializable, HasLogger
 			catch ( Exception e )
 			{
 				throw new SIIIEImporterException(
-								"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
+						"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
 			}
 			String strSheetName = null;
 			for ( Sheet sheet : spreadsheet.getSheets() )
 			{
 				getLogger().info( "Check sheetId: {} == {}", sheet.getProperties().getSheetId(), iSheetid );
-				if ( sheet.getProperties().getSheetId() == iSheetid )
+				if ( sheet.getProperties().getSheetId().equals(iSheetid ))
 				{
 					strSheetName = sheet.getProperties().getTitle();
 					break;
@@ -237,23 +245,23 @@ public class SIIEService implements Serializable, HasLogger
 					Cell cell = cellIterator.next();
 					switch ( cell.getCellType() )
 					{
-						case Cell.CELL_TYPE_BLANK:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-							break;
-						case Cell.CELL_TYPE_STRING:
-						case Cell.CELL_TYPE_FORMULA:
-							elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
-																StringUtils.trimToEmpty( cell.getStringCellValue() ) );
-							break;
-						case Cell.CELL_TYPE_BOOLEAN:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
-							break;
-						case Cell.CELL_TYPE_NUMERIC:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
-							break;
-						default:
-							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-							break;
+					case Cell.CELL_TYPE_BLANK:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+						break;
+					case Cell.CELL_TYPE_STRING:
+					case Cell.CELL_TYPE_FORMULA:
+						elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
+								StringUtils.trimToEmpty( cell.getStringCellValue() ) );
+						break;
+					case Cell.CELL_TYPE_BOOLEAN:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
+						break;
+					case Cell.CELL_TYPE_NUMERIC:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
+						break;
+					default:
+						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+						break;
 					}
 				}
 				if ( elemento.isActivo() )

@@ -16,6 +16,7 @@ import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FinishedEvent;
 import com.vaadin.ui.Upload.FinishedListener;
 import com.vaadin.ui.VerticalLayout;
+
 import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.listeners.FileUploader;
@@ -47,7 +48,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		this.siieService = siieService;
 		this.escolherElementosLayout = escolherElementosLayout;
 		this.fileUploader = new FileUploader( siieService );
-		
+
 		VerticalLayout uploadFromGoogleDriveLayout = getUploadFromGoogleDriveLayout();
 		VerticalLayout uploadFromLocalFileLayout = getUploadFromLocalFileLayout();
 
@@ -74,7 +75,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		upload.addFailedListener( fileUploader );
 		upload.addFinishedListener( this );
 		upload.setReceiver( fileUploader );
-		
+
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
 		verticalLayout.setSpacing( false );
@@ -86,13 +87,13 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 	}
 	/**
 	 * The <b>getUploadFromGoogleDriveLayout</b> method returns {@link VerticalLayout}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-21
 	 * @return
 	 */
 	private VerticalLayout getUploadFromGoogleDriveLayout()
 	{
-		
+
 		TextField textField = new TextField( "Colocar link para ficheiro do google drive" );
 		textField.setWidth( "100%" );
 		Button button = new Button( "Upload" );
@@ -112,7 +113,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 				{
 					siieService.loadElementosGDrive( textField.getValue() );
 					escolherElementosLayout.refreshGrids();
-					Page.getCurrent().setUriFragment( "/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue(), false );
+					Page.getCurrent().setLocation( "https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue() );
 					labelAjuda.setValue( "No futuro poderá utilizar este url: " + Page.getCurrent().getLocation() );
 				}
 				catch ( SIIIEImporterException e )
@@ -123,7 +124,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 				labelAjuda.setVisible( true );
 			}
 		} );
-		
+
 		VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
 		verticalLayout.setMargin( new MarginInfo( false, true ) );
@@ -136,7 +137,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.vaadin.ui.Upload.FinishedListener#uploadFinished(com.vaadin.ui.Upload.FinishedEvent)
 	 */
 	@Override

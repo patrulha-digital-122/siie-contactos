@@ -118,7 +118,6 @@ public class MyUI extends UI implements HasLogger
 				try
 				{
 					siieService.loadElementosGDrive( siieGDriveFile );
-					elementosLayout.refreshGrids();
 				}
 				catch ( SIIIEImporterException e )
 				{

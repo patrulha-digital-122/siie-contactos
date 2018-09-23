@@ -15,7 +15,6 @@ import com.vaadin.ui.Upload.FinishedEvent;
 import com.vaadin.ui.Upload.FinishedListener;
 import com.vaadin.ui.VerticalLayout;
 
-import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.SIIIEImporterException;
@@ -110,7 +109,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 				{
 					siieService.loadElementosGDrive( textField.getValue() );
 					escolherElementosLayout.refreshGrids();
-					labelAjuda.setValue( "No futuro poderá utilizar este url: https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue() );
+					//labelAjuda.setValue( "No futuro poderá utilizar este url: https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue() );
 				}
 				catch ( SIIIEImporterException e )
 				{

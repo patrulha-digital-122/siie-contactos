@@ -3,9 +3,11 @@ package scouts.cne.pt;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.leif.headertags.Meta;
 import org.vaadin.leif.headertags.MetaTags;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
@@ -28,6 +30,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
+
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
@@ -42,7 +45,7 @@ import scouts.cne.pt.services.SIIEService;
 @Title( "SIIE - importer" )
 // <meta name="google-site-verification" content="FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" />
 @MetaTags(
-{ @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
+		{ @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
 public class MyUI extends UI implements HasLogger
 {
 	/**
@@ -80,7 +83,7 @@ public class MyUI extends UI implements HasLogger
 		try
 		{
 			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
-							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
+					googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
 			browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
 			browserWindowOpener.extend( importarLayout.getBtImportacao() );
@@ -115,6 +118,7 @@ public class MyUI extends UI implements HasLogger
 				try
 				{
 					siieService.loadElementosGDrive( siieGDriveFile );
+					elementosLayout.refreshGrids();
 				}
 				catch ( SIIIEImporterException e )
 				{
@@ -123,13 +127,13 @@ public class MyUI extends UI implements HasLogger
 				elementosLayout.refreshGrids();
 			} ).start();
 		}
-		
+
 		if ( siieLocalFile == null )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
 			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
 			verticalSplitPanel.setSplitPosition( 20 );
-			
+
 			VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
 			verticalSplitPanel2.setSplitPosition( 85 );
 

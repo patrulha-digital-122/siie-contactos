@@ -1,6 +1,5 @@
 package scouts.cne.pt.layouts;
 
-import com.vaadin.server.Page;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -10,7 +9,6 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FinishedEvent;
@@ -98,8 +96,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		textField.setWidth( "100%" );
 		Button button = new Button( "Upload" );
 		button.setResponsive( true );
-		TextArea labelAjuda = new TextArea();
-		labelAjuda.setEnabled( false );
+		Label labelAjuda = new Label();
 		labelAjuda.setWidth( "100%" );
 		labelAjuda.setVisible( false );
 		button.addClickListener( new ClickListener()
@@ -113,8 +110,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 				{
 					siieService.loadElementosGDrive( textField.getValue() );
 					escolherElementosLayout.refreshGrids();
-					Page.getCurrent().setLocation( "https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue() );
-					labelAjuda.setValue( "No futuro poderá utilizar este url: " + Page.getCurrent().getLocation() );
+					labelAjuda.setValue( "No futuro poderá utilizar este url: https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" + textField.getValue() );
 				}
 				catch ( SIIIEImporterException e )
 				{

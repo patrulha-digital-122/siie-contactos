@@ -176,7 +176,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			btnPrevious.setEnabled( false );
 			btnNext.setEnabled( lstElementos.size() > 1 );
 		}
-		else if ( iElementCount >= lstElementos.size() )
+		if ( iElementCount >= lstElementos.size() )
 		{
 			btnPrevious.setEnabled( lstElementos.size() > 1 );
 			btnNext.setEnabled( false );

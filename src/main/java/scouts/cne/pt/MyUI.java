@@ -3,11 +3,9 @@ package scouts.cne.pt;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.leif.headertags.Meta;
 import org.vaadin.leif.headertags.MetaTags;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
@@ -30,7 +28,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
-
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
@@ -213,5 +210,6 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtImportacaoVCard().setEnabled( iSelecionados > 0 );
 		importarLayout.getBtnCopyMailingList().setCaption( String.format( "Mailing list (%d)", iSelecionados ) );
 		importarLayout.getBtnCopyMailingList().setEnabled( iSelecionados > 0 );
+		importarLayout.getBtnEmailer().setEnabled( iSelecionados > 0 );
 	}
 }

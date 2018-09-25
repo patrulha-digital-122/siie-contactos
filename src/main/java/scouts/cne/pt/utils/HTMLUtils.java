@@ -2,15 +2,18 @@ package scouts.cne.pt.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
-
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
+import j2html.TagCreator;
+import j2html.tags.ContainerTag;
+import j2html.tags.UnescapedText;
+import scouts.cne.pt.model.ElementoTags;
 
 public class HTMLUtils {
 
@@ -38,5 +41,26 @@ public class HTMLUtils {
 		Message message = new Message();
 		message.setRaw(encodedEmail);
 		return message;
+	}
+
+	public static String getDefaultEmail()
+	{
+		UnescapedText linhaOla = TagCreator.join(	TagCreator.text( "Olá " ),
+													TagCreator.text( ElementoTags.NOME.getTagReplace() ),
+													TagCreator.text( "," ),
+													TagCreator.br() );
+		UnescapedText linhaInicio = TagCreator.join(	TagCreator.text( "Com o inicio do ano escutista é altura de confirmar se os dados pessoais que temos estão actualizados. Por isso pedimos que nos informe se algum destes dados está incompleto/desactualizado:" ),
+		                                         	TagCreator.br() );
+		UnescapedText each = TagCreator.join( TagCreator
+						.ul( TagCreator.each(	Arrays.asList( ElementoTags.values() ),
+												e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
+																						TagCreator.text( e.getTagReplace() ) ) ) ) ) );
+		UnescapedText linhaDespedida = TagCreator.join(	TagCreator.text( "Obrigado. " ),
+													TagCreator.br(),
+														TagCreator.br(),
+													TagCreator.text( "Canhotas," ),
+													TagCreator.br() );
+		ContainerTag p = TagCreator.p( linhaOla, linhaInicio, each, linhaDespedida );
+		return p.render();
 	}
 }

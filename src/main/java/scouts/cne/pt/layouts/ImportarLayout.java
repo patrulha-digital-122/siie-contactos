@@ -31,7 +31,9 @@ import com.google.gdata.data.contacts.UserDefinedField;
 import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.FileDownloader;
+import com.vaadin.server.Page;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.shared.ui.ContentMode;
@@ -47,6 +49,7 @@ import com.vaadin.ui.Window;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.component.EmailerWindow;
 import scouts.cne.pt.component.ImportContactsReportLayout;
 import scouts.cne.pt.component.MailingListWindow;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -67,6 +70,7 @@ public class ImportarLayout extends Panel implements HasLogger
 	private Button btImportacao;
 	private Button					btImportacaoVCard;
 	private final Button				btnCopyMailingList;
+	private final Button				btnEmailer;
 	private EscolherElementosLayout	elementosLayout;
 	private GoogleAuthenticationBean	googleAuthentication;
 
@@ -126,12 +130,28 @@ public class ImportarLayout extends Panel implements HasLogger
 			}
 		} );
 		
-		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout( btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
+		btnEmailer = new Button( "Enviar email", VaadinIcons.MAILBOX );
+		btnEmailer.setEnabled( false );
+		btnEmailer.addClickListener( new ClickListener()
+		{
+			private static final long serialVersionUID = 8916961174824919931L;
+
+			@Override
+			public void buttonClick( ClickEvent event )
+			{
+				getUI().addWindow( new EmailerWindow( elementosLayout.getElementosSelecionados().values(), googleAuthentication ) );
+			}
+		} );
+		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout();
 		horizontalLayoutBtn.setWidth( "100%" );
-		horizontalLayoutBtn.setComponentAlignment( btImportacao, Alignment.MIDDLE_CENTER );
-		horizontalLayoutBtn.setComponentAlignment( btImportacaoVCard, Alignment.MIDDLE_CENTER );
-		horizontalLayoutBtn.setComponentAlignment( btnCopyMailingList, Alignment.MIDDLE_CENTER );
-		horizontalLayoutBtn.setComponentAlignment( btnFaq, Alignment.MIDDLE_CENTER );
+		horizontalLayoutBtn.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		horizontalLayoutBtn.addComponents( btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
+
+		if ( StringUtils.trimToEmpty( Page.getCurrent().getLocation().getQuery() ).contains( "emailer=true" ) )
+		{
+			horizontalLayoutBtn.addComponent( btnEmailer );
+		}
+
 
 		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
@@ -171,6 +191,17 @@ public class ImportarLayout extends Panel implements HasLogger
 	public Button getBtnCopyMailingList()
 	{
 		return btnCopyMailingList;
+	}
+
+	/**
+	 * Getter for btnEmailer
+	 * 
+	 * @author anco62000465 2018-09-25
+	 * @return the btnEmailer {@link Button}
+	 */
+	public Button getBtnEmailer()
+	{
+		return btnEmailer;
 	}
 
 	/**

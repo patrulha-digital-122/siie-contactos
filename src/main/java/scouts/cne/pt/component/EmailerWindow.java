@@ -116,6 +116,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private void initBtnEnviarEmail()
 	{
 		btnEnviarEmail = new Button( "Enviar email", VaadinIcons.MAILBOX );
+		btnEnviarEmail.setDisableOnClick( true );
 		btnEnviarEmail.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = -1006672708345973490L;
@@ -125,35 +126,41 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			{
 				try
 				{
+					String message = "?";
 					if ( chbEmailSplitted.getValue() )
 					{
-						sendSplittedEmail();
+						message = sendSplittedEmail();
 					}
 					else
 					{
-						sendOneEmail();
+						message = sendOneEmail();
 					}
 					
+					showInfo( message );
 				}
 				catch ( Exception e )
 				{
 					showError( e );
 					return;
 				}
+				btnEnviarEmail.setEnabled( true );
 			}
 
 			/**
 			 * The <b>sendSplittedEmail</b> method returns {@link void}
 			 * 
 			 * @author anco62000465 2018-09-26
+			 * @return
 			 * @throws GeneralSecurityException
 			 * @throws IOException
 			 * @throws UnsupportedEncodingException
 			 * @throws MessagingException
 			 */
-			private void sendSplittedEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
+			private String sendSplittedEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
 			{
 				Gmail service = googleAuthentication.getGmailService();
+				List< String > lstSentEmails = new ArrayList<>();
+				int iSentMailsCount = 0;
 				for ( Elemento elemento : lstElementos )
 				{
 					List< InternetAddress > lstEmails = new ArrayList<>();
@@ -177,8 +184,10 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 																		txtEmailSubject.getValue(),
 																		strHTMLEmail );
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
-					getLogger().info( "Enviado email: {}", message.getId() );
+					getLogger().info( "Enviado email: {}", message.toPrettyString() );
+					lstEmails.forEach( p -> lstSentEmails.add( p.getAddress() ) );
 				}
+				return "Enviado com sucesso " + iSentMailsCount + " emails para " + lstSentEmails.size() + " endereços.";
 			}
 
 			/**
@@ -186,12 +195,13 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			 * The <b>sendOneEmail</b> method returns {@link void}
 			 * 
 			 * @author anco62000465 2018-09-26
+			 * @return
 			 * @throws GeneralSecurityException
 			 * @throws IOException
 			 * @throws UnsupportedEncodingException
 			 * @throws MessagingException
 			 */
-			private void sendOneEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
+			private String sendOneEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
 			{
 				Gmail service = googleAuthentication.getGmailService();
 				List< InternetAddress > lstEmails = new ArrayList<>();
@@ -210,14 +220,20 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 						}
 					}
 				}
-				MimeMessage createEmail = HTMLUtils.createEmail(	null,
-																	null,
-																	lstEmails,
-																	"patrulha.digital.122@escutismo.pt",
-																	txtEmailSubject.getValue(),
-																	richTextArea.getValue() );
-				Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
-				getLogger().info( "Enviado email: {}", message.getId() );
+
+				if ( !lstEmails.isEmpty() )
+				{
+					MimeMessage createEmail = HTMLUtils.createEmail(	null,
+																		null,
+																		lstEmails,
+																		"patrulha.digital.122@escutismo.pt",
+																		txtEmailSubject.getValue(),
+																		richTextArea.getValue() );
+					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+					getLogger().info( "Enviado email: {}", message.toPrettyString() );
+					return "Email enviado com sucesso para " + lstEmails.size() + " endereços.";
+				}
+				return "Lista de emails vazia";
 			}
 		} );
 	}

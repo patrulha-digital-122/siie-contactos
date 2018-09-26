@@ -9,6 +9,16 @@
 			"question": "Proteção de Dados - RGPD ( Regulamento Geral Proteção de Dados )?",
 			"response": "<p>Esta aplica&ccedil;&atilde;o obedece &agrave; <strong><a title=\"Lei do Escuta\" href=\"https://www.escutismo.pt/dirigentes/associacao/lei-principios-e-promessa/lei-principios-e-promessa:78\" target=\"_blank\" rel=\"noopener\">Lei do Escuta</a></strong>.</p>",
 			"isHTML": true
+		},
+		{
+			"question": "Porque tenho de estar sempre a carregar no botão 'Autorizar' quando acedo a esta página?",
+			"response": "Para garantir que a aplicação não utiliza as permissões depois de sair da página. Por esse motivo poderá sempre remover as autorizações de acesso na sua conta google",
+			"isHTML": true
+		},
+		{
+			"question": "Porque só o botão 'Autorizar' está activo?",
+			"response": "Os botões que permitem importar os contactos e enviar emails só ficam visiveis depois de aplicação receber a autorização.",
+			"isHTML": false
 		}
 	]
 }

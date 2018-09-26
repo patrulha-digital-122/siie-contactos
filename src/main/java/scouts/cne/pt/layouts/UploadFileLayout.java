@@ -94,6 +94,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		TextField textField = new TextField( "Colocar link para ficheiro do google drive" );
 		textField.setWidth( "100%" );
 		Button button = new Button( "Upload", VaadinIcons.UPLOAD );
+		button.setDisableOnClick( true );
 		button.setResponsive( true );
 		Label labelAjuda = new Label();
 		labelAjuda.setWidth( "100%" );
@@ -117,6 +118,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 					labelAjuda.setValue( e.getMessage() );
 				}
 				labelAjuda.setVisible( true );
+				button.setEnabled( true );
 			}
 		} );
 

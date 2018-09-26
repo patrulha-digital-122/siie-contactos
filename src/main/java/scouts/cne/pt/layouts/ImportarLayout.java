@@ -33,7 +33,6 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.FileDownloader;
-import com.vaadin.server.Page;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.shared.ui.ContentMode;
@@ -93,11 +92,13 @@ public class ImportarLayout extends Panel implements HasLogger
 		btImportacao = new Button( "Iniciar Importação (0)", VaadinIcons.USER_STAR );
 		btImportacao.setEnabled( false );
 		btImportacao.setVisible( false );
+		btImportacao.setDisableOnClick( true );
 		btImportacao.addClickListener( event ->
 		{
 			if ( ( googleAuthentication.getRefreshToken() != null ) && ( elementosLayout.getSelecionados() > 0 ) )
 			{
 				importProcess();
+				btImportacao.setEnabled( true );
 			}
 		} );
 

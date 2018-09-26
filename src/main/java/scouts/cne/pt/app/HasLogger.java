@@ -2,7 +2,8 @@ package scouts.cne.pt.app;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.vaadin.icons.VaadinIcons;
+import com.vaadin.server.Page;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 
@@ -41,7 +42,10 @@ public interface HasLogger
 
 	default void showInfo( String e )
 	{
-		Notification.show( "Info", e, Type.HUMANIZED_MESSAGE );
+		Notification notification = new Notification( e, Type.HUMANIZED_MESSAGE );
+		notification.setDelayMsec( 10 * 1000 );
+		notification.setIcon( VaadinIcons.INFO );
+		notification.show( Page.getCurrent() );
 	}
 
 	default void showWarning( String e )

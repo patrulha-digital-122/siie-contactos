@@ -184,8 +184,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 																		txtEmailSubject.getValue(),
 																		strHTMLEmail );
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
-					getLogger().info( "Enviado email: {}", message.toPrettyString() );
+					getLogger().info( "Enviado SplittedEmail: {}", message.toPrettyString() );
 					lstEmails.forEach( p -> lstSentEmails.add( p.getAddress() ) );
+					iSentMailsCount++;
 				}
 				return "Enviado com sucesso " + iSentMailsCount + " emails para " + lstSentEmails.size() + " endereços.";
 			}

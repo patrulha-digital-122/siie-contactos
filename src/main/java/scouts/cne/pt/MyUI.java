@@ -221,7 +221,7 @@ public class MyUI extends UI implements HasLogger
 						}
 					}
 				}
-				getLogger().info( person.toPrettyString() );
+				getLogger().info( "Hello {} with email {}.", googleAuthentication.getUserFullName(), googleAuthentication.getUserEmail() );
 			}
 			catch ( Exception e )
 			{

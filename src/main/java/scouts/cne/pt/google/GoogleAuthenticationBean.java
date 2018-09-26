@@ -39,6 +39,8 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 					Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_PROFILE );
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private String						refreshToken		= null;
+	private String						userFullName		= "";
+	private String						userEmail			= "";
 	private GoogleCredential			googleCredential;
 
 	public GoogleAuthenticationBean()
@@ -184,5 +186,49 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	{
 		return new PeopleService.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() )
 						.build();
+	}
+
+	/**
+	 * Getter for userFullName
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @return the userFullName {@link String}
+	 */
+	public String getUserFullName()
+	{
+		return userFullName;
+	}
+
+	/**
+	 * Setter for userFullName
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @param userFullName the userFullName to set
+	 */
+	public void setUserFullName( String userFullName )
+	{
+		this.userFullName = userFullName;
+	}
+
+	/**
+	 * Getter for userEmail
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @return the userEmail {@link String}
+	 */
+	public String getUserEmail()
+	{
+		return userEmail;
+	}
+
+	/**
+	 * Setter for userEmail
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @param userEmail the userEmail to set
+	 */
+	public void setUserEmail( String userEmail )
+	{
+		this.userEmail = userEmail;
 	}
 }

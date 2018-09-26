@@ -26,7 +26,7 @@ public class HTMLUtils {
 	public static MimeMessage createEmail(	List< InternetAddress > listTo,
 											List< InternetAddress > listCc,
 											List< InternetAddress > listBcc,
-											String from,
+											InternetAddress fromInternetAddress,
 											String subject,
 											String bodyText )
 		throws MessagingException
@@ -34,7 +34,7 @@ public class HTMLUtils {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance( props, null );
 		MimeMessage email = new MimeMessage( session );
-		email.setFrom( new InternetAddress( from ) );
+		email.setFrom( fromInternetAddress );
 		if ( listTo != null )
 		{
 			listTo.forEach( p ->

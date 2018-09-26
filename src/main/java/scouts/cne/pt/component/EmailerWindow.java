@@ -14,8 +14,6 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.StringUtils;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
-import com.google.api.services.people.v1.PeopleService;
-import com.google.api.services.people.v1.model.Person;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
@@ -161,7 +159,6 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			private String sendSplittedEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
 			{
 				Gmail service = googleAuthentication.getGmailService();
-				// getFromInternetAddress();
 				List< String > lstSentEmails = new ArrayList<>();
 				int iSentMailsCount = 0;
 				for ( Elemento elemento : lstElementos )
@@ -183,7 +180,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 					MimeMessage createEmail = HTMLUtils.createEmail(	null,
 																		lstEmails,
 																		null,
-																		"patrulha.digital.122@escutismo.pt",
+																		getFromInternetAddress(),
 																		txtEmailSubject.getValue(),
 																		strHTMLEmail );
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
@@ -230,7 +227,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 					MimeMessage createEmail = HTMLUtils.createEmail(	null,
 																		null,
 																		lstEmails,
-																		"patrulha.digital.122@escutismo.pt",
+																		getFromInternetAddress(),
 																		txtEmailSubject.getValue(),
 																		richTextArea.getValue() );
 					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
@@ -240,11 +237,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				return "Lista de emails vazia";
 			}
 
-			private void getFromInternetAddress() throws GeneralSecurityException, IOException
+			private InternetAddress getFromInternetAddress() throws GeneralSecurityException, IOException
 			{
-				PeopleService peopleService = googleAuthentication.getPeopleService();
-				Person person = peopleService.people().get( "people/me" ).setPersonFields( "names,emailAddresses" ).execute();
-				getLogger().info( person.toPrettyString() );
+				return new InternetAddress( googleAuthentication.getUserEmail(), googleAuthentication.getUserFullName() );
 			}
 		} );
 	}

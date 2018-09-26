@@ -137,6 +137,12 @@
 			<artifactId>google-api-services-sheets</artifactId>
 			<version>v4-rev543-1.25.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-people -->
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-people</artifactId>
+			<version>v1-rev344-1.25.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.poi</groupId>

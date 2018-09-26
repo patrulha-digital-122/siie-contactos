@@ -1,5 +1,6 @@
 package scouts.cne.pt.layouts;
 
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -14,7 +15,6 @@ import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FinishedEvent;
 import com.vaadin.ui.Upload.FinishedListener;
 import com.vaadin.ui.VerticalLayout;
-
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.listeners.FileUploader;
 import scouts.cne.pt.model.SIIIEImporterException;
@@ -93,7 +93,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 
 		TextField textField = new TextField( "Colocar link para ficheiro do google drive" );
 		textField.setWidth( "100%" );
-		Button button = new Button( "Upload" );
+		Button button = new Button( "Upload", VaadinIcons.UPLOAD );
 		button.setResponsive( true );
 		Label labelAjuda = new Label();
 		labelAjuda.setWidth( "100%" );

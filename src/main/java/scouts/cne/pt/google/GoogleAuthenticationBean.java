@@ -19,6 +19,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
@@ -32,9 +33,10 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 *
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
-	private static final List< String >	SCOPES				= Arrays.asList( "https://www.google.com/m8/feeds/" );
+	private static final List< String >	SCOPES				= Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND );
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private String						refreshToken		= null;
+	private GoogleCredential			googleCredential;
 
 	public GoogleAuthenticationBean()
 	{
@@ -74,8 +76,6 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 
 	private GoogleClientSecrets getGoogleClientSecrets() throws IOException
 	{
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		InputStream in = classLoader.getResourceAsStream( "client_secrets.json" );
 		GoogleClientSecrets googleClientSecrets = new GoogleClientSecrets();
 		String strGoogleClientSecrets = System.getenv().get( "GOOGLE_CLIENT_SECRETS" );
 		if ( StringUtils.isNotBlank( strGoogleClientSecrets ) )
@@ -89,6 +89,8 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 				printError( e );
 			}
 		}
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		InputStream in = classLoader.getResourceAsStream( "client_secrets.json" );
 		try ( InputStreamReader inputStreamReader = new InputStreamReader( in ) )
 		{
 			googleClientSecrets = GoogleClientSecrets.load( getJsonfactry(), inputStreamReader );
@@ -102,7 +104,6 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 
 	public GoogleAuthorizationCodeRequestUrl getGoogleAuthorizationCodeRequestUrl( String sessionId ) throws GeneralSecurityException, IOException
 	{
-		// TODO Auto-generated method stub
 		return getGoogleAuthorizationCodeFlow().newAuthorizationUrl().setRedirectUri( getRedicetUrl() ).setState( sessionId );
 	}
 
@@ -138,26 +139,32 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 */
 	public GoogleCredential getGoogleCredentials() throws IOException
 	{
-		GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
-		GoogleCredential credential = null;
-		try
+		if ( googleCredential == null )
 		{
-			TokenResponse response = new AuthorizationCodeTokenRequest( getHttpTransport(), getJsonfactry(),
-					new GenericUrl( googleClientSecrets.getDetails().getTokenUri() ), refreshToken )
-					.setClientAuthentication( new ClientParametersAuthentication(
-							googleClientSecrets.getDetails().getClientId(),
-							googleClientSecrets.getDetails().getClientSecret() ) )
-					.setRedirectUri( getRedicetUrl() ).execute();
-			refreshToken = response.getRefreshToken();
-			// FirebaseManager.getInstance().addCode(uiId, googleClientSecrets.getDetails().getClientId(),
-			// refreshToken);
-			credential = new GoogleCredential().setAccessToken( response.getAccessToken() );
+			GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
+			try
+			{
+				TokenResponse response = new AuthorizationCodeTokenRequest( getHttpTransport(), getJsonfactry(),
+								new GenericUrl( googleClientSecrets.getDetails().getTokenUri() ), refreshToken )
+												.setClientAuthentication( new ClientParametersAuthentication(
+																googleClientSecrets.getDetails().getClientId(),
+																googleClientSecrets.getDetails().getClientSecret() ) )
+												.setRedirectUri( getRedicetUrl() ).execute();
+				refreshToken = response.getRefreshToken();
+				// FirebaseManager.getInstance().addCode(uiId, googleClientSecrets.getDetails().getClientId(),
+				// refreshToken);
+				googleCredential = new GoogleCredential().setAccessToken( response.getAccessToken() );
+			}
+			catch ( GeneralSecurityException | IOException e )
+			{
+				e.printStackTrace();
+			}
 		}
-		catch ( GeneralSecurityException | IOException e )
-		{
-			e.printStackTrace();
-		}
-		return credential;
+		return googleCredential;
 	}
 
+	public Gmail getGmailService() throws GeneralSecurityException, IOException
+	{
+		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() ).build();
+	}
 }

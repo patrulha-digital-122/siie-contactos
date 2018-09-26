@@ -1,9 +1,19 @@
 package scouts.cne.pt.component;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import org.apache.commons.lang3.StringUtils;
+import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.model.Message;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
@@ -11,14 +21,16 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.PopupView;
 import com.vaadin.ui.RichTextArea;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -41,9 +53,13 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private Button						btnPrevious;
 	private Button						btnNext;
 	private Label							labelPopUp;
+	private TextField					txtEmailSubject;
+	private CheckBox					chbWithParents;
+	private CheckBox					chbEmailSplitted;
 	private final VerticalLayout			mainLayout;
+	private final HorizontalLayout		bodyLayout;
 	private final List< Elemento >		lstElementos;
-	private int							iElementCount		= 0;
+	private int							iElementCount		= 1;
 
 	/**
 	 * constructor
@@ -53,7 +69,8 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	public EmailerWindow( Collection< Elemento > lst, GoogleAuthenticationBean googleAuthentication )
 	{
 		super();
-		lstElementos = new ArrayList<>( lst );
+		this.googleAuthentication = googleAuthentication;
+		lstElementos = new LinkedList<>( lst );
 		setCaption( "Enviar email's" );
 		setCaptionAsHtml( true );
 		center();
@@ -69,14 +86,26 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 
 		initRichText();
 		initListTag();
-		initBtnPreview();
 		initBtnEnviarEmail();
 
 		HorizontalSplitPanel editorLayout = getEditorLayout();
+		HorizontalLayout configLayout = getConfigLayout();
+		VerticalSplitPanel layoutPreviousNext = getLayoutPreviousNext();
+		initBtnPreview( editorLayout, layoutPreviousNext );
+		bodyLayout = new HorizontalLayout();
+		bodyLayout.setSizeFull();
+		bodyLayout.setMargin( false );
+		bodyLayout.setSpacing( false );
+		bodyLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		bodyLayout.addComponent( editorLayout );
+
 		HorizontalLayout buttonsLayout = getButtonsLayout();
-		mainLayout.addComponents( editorLayout, buttonsLayout );
-		mainLayout.setExpandRatio( editorLayout, 5 );
+		
+		mainLayout.addComponents( configLayout, bodyLayout, buttonsLayout );
+		mainLayout.setExpandRatio( configLayout, 1 );
+		mainLayout.setExpandRatio( bodyLayout, 6 );
 		mainLayout.setExpandRatio( buttonsLayout, 1 );
+		
 		setContent( mainLayout );
 	}
 
@@ -94,7 +123,101 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			@Override
 			public void buttonClick( ClickEvent event )
 			{
+				try
+				{
+					if ( chbEmailSplitted.getValue() )
+					{
+						sendSplittedEmail();
+					}
+					else
+					{
+						sendOneEmail();
+					}
+					
+				}
+				catch ( Exception e )
+				{
+					showError( e );
+					return;
+				}
+			}
 
+			/**
+			 * The <b>sendSplittedEmail</b> method returns {@link void}
+			 * 
+			 * @author anco62000465 2018-09-26
+			 * @throws GeneralSecurityException
+			 * @throws IOException
+			 * @throws UnsupportedEncodingException
+			 * @throws MessagingException
+			 */
+			private void sendSplittedEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
+			{
+				Gmail service = googleAuthentication.getGmailService();
+				for ( Elemento elemento : lstElementos )
+				{
+					List< InternetAddress > lstEmails = new ArrayList<>();
+					lstEmails.add( new InternetAddress( elemento.getEmailPrincipal(), elemento.getNome() ) );
+					if ( chbWithParents.getValue() )
+					{
+						if ( StringUtils.isNotBlank( elemento.getEmailMae() ) )
+						{
+							lstEmails.add( new InternetAddress( elemento.getEmailMae(), elemento.getNomeMae() ) );
+						}
+						if ( StringUtils.isNotBlank( elemento.getEmailPai() ) )
+						{
+							lstEmails.add( new InternetAddress( elemento.getEmailPai(), elemento.getNomePai() ) );
+						}
+					}
+					String strHTMLEmail = ElementoTags.convertHTML( richTextArea.getValue(), elemento );
+					MimeMessage createEmail = HTMLUtils.createEmail(	null,
+																		lstEmails,
+																		null,
+																		"patrulha.digital.122@escutismo.pt",
+																		txtEmailSubject.getValue(),
+																		strHTMLEmail );
+					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+					getLogger().info( "Enviado email: {}", message.getId() );
+				}
+			}
+
+			/**
+			 * 
+			 * The <b>sendOneEmail</b> method returns {@link void}
+			 * 
+			 * @author anco62000465 2018-09-26
+			 * @throws GeneralSecurityException
+			 * @throws IOException
+			 * @throws UnsupportedEncodingException
+			 * @throws MessagingException
+			 */
+			private void sendOneEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
+			{
+				Gmail service = googleAuthentication.getGmailService();
+				List< InternetAddress > lstEmails = new ArrayList<>();
+				for ( Elemento elemento : lstElementos )
+				{
+					lstEmails.add( new InternetAddress( elemento.getEmailPrincipal(), elemento.getNome() ) );
+					if ( chbWithParents.getValue() )
+					{
+						if ( StringUtils.isNotBlank( elemento.getEmailMae() ) )
+						{
+							lstEmails.add( new InternetAddress( elemento.getEmailMae(), elemento.getNomeMae() ) );
+						}
+						if ( StringUtils.isNotBlank( elemento.getEmailPai() ) )
+						{
+							lstEmails.add( new InternetAddress( elemento.getEmailPai(), elemento.getNomePai() ) );
+						}
+					}
+				}
+				MimeMessage createEmail = HTMLUtils.createEmail(	null,
+																	null,
+																	lstEmails,
+																	"patrulha.digital.122@escutismo.pt",
+																	txtEmailSubject.getValue(),
+																	richTextArea.getValue() );
+				Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+				getLogger().info( "Enviado email: {}", message.getId() );
 			}
 		} );
 	}
@@ -117,21 +240,30 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	 * The <b>initBtnPreview</b> method returns {@link void}
 	 * 
 	 * @author anco62000465 2018-09-25
+	 * @param layoutPreviousNext
+	 * @param editorLayout
 	 */
-	private void initBtnPreview()
+	private void initBtnPreview( HorizontalSplitPanel editorLayout, VerticalSplitPanel layoutPreviousNext )
 	{
-		VerticalLayout verticalLayout = new VerticalLayout();
-		verticalLayout.setSizeFull();
-		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		labelPopUp = new Label( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( 0 ) ), ContentMode.HTML );
-		verticalLayout.addComponents( labelPopUp, getLayoutPreviousNext() );
-		PopupView popupView = new PopupView( null, verticalLayout );
-		btnPreview = new Button( "Pré-visualizar mensagem", click ->
+		String captionPreView = "Pré-visualizar mensagem";
+		String captionEditView = "Editar mensagem";
+		btnPreview = new Button( captionPreView, click ->
 		{
-			popupView.setPopupVisible( true );
-			iElementCount = 0;
+			if ( btnPreview.getCaption().equals( captionPreView ) )
+			{
+				bodyLayout.removeAllComponents();
+				iElementCount = 1;
+				btnNext.click();
+				bodyLayout.addComponent( layoutPreviousNext );
+				btnPreview.setCaption( captionEditView );
+			}
+			else
+			{
+				bodyLayout.removeAllComponents();
+				bodyLayout.addComponent( editorLayout );
+				btnPreview.setCaption( captionPreView );
+			}
 		} );
-		mainLayout.addComponent( popupView );
 	}
 
 	/**
@@ -140,47 +272,59 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	 * @author anco62000465 2018-09-25
 	 * @return
 	 */
-	private HorizontalLayout getLayoutPreviousNext()
+	private VerticalSplitPanel getLayoutPreviousNext()
 	{
-		HorizontalLayout horizontalLayout = new HorizontalLayout();
-		horizontalLayout.setSizeFull();
-		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 
-		btnPrevious = new Button( "Anterior", click -> updateLabelPopUp( iElementCount-- ) );
+		HorizontalLayout footerLayout = new HorizontalLayout();
+		footerLayout.setSizeFull();
+		footerLayout.setMargin( false );
+		footerLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		Label label = new Label( iElementCount + " de " + lstElementos.size() );
+		btnPrevious = new Button( "Anterior", click ->
+		{
+			iElementCount -= 1;
+			if ( iElementCount <= lstElementos.size() )
+			{
+				labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( iElementCount - 1 ) ) );
+			}
+			if ( iElementCount <= 1 )
+			{
+				iElementCount = 1;
+				btnPrevious.setEnabled( false );
+			}
+			btnNext.setEnabled( lstElementos.size() > 1 );
+			label.setValue( iElementCount + " de " + lstElementos.size() );
+		} );
 		btnPrevious.setEnabled( false );
-		btnNext = new Button( "Próximo", click -> updateLabelPopUp( iElementCount++ ) );
+		btnNext = new Button( "Próximo", click ->
+		{
+			iElementCount += 1;
+
+			if ( iElementCount <= lstElementos.size() )
+			{
+				labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( iElementCount - 1 ) ) );
+			}
+
+			if ( iElementCount >= lstElementos.size() )
+			{
+				iElementCount = lstElementos.size();
+				btnNext.setEnabled( false );
+			}
+			btnPrevious.setEnabled( lstElementos.size() > 1 );
+
+			label.setValue( iElementCount + " de " + lstElementos.size() );
+		} );
 		btnNext.setEnabled( lstElementos.size() > 1 );
 
-		horizontalLayout.addComponents( btnPrevious, btnNext );
-		return horizontalLayout;
-	}
+		footerLayout.addComponents( btnPrevious, label, btnNext );
 
-	/**
-	 * The <b>updateLabelPopUp</b> method returns {@link Object}
-	 * 
-	 * @author anco62000465 2018-09-25
-	 * @param i
-	 * @return
-	 */
-	private void updateLabelPopUp( int i )
-	{
-		getLogger().info( "iElementCount={}", iElementCount );
-		if ( i >= 0 && i < lstElementos.size() )
-		{
-			getLogger().info( "iElementCount2={}", iElementCount );
-			labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( i ) ) );
-		}
 
-		if ( iElementCount < 1 )
-		{
-			btnPrevious.setEnabled( false );
-			btnNext.setEnabled( lstElementos.size() > 1 );
-		}
-		if ( iElementCount >= lstElementos.size() )
-		{
-			btnPrevious.setEnabled( lstElementos.size() > 1 );
-			btnNext.setEnabled( false );
-		}
+		labelPopUp = new Label( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( 0 ) ), ContentMode.HTML );
+
+		VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( labelPopUp, footerLayout );
+		verticalSplitPanel.setSplitPosition( 90 );
+		verticalSplitPanel.setWidth( "100%" );
+		return verticalSplitPanel;
 	}
 
 	/**
@@ -245,5 +389,26 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		horizontalSplitPanel.setSplitPosition( 75 );
 		horizontalSplitPanel.setWidth( "100%" );
 		return horizontalSplitPanel;
+	}
+
+	/**
+	 * The <b>getConfigLayout</b> method returns {@link HorizontalSplitPanel}
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @return
+	 */
+	private HorizontalLayout getConfigLayout()
+	{
+		txtEmailSubject = new TextField( "Assunto do email", "Actualização de contactos" );
+		txtEmailSubject.setIcon( VaadinIcons.COMMENT_ELLIPSIS_O );
+		txtEmailSubject.setWidth( "100%" );
+		chbWithParents = new CheckBox( "Utilizar email dos pais", true );
+		chbEmailSplitted = new CheckBox( "Enviar emails em separado", true );
+		chbEmailSplitted.setDescription( "Se esta opção estiver activa envia um email para cada elemento, caso contrário envia o mesmo email para todos os conactos selecionados (em Bcc)" );
+		HorizontalLayout horizontalLayout = new HorizontalLayout();
+		horizontalLayout.setSizeFull();
+		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		horizontalLayout.addComponents( txtEmailSubject, chbWithParents, chbEmailSplitted );
+		return horizontalLayout;
 	}
 }

@@ -83,7 +83,7 @@ public class MyUI extends UI implements HasLogger
 					googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
 			browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
-			browserWindowOpener.extend( importarLayout.getBtImportacao() );
+			browserWindowOpener.extend( importarLayout.getBtnAutorizacao() );
 		}
 		catch ( GeneralSecurityException | IOException e )
 		{
@@ -195,11 +195,9 @@ public class MyUI extends UI implements HasLogger
 		getLogger().info( "Received code: " + code + " | embedId: " + embedId );
 		googleAuthentication.addSession( code );
 		browserWindowOpener.remove();
-		push();
-		if ( elementosLayout.getSelecionados() > 0 )
-		{
-			importarLayout.importProcess();
-		}
+		importarLayout.getBtnAutorizacao().setVisible( false );
+		importarLayout.getBtImportacao().setVisible( true );
+		importarLayout.getBtnEmailer().setVisible( true );
 	}
 
 	public void updateSelectionados( int iSelecionados )

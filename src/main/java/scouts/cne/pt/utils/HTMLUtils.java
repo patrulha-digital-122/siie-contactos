@@ -3,11 +3,14 @@ package scouts.cne.pt.utils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.api.client.util.Base64;
 import com.google.api.services.gmail.model.Message;
 import j2html.TagCreator;
@@ -18,18 +21,64 @@ import scouts.cne.pt.model.ElementoTags;
 public class HTMLUtils {
 
 	public static String strHTMLHelpFicheiroSIIE = "<p>Para fazer o download do ficheiro .xls do SIIE deve aceder &agrave;s listagens completas - <a href=\"https://siie.escutismo.pt/elementos/List?xml=elementos/elementos/dados-completos\" target=\"_blank\" rel=\"noopener\">LINK</a> - e fazer o download carregando no bot&atilde;o que est&aacute; no canto superior esquerdo.</p>";
+	private static Logger	logger					= LoggerFactory.getLogger( HTMLUtils.class );
 
-	public static MimeMessage createEmail(String to, String from, String subject, String bodyText)
-			throws MessagingException {
+	public static MimeMessage createEmail(	List< InternetAddress > listTo,
+											List< InternetAddress > listCc,
+											List< InternetAddress > listBcc,
+											String from,
+											String subject,
+											String bodyText )
+		throws MessagingException
+	{
 		Properties props = new Properties();
-		Session session = Session.getDefaultInstance(props, null);
-
-		MimeMessage email = new MimeMessage(session);
-
-		email.setFrom(new InternetAddress(from));
-		email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
-		email.setSubject(subject);
-		email.setText(bodyText);
+		Session session = Session.getDefaultInstance( props, null );
+		MimeMessage email = new MimeMessage( session );
+		email.setFrom( new InternetAddress( from ) );
+		if ( listTo != null )
+		{
+			listTo.forEach( p ->
+			{
+				try
+				{
+					email.addRecipient( javax.mail.Message.RecipientType.TO, p );
+				}
+				catch ( MessagingException e )
+				{
+					logger.error( e.getMessage(), e );
+				}
+			} );
+		}
+		if ( listCc != null )
+		{
+			listCc.forEach( p ->
+			{
+				try
+				{
+					email.addRecipient( javax.mail.Message.RecipientType.CC, p );
+				}
+				catch ( MessagingException e )
+				{
+					logger.error( e.getMessage(), e );
+				}
+			} );
+		}
+		if ( listBcc != null )
+		{
+			listBcc.forEach( p ->
+			{
+				try
+				{
+					email.addRecipient( javax.mail.Message.RecipientType.BCC, p );
+				}
+				catch ( MessagingException e )
+				{
+					logger.error( e.getMessage(), e );
+				}
+			} );
+		}
+		email.setSubject( subject );
+		email.setContent( bodyText, "text/html; charset=utf-8" );
 		return email;
 	}
 

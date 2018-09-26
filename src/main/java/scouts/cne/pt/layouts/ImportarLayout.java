@@ -66,15 +66,14 @@ import scouts.cne.pt.utils.ElementoImport;
  */
 public class ImportarLayout extends Panel implements HasLogger
 {
-	private static final long	serialVersionUID	= -6763770502811814642L;
-	private Button btImportacao;
-	private Button					btImportacaoVCard;
+	private static final long			serialVersionUID	= -6763770502811814642L;
+	private final Button				btnAutorizacao;
+	private Button						btImportacao;
+	private Button						btImportacaoVCard;
 	private final Button				btnCopyMailingList;
 	private final Button				btnEmailer;
-	private EscolherElementosLayout	elementosLayout;
+	private EscolherElementosLayout		elementosLayout;
 	private GoogleAuthenticationBean	googleAuthentication;
-
-	private GoogleCredential			credential			= null;
 
 	/**
 	 * constructor
@@ -88,8 +87,12 @@ public class ImportarLayout extends Panel implements HasLogger
 		setSizeFull();
 		this.elementosLayout = elementosLayout;
 		this.googleAuthentication = googleAuthentication;
-		btImportacao = new Button( "Iniciar Importação (0)" );
+		
+		btnAutorizacao = new Button( "Autorizar", VaadinIcons.GOOGLE_PLUS_SQUARE );
+		
+		btImportacao = new Button( "Iniciar Importação (0)", VaadinIcons.USER_STAR );
 		btImportacao.setEnabled( false );
+		btImportacao.setVisible( false );
 		btImportacao.addClickListener( event ->
 		{
 			if ( ( googleAuthentication.getRefreshToken() != null ) && ( elementosLayout.getSelecionados() > 0 ) )
@@ -97,15 +100,16 @@ public class ImportarLayout extends Panel implements HasLogger
 				importProcess();
 			}
 		} );
-		btImportacaoVCard = new Button( "Download como VCard (0)" );
+
+		btImportacaoVCard = new Button( "Download como VCard (0)", VaadinIcons.DOWNLOAD_ALT );
 		btImportacaoVCard.setEnabled( false );
 		StreamResource myResource = createVCardFile();
 		FileDownloader fileDownloader = new FileDownloader( myResource );
 		fileDownloader.extend( btImportacaoVCard );
 		Label labelFooter = new Label(
-				"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
-				ContentMode.HTML );
-		Button btnFaq = new Button( "Ajuda - FAQ" );
+						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
+						ContentMode.HTML );
+		Button btnFaq = new Button( "Ajuda - FAQ", VaadinIcons.QUESTION );
 		btnFaq.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = -2312531713940582397L;
@@ -116,8 +120,8 @@ public class ImportarLayout extends Panel implements HasLogger
 				getUI().addWindow( new FAQWindow( btnFaq.getCaption() ) );
 			}
 		} );
-		
-		btnCopyMailingList = new Button( "Mailing list (0)" );
+
+		btnCopyMailingList = new Button( "Mailing list (0)", VaadinIcons.ENVELOPES );
 		btnCopyMailingList.setEnabled( false );
 		btnCopyMailingList.addClickListener( new ClickListener()
 		{
@@ -129,9 +133,10 @@ public class ImportarLayout extends Panel implements HasLogger
 				getUI().addWindow( new MailingListWindow( elementosLayout.getElementosSelecionados().values() ) );
 			}
 		} );
-		
-		btnEmailer = new Button( "Enviar email", VaadinIcons.MAILBOX );
+
+		btnEmailer = new Button( "Email's", VaadinIcons.MAILBOX );
 		btnEmailer.setEnabled( false );
+		btnEmailer.setVisible( false );
 		btnEmailer.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = 8916961174824919931L;
@@ -145,20 +150,26 @@ public class ImportarLayout extends Panel implements HasLogger
 		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout();
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		horizontalLayoutBtn.addComponents( btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
-
-		if ( StringUtils.trimToEmpty( Page.getCurrent().getLocation().getQuery() ).contains( "emailer=true" ) )
-		{
-			horizontalLayoutBtn.addComponent( btnEmailer );
-		}
-
+		horizontalLayoutBtn.addComponents( btnAutorizacao, btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
+		horizontalLayoutBtn.addComponent( btnEmailer );
 
 		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
 		verticalLayout.setMargin( true );
-
 		setContent( verticalLayout );
 	}
+
+
+	/**
+	 * Getter for btnAutorizacao
+	 * @author anco62000465 2018-09-26
+	 * @return the btnAutorizacao  {@link Button}
+	 */
+	public Button getBtnAutorizacao()
+	{
+		return btnAutorizacao;
+	}
+
 
 	/**
 	 * Getter for btImportacao
@@ -244,9 +255,11 @@ public class ImportarLayout extends Panel implements HasLogger
 			{
 				return;
 			}
+			GoogleCredential credential = googleAuthentication.getGoogleCredentials();
 			if ( credential == null )
 			{
-				credential = googleAuthentication.getGoogleCredentials();
+				showWarning( "Aplicação sem autorização..." );
+				return;
 			}
 			String applicationName = googleAuthentication.getApplicationName();
 			ContactsService contactsService = new ContactsService( applicationName );
@@ -376,7 +389,7 @@ public class ImportarLayout extends Panel implements HasLogger
 			{
 				// Submit the batch request to the server.
 				ContactFeed responseFeed =
-						contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
 				// Check the status of each operation.
 				for ( ContactEntry entry : responseFeed.getEntries() )
 				{
@@ -385,32 +398,33 @@ public class ImportarLayout extends Panel implements HasLogger
 					ElementoImport e = importReports.get( getNinFromContactEntry( entry.getUserDefinedFields() ) );
 					switch ( status.getCode() )
 					{
-					case 200:
-						getLogger().error( "Contacto actualizado: {}", entry.getName().getFullName() );
-						listOk.add( e );
-						break;
-					case 201:
-						getLogger().error( "Contacto criados: {}", entry.getName().getFullName() );
-						e.getContactEntry().setId( entry.getId() );
-						listCriados.add( e );
-						break;
-					case 304:
-						getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
-						listNaoModificado.add( e );
-						break;
-					default:
-						getLogger().error(	"Erro a processar : {} | {} :: {}",
-								entry.getPlainTextContent(),
-								status.getCode(),
-								status.getReason() );
-						ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
-								TagCreator.b( String.valueOf( status.getCode() ) ),
-								TagCreator.text( " | Motivo: " ),
-								TagCreator.b( status.getReason() ) ) );
-						ElementoImport elementoImport = new ElementoImport(entry, null, new ImportContactReport(getNinFromContactEntry( entry.getUserDefinedFields() )));
-						elementoImport.getImportContactReport().getLstLabels().add( join.render() );
-						listErro.add( elementoImport );
-						break;
+						case 200:
+							getLogger().error( "Contacto actualizado: {}", entry.getName().getFullName() );
+							listOk.add( e );
+							break;
+						case 201:
+							getLogger().error( "Contacto criados: {}", entry.getName().getFullName() );
+							e.getContactEntry().setId( entry.getId() );
+							listCriados.add( e );
+							break;
+						case 304:
+							getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
+							listNaoModificado.add( e );
+							break;
+						default:
+							getLogger().error(	"Erro a processar : {} | {} :: {}",
+												entry.getPlainTextContent(),
+												status.getCode(),
+												status.getReason() );
+							ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
+																				TagCreator.b( String.valueOf( status.getCode() ) ),
+																				TagCreator.text( " | Motivo: " ),
+																				TagCreator.b( status.getReason() ) ) );
+							ElementoImport elementoImport = new ElementoImport( entry, null,
+											new ImportContactReport( getNinFromContactEntry( entry.getUserDefinedFields() ) ) );
+							elementoImport.getImportContactReport().getLstLabels().add( join.render() );
+							listErro.add( elementoImport );
+							break;
 					}
 				}
 			}
@@ -431,11 +445,15 @@ public class ImportarLayout extends Panel implements HasLogger
 		}
 	}
 
-	private String getNinFromContactEntry(List<UserDefinedField> userDefinedFields) {
-		Optional<UserDefinedField> findFirst = userDefinedFields.stream().filter( p ->  StringUtils.equals( p.getKey(), "NIN" )).findFirst();
-		if(findFirst.isPresent()) {
+	private String getNinFromContactEntry( List< UserDefinedField > userDefinedFields )
+	{
+		Optional< UserDefinedField > findFirst = userDefinedFields.stream().filter( p -> StringUtils.equals( p.getKey(), "NIN" ) ).findFirst();
+		if ( findFirst.isPresent() )
+		{
 			return findFirst.get().getValue();
-		} else {
+		}
+		else
+		{
 			return null;
 		}
 	}
@@ -477,7 +495,7 @@ public class ImportarLayout extends Panel implements HasLogger
 				}
 				// Adicionar aos contactos pessoais
 				if ( ( entry.getSystemGroup() != null ) && ( entry.getSystemGroup().getId() != null ) &&
-						"Contacts".equals( entry.getSystemGroup().getId() ) )
+					"Contacts".equals( entry.getSystemGroup().getId() ) )
 				{
 					myContacts = entry;
 				}

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.leif.headertags.Meta;
 import org.vaadin.leif.headertags.MetaTags;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
+import com.google.api.services.people.v1.PeopleService;
+import com.google.api.services.people.v1.model.Person;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
 import com.vaadin.server.BrowserWindowOpener;
@@ -198,6 +200,17 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnAutorizacao().setVisible( false );
 		importarLayout.getBtImportacao().setVisible( true );
 		importarLayout.getBtnEmailer().setVisible( true );
+		PeopleService peopleService;
+		try
+		{
+			peopleService = googleAuthentication.getPeopleService();
+			Person person = peopleService.people().get( "people/me" ).setPersonFields( "names,emailAddresses" ).execute();
+			getLogger().info( person.toPrettyString() );
+		}
+		catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public void updateSelectionados( int iSelecionados )

@@ -21,6 +21,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.people.v1.PeopleService;
+import com.google.api.services.people.v1.PeopleServiceScopes;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
@@ -33,7 +35,8 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 *
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
-	private static final List< String >	SCOPES				= Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND );
+	private static final List< String >	SCOPES				=
+					Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_PROFILE );
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private String						refreshToken		= null;
 	private GoogleCredential			googleCredential;
@@ -166,5 +169,20 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	public Gmail getGmailService() throws GeneralSecurityException, IOException
 	{
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() ).build();
+	}
+
+	/**
+	 * 
+	 * The <b>getPeopleService</b> method returns {@link PeopleService}
+	 * 
+	 * @author anco62000465 2018-09-26
+	 * @return
+	 * @throws GeneralSecurityException
+	 * @throws IOException
+	 */
+	public PeopleService getPeopleService() throws GeneralSecurityException, IOException
+	{
+		return new PeopleService.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() )
+						.build();
 	}
 }

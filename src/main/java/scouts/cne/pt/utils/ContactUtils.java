@@ -7,8 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.swing.text.MaskFormatter;
+
 import org.apache.commons.lang3.StringUtils;
+
 import com.google.gdata.data.DateTime;
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
@@ -28,6 +31,7 @@ import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
 import com.google.gdata.data.extensions.When;
 import com.vaadin.ui.CheckBox;
+
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
@@ -41,8 +45,8 @@ public class ContactUtils
 {
 	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
 			ContactEntry contactEntry,
-																Set< String > listTelefonesExistentes,
-																Map< ElementoTags, CheckBox > mapConfigs )
+			Set< String > listTelefonesExistentes,
+			Map< ElementoTags, CheckBox > mapConfigs )
 	{
 		ImportContactReport importContactReport = new ImportContactReport(elemento.getNin());
 
@@ -129,7 +133,7 @@ public class ContactUtils
 
 	/**
 	 * The <b>updatePropertie</b> method returns {@link boolean}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-27
 	 * @param mapConfigs
 	 * @param totem
@@ -383,7 +387,9 @@ public class ContactUtils
 		}
 
 		When when = new When();
-		when.setStartTime( new DateTime( date ) );
+		DateTime dateTime = new DateTime( date );
+		when.setStartTime( dateTime );
+		when.setEndTime(dateTime);
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
 		String format = dateFormat.format( date );
@@ -392,7 +398,7 @@ public class ContactUtils
 		{
 			if ( StringUtils.equals( event.getLabel(), label ) )
 			{
-				if ( event.getWhen() != null && !event.getWhen().getStartTime().equals( when.getStartTime() ) )
+				if ( (event.getWhen() != null) && !event.getWhen().getStartTime().equals( when.getStartTime() ) )
 				{
 					event.setWhen( when );
 					importContactReport.addNewField( label, format );

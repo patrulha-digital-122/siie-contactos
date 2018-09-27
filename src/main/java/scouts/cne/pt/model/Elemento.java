@@ -6,7 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import javax.mail.internet.InternetAddress;
+
 import scouts.cne.pt.app.HasLogger;
 
 /**
@@ -380,7 +382,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 
 	/**
 	 * The <b>getDate</b> method returns {@link Date}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-27
 	 * @param objectDate
 	 * @return
@@ -401,7 +403,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 			}
 			catch ( ParseException e )
 			{
-				printError( e );
+				getLogger().error(e.getMessage());
 			}
 			simpleDateFormat = new SimpleDateFormat( "dd-MM-yyyy" );
 			try
@@ -410,7 +412,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 			}
 			catch ( ParseException e )
 			{
-				printError( e );
+				getLogger().error(e.getMessage());
 			}
 		}
 		else if ( objectDate instanceof Date )

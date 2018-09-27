@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.leif.headertags.Meta;
 import org.vaadin.leif.headertags.MetaTags;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.model.EmailAddress;
@@ -32,6 +34,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
+
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
@@ -128,7 +131,7 @@ public class MyUI extends UI implements HasLogger
 			} ).start();
 		}
 
-		if ( siieLocalFile == null && siieGDriveFile == null )
+		if ( (siieLocalFile == null) && (siieGDriveFile == null) )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
 			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
@@ -202,7 +205,7 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnAutorizacao().setVisible( false );
 		importarLayout.getBtImportacao().setVisible( true );
 		importarLayout.getBtnEmailer().setVisible( true );
-		new Thread( () ->
+		access(() ->
 		{
 			PeopleService peopleService;
 			try
@@ -212,23 +215,24 @@ public class MyUI extends UI implements HasLogger
 				List< EmailAddress > emailAddresses = person.getEmailAddresses();
 				for ( EmailAddress emailAddress : emailAddresses )
 				{
-					if ( emailAddress.getMetadata() != null && emailAddress.getMetadata().getPrimary() )
+					if ( (emailAddress.getMetadata() != null) &&(emailAddress.getMetadata().getPrimary() != null) && emailAddress.getMetadata().getPrimary() )
 					{
 						googleAuthentication.setUserEmail( emailAddress.getValue() );
 						if ( !person.getNames().isEmpty() )
 						{
 							googleAuthentication.setUserFullName( person.getNames().get( 0 ).getDisplayName() );
 						}
+						break;
 					}
 				}
+				getLogger().info( "Hello '{}' with email '{}'.", googleAuthentication.getUserFullName(), googleAuthentication.getUserEmail() );
 				showTray( "Olá " + googleAuthentication.getUserFullName() );
-				getLogger().info( "Hello {} with email {}.", googleAuthentication.getUserFullName(), googleAuthentication.getUserEmail() );
 			}
 			catch ( Exception e )
 			{
 				e.printStackTrace();
 			}
-		} ).start();
+		} );
 	}
 
 	public void updateSelectionados( int iSelecionados )

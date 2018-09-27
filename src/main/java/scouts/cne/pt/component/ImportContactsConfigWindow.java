@@ -3,6 +3,7 @@ package scouts.cne.pt.component;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -14,6 +15,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+
 import scouts.cne.pt.model.ElementoTags;
 
 /**
@@ -45,9 +47,9 @@ public class ImportContactsConfigWindow extends Window
 		mainLayout.setMargin( new MarginInfo( true, true, false, true ) );
 		mainLayout.setSizeFull();
 		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_LEFT );
-		
+
 		mapProperties = new EnumMap<>( ElementoTags.class );
-		
+
 		Button btnSelectAll = new Button( "Selecionar todos", VaadinIcons.CHECK_SQUARE_O );
 		btnSelectAll.addClickListener( new ClickListener()
 		{
@@ -80,7 +82,7 @@ public class ImportContactsConfigWindow extends Window
 		for ( ElementoTags component : ElementoTags.getGoogleImportTags() )
 		{
 			CheckBox checkBox = new CheckBox( component.getTagDescription(), true );
-			
+
 			mapProperties.put( component, checkBox );
 			mainLayout.addComponent( checkBox );
 		}
@@ -108,20 +110,19 @@ public class ImportContactsConfigWindow extends Window
 				close();
 			}
 		} );
-		btnCancel.focus();
 
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 		horizontalLayout.setSizeFull();
 		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		horizontalLayout.addComponents( btnCancel, btnOk );
-		
+
 		mainLayout.addComponent( horizontalLayout );
 		setContent( new Panel( mainLayout ) );
 	}
 
 	/**
 	 * Getter for mapProperties
-	 * 
+	 *
 	 * @author anco62000465 2018-09-27
 	 * @return the mapProperties {@link Map<ElementoTags,CheckBox>}
 	 */
@@ -132,7 +133,7 @@ public class ImportContactsConfigWindow extends Window
 
 	/**
 	 * Getter for isCancel
-	 * 
+	 *
 	 * @author anco62000465 2018-09-27
 	 * @return the isCancel {@link Boolean}
 	 */

@@ -40,7 +40,7 @@ public enum ElementoTags
 
 	/**
 	 * constructor
-	 * 
+	 *
 	 * @author anco62000465 2018-09-25
 	 * @param strTagId
 	 * @param strTagDescription
@@ -54,7 +54,7 @@ public enum ElementoTags
 
 	/**
 	 * Getter for strTagId
-	 * 
+	 *
 	 * @author anco62000465 2018-09-25
 	 * @return the strTagId {@link String}
 	 */
@@ -65,7 +65,7 @@ public enum ElementoTags
 
 	/**
 	 * Getter for strTagDescription
-	 * 
+	 *
 	 * @author anco62000465 2018-09-25
 	 * @return the strTagDescription {@link String}
 	 */
@@ -76,7 +76,7 @@ public enum ElementoTags
 
 	/**
 	 * Getter for strTagReplace
-	 * 
+	 *
 	 * @author anco62000465 2018-09-25
 	 * @return the strTagReplace {@link String}
 	 */
@@ -87,7 +87,7 @@ public enum ElementoTags
 
 	/**
 	 * The <b>convertHTML</b> method returns {@link String}
-	 * 
+	 *
 	 * @author anco62000465 2018-09-25
 	 * @param value
 	 * @param next
@@ -107,7 +107,7 @@ public enum ElementoTags
 		List< ElementoTags > tags = new LinkedList<>();
 		tags.add( ElementoTags.NOME );
 		tags.add( ElementoTags.DATA_NASCIMENTO );
-		tags.add( ElementoTags.DATA_PROMESSA );
+		// tags.add( ElementoTags.DATA_PROMESSA );
 		tags.add( ElementoTags.MORADA );
 		tags.add( ElementoTags.TELEFONE );
 		tags.add( ElementoTags.TELEMOVEL );

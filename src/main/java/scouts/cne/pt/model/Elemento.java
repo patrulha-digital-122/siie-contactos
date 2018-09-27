@@ -9,6 +9,8 @@ import java.util.LinkedList;
 
 import javax.mail.internet.InternetAddress;
 
+import org.apache.commons.lang3.StringUtils;
+
 import scouts.cne.pt.app.HasLogger;
 
 /**
@@ -345,7 +347,11 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getNin()
 	{
-		return getAtributo( "nin" ).toString();
+		String string = getAtributo("nin").toString();
+		if (!string.isEmpty()) {
+			string = StringUtils.leftPad(string, 13, "0");
+		}
+		return string;
 	}
 
 	/**

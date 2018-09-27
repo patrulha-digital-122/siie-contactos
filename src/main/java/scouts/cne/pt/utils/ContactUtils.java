@@ -384,6 +384,7 @@ public class ContactUtils
 
 		When when = new When();
 		when.setStartTime( new DateTime( date ) );
+
 		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
 		String format = dateFormat.format( date );
 		List< Event > events = contactEntry.getEvents();

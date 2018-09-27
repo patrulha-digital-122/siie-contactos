@@ -401,7 +401,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 			}
 			catch ( ParseException e )
 			{
-				showError( e );
+				printError( e );
 			}
 			simpleDateFormat = new SimpleDateFormat( "dd-MM-yyyy" );
 			try
@@ -410,7 +410,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 			}
 			catch ( ParseException e )
 			{
-				showError( e );
+				printError( e );
 			}
 		}
 		else if ( objectDate instanceof Date )

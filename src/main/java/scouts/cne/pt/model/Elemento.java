@@ -7,11 +7,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.mail.internet.InternetAddress;
+import scouts.cne.pt.app.HasLogger;
 
 /**
  * Created by Andr� on 03/10/2015.
  */
-public class Elemento implements Comparable< Elemento >
+public class Elemento implements Comparable< Elemento >, HasLogger
 {
 	/**
 	 *
@@ -381,14 +382,14 @@ public class Elemento implements Comparable< Elemento >
 	 * The <b>getDate</b> method returns {@link Date}
 	 * 
 	 * @author anco62000465 2018-09-27
-	 * @param dataNascimento
+	 * @param objectDate
 	 * @return
 	 */
-	private Date getDate( Object dataNascimento )
+	private Date getDate( Object objectDate )
 	{
-		if ( dataNascimento instanceof String )
+		if ( objectDate instanceof String )
 		{
-			String strData = ( String ) dataNascimento;
+			String strData = ( String ) objectDate;
 			if ( strData.isEmpty() )
 			{
 				return null;
@@ -396,25 +397,25 @@ public class Elemento implements Comparable< Elemento >
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
 			try
 			{
-				return simpleDateFormat.parse( ( String ) dataNascimento );
+				return simpleDateFormat.parse( ( String ) objectDate );
 			}
 			catch ( ParseException e )
 			{
-				e.printStackTrace();
+				showError( e );
 			}
 			simpleDateFormat = new SimpleDateFormat( "dd-MM-yyyy" );
 			try
 			{
-				return simpleDateFormat.parse( ( String ) dataNascimento );
+				return simpleDateFormat.parse( ( String ) objectDate );
 			}
 			catch ( ParseException e )
 			{
-				e.printStackTrace();
+				showError( e );
 			}
 		}
-		else if ( dataNascimento instanceof Date )
+		else if ( objectDate instanceof Date )
 		{
-			return ( Date ) dataNascimento;
+			return ( Date ) objectDate;
 		}
 		return null;
 	}

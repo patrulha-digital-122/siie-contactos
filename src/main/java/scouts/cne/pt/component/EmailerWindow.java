@@ -1,6 +1,7 @@
 package scouts.cne.pt.component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -12,6 +13,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
 import com.vaadin.icons.VaadinIcons;
@@ -22,6 +24,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
@@ -36,6 +39,8 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
+import scouts.cne.pt.model.emails.EmailTemplate;
+import scouts.cne.pt.model.emails.Templates;
 import scouts.cne.pt.utils.HTMLUtils;
 
 /**
@@ -254,6 +259,26 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		HorizontalLayout horizontalLayout = new HorizontalLayout();
 		horizontalLayout.setSizeFull();
 		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+
+		try
+		{
+			ComboBox< EmailTemplate > comboBox = new ComboBox<>( "Lista de templates", getTemplates() );
+			comboBox.setIcon( VaadinIcons.LIST );
+			comboBox.setPlaceholder( "Escolha um template" );
+			comboBox.setItemCaptionGenerator( EmailTemplate::getNome );
+			// Disallow null selections
+			comboBox.setEmptySelectionAllowed( false );
+			comboBox.setWidth( "100%" );
+			comboBox.addValueChangeListener( event ->
+			{
+				richTextArea.setValue( event.getValue().getValue() );
+			} );
+			horizontalLayout.addComponent( comboBox );
+		}
+		catch ( IOException e )
+		{
+			printError( e );
+		}
 		horizontalLayout.addComponents( btnPreview, btnEnviarEmail );
 		return horizontalLayout;
 	}
@@ -360,7 +385,6 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	{
 		richTextArea = new RichTextArea();
 		richTextArea.setSizeFull();
-		richTextArea.setValue( HTMLUtils.getDefaultEmail() );
 	}
 
 	/**
@@ -432,5 +456,30 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		horizontalLayout.addComponents( txtEmailSubject, chbWithParents, chbEmailSplitted );
 		return horizontalLayout;
+	}
+
+	private List< EmailTemplate > getTemplates() throws IOException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		Templates templates = new Templates();
+		
+		EmailTemplate emailTemplateDados = new EmailTemplate();
+		emailTemplateDados.setNome( "Email Confirmação dados pessoais" );
+		emailTemplateDados.setValue( HTMLUtils.getDefaultEmail() );
+		templates.getEmailTemplateList().add( emailTemplateDados );
+		
+		try ( InputStream inputStream = classLoader.getResourceAsStream( "emailTemplates.json" ) )
+		{
+			ObjectMapper mapper = new ObjectMapper();
+			Templates templatesTemp = mapper.readValue( inputStream, Templates.class );
+			templates.getEmailTemplateList().addAll( templatesTemp.getEmailTemplateList() );
+		}
+		catch ( Exception e )
+		{
+			printError( e );
+		}
+		
+		
+		return templates.getEmailTemplateList();
 	}
 }

@@ -1,0 +1,24 @@
+{
+	"emailTemplateList": [
+		{
+			"nome": "Email Alcateia",
+			"value": "<p>Alerta Alcateia,</p> <p>&nbsp;</p> <p><img src=\"http://www.cne-escutismo.pt/portals/0/skins/lobitos/topo.jpg\" width=\"600\" height=\"71\" /></p>"
+		},
+		{
+			"nome": "Email Expedição",
+			"value": "<p>Alerta Expedi&ccedil;&atilde;o,</p> <p>&nbsp;</p> <p><img src=\"http://www.cne-escutismo.pt/portals/0/skins/exploradores/topo.jpg\" width=\"600\" height=\"71\" /></p>"
+		},
+		{
+			"nome": "Email Comunidade",
+			"value": "<p>Alerta Comunidade,</p> <p>&nbsp;</p> <p><img src=\"http://www.cne-escutismo.pt/portals/0/skins/pioneiros/topo.jpg\" width=\"600\" height=\"71\" /></p>"
+		},
+		{
+			"nome": "Email Clã",
+			"value": "<p>Alerta Cl&atilde;,</p> <p>&nbsp;</p> <p><img src=\"http://www.cne-escutismo.pt/portals/0/skins/caminheiros/topo.jpg\" width=\"600\" height=\"71\" /></p>"
+		},
+		{
+			"nome": "Email Agrupamento",
+			"value": "<p>Alerta Agrupamento,</p> <p>&nbsp;</p> <p><img src=\"http://www.cne-escutismo.pt/portals/0/skins/dirigentes/geraltopo.jpg\" width=\"600\" height=\"71\" /></p>"
+		}
+	]
+}

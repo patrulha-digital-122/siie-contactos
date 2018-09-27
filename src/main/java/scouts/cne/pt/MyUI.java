@@ -36,7 +36,7 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.layouts.EscolherElementosLayout;
-import scouts.cne.pt.layouts.ImportarLayout;
+import scouts.cne.pt.layouts.FooterLayout;
 import scouts.cne.pt.layouts.UploadFileLayout;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.services.SIIEService;
@@ -65,7 +65,7 @@ public class MyUI extends UI implements HasLogger
 	@Autowired
 	private GoogleServerAuthenticationBean	googleServerAuthentication;
 	private EscolherElementosLayout			elementosLayout;
-	private ImportarLayout					importarLayout;
+	private FooterLayout					importarLayout;
 
 	@Override
 	protected void init( VaadinRequest vaadinRequest )
@@ -80,7 +80,7 @@ public class MyUI extends UI implements HasLogger
 		setTheme( "mytheme" );
 		Responsive.makeResponsive( mainLayout );
 		elementosLayout = new EscolherElementosLayout( getEmbedId(), siieService );
-		importarLayout = new ImportarLayout( elementosLayout, googleAuthentication );
+		importarLayout = new FooterLayout( elementosLayout, googleAuthentication );
 		try
 		{
 			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
@@ -128,7 +128,7 @@ public class MyUI extends UI implements HasLogger
 			} ).start();
 		}
 
-		if ( siieLocalFile == null )
+		if ( siieLocalFile == null && siieGDriveFile == null )
 		{
 			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
 			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );

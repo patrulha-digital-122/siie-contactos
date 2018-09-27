@@ -63,7 +63,7 @@ import scouts.cne.pt.utils.ElementoImport;
  * @author anco62000465 2018-09-17
  *
  */
-public class ImportarLayout extends Panel implements HasLogger
+public class FooterLayout extends Panel implements HasLogger
 {
 	private static final long			serialVersionUID	= -6763770502811814642L;
 	private final Button				btnAutorizacao;
@@ -80,9 +80,9 @@ public class ImportarLayout extends Panel implements HasLogger
 	 * @author anco62000465 2018-09-17
 	 * @param button
 	 */
-	public ImportarLayout( EscolherElementosLayout elementosLayout, GoogleAuthenticationBean googleAuthentication )
+	public FooterLayout( EscolherElementosLayout elementosLayout, GoogleAuthenticationBean googleAuthentication )
 	{
-		super( "Terceiro Passo - Dar permissão para fazer a importação" );
+		super( "Funcionalidades disponiveis" );
 		setSizeFull();
 		this.elementosLayout = elementosLayout;
 		this.googleAuthentication = googleAuthentication;

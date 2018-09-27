@@ -270,6 +270,46 @@ public class Elemento implements Comparable< Elemento >
 	}
 
 	/**
+	 * @return the emailPai
+	 */
+	public String getProfissaoPai()
+	{
+		return ( String ) getAtributo( "profissaoPai" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getEnderecoWWW()
+	{
+		return ( String ) getAtributo( "enderecowww" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getNotas()
+	{
+		return ( String ) getAtributo( "notas" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getObservacoes()
+	{
+		return ( String ) getAtributo( "observacoes" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getTotem()
+	{
+		return ( String ) getAtributo( "totem" );
+	}
+
+	/**
 	 * @return the nomeMae
 	 */
 	public String getNomeMae()
@@ -291,6 +331,44 @@ public class Elemento implements Comparable< Elemento >
 	public String getEmailMae()
 	{
 		return ( String ) getAtributo( "emailmae" );
+	}
+
+	/**
+	 * @return the emailMae
+	 */
+	public String getProfissaoMae()
+	{
+		return ( String ) getAtributo( "profissaomae" );
+	}
+
+	/**
+	 * @return the emailMae
+	 */
+	public Date getDataPromessa()
+	{
+		Object dataNascimento = getAtributo( "dtpromessa" );
+		if ( dataNascimento instanceof String )
+		{
+			String strData = ( String ) dataNascimento;
+			if ( strData.isEmpty() )
+			{
+				return null;
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
+			try
+			{
+				return simpleDateFormat.parse( ( String ) dataNascimento );
+			}
+			catch ( ParseException e )
+			{
+				e.printStackTrace();
+			}
+		}
+		else if ( dataNascimento instanceof Date )
+		{
+			return ( Date ) dataNascimento;
+		}
+		return null;
 	}
 
 	/**

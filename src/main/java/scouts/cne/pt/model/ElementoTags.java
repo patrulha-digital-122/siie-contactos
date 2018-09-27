@@ -12,6 +12,7 @@ public enum ElementoTags
 	NOME( "nome", "Nome do elemento" ),
 	NIF( "nif", "Numero identificação fiscal" ),
 	DATA_NASCIMENTO( "dtNasc", "Data de nascimento" ),
+	DATA_PROMESSA( "dtpromessa", "Data da Promessa" ),
 	MORADA( "morada", "Morada" ),
 	LOCALIDADE( "localidade", "Localidade" ),
 	CP4( "cp4", "Código Postal (os primeiros 4 digitos)" ),
@@ -27,6 +28,9 @@ public enum ElementoTags
 	PROFISSAO_MAE( "profissaomae", "Profissão do Mãe" ),
 	TELEFONE_MAE( "telefonemae", "Telefone do Mãe" ),
 	EMAIL_MAE( "emailmae", "E-mail do Mãe" ),
+	NOTAS( "notas", "Notas" ),
+	OBSERVACOES( "observacoes", "Observações" ),
+	TOTEM( "totem", "Totem" ),
 	NATURALIDADE( "naturalidade", "Naturalidade" );
 	//
 	private final String	strTagId;

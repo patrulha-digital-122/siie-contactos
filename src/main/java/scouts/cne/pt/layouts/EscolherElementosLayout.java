@@ -19,6 +19,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.DescriptionGenerator;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.Column;
 import com.vaadin.ui.Grid.SelectionMode;
@@ -30,6 +31,7 @@ import com.vaadin.ui.renderers.DateRenderer;
 import scouts.cne.pt.MyUI;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.Elemento;
+import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.services.SIIEService;
 
@@ -117,12 +119,55 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			grid.removeAllColumns();
 			grid.setSelectionMode( SelectionMode.MULTI );
 			verticalLayout.addComponent( grid );
-			grid.addColumn( Elemento::getNome ).setCaption( "Nome" );
-			grid.addColumn( Elemento::getNin ).setCaption( "NIN" );
-			grid.addColumn( Elemento::getEmail ).setCaption( "Email" );
-			grid.addColumn( Elemento::getNif ).setCaption( "NIF" );
-			Column< Elemento, Date > dataNascimentoColumn = grid.addColumn( Elemento::getDataNascimento ).setCaption( "Data Nascimento" );
+			grid.addColumn( Elemento::getNome ).setCaption( ElementoTags.NOME.getTagDescription() );
+			grid.addColumn( Elemento::getNin ).setCaption( ElementoTags.NIN.getTagDescription() );
+			grid.addColumn( Elemento::getEmail ).setCaption( ElementoTags.EMAIL.getTagDescription() );
+			grid.addColumn( Elemento::getNif ).setCaption( ElementoTags.NIF.getTagDescription() );
+			Column< Elemento, Date > dataNascimentoColumn =
+							grid.addColumn( Elemento::getDataNascimento ).setCaption( ElementoTags.DATA_NASCIMENTO.getTagDescription() );
 			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
+			Column< Elemento, Date > dataPromessaColumn = grid.addColumn( Elemento::getDataPromessa )
+							.setCaption( ElementoTags.DATA_PROMESSA.getTagDescription() ).setHidable( true ).setHidden( true );
+			dataPromessaColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
+			
+			grid.addColumn( Elemento::getTotem ).setCaption( ElementoTags.TOTEM.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getTelemovel ).setCaption( ElementoTags.TELEMOVEL.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getTelefone ).setCaption( ElementoTags.TELEFONE.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getMorada ).setCaption( ElementoTags.MORADA.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getCodigoPostal ).setCaption( "Código Postal" ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getNomeMae ).setCaption( ElementoTags.NOME_MAE.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getTelefoneMae ).setCaption( ElementoTags.TELEFONE_MAE.getTagDescription() ).setHidable( true )
+							.setHidden( true );
+			grid.addColumn( Elemento::getEmailMae ).setCaption( ElementoTags.EMAIL_MAE.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getProfissaoMae ).setCaption( ElementoTags.PROFISSAO_MAE.getTagDescription() ).setHidable( true )
+							.setHidden( true );
+			grid.addColumn( Elemento::getNomePai ).setCaption( ElementoTags.NOME_PAI.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getTelefonePai ).setCaption( ElementoTags.TELEFONE_PAI.getTagDescription() ).setHidable( true )
+							.setHidden( true );
+			grid.addColumn( Elemento::getEmailPai ).setCaption( ElementoTags.EMAIL_PAI.getTagDescription() ).setHidable( true ).setHidden( true );
+			grid.addColumn( Elemento::getProfissaoPai ).setCaption( ElementoTags.PROFISSAO_PAI.getTagDescription() ).setHidable( true )
+							.setHidden( true );
+			grid.addColumn( Elemento::getNotas ).setCaption( ElementoTags.NOTAS.getTagDescription() ).setHidable( true ).setHidden( true ).setDescriptionGenerator( new DescriptionGenerator< Elemento >()
+			{
+				private static final long serialVersionUID = -6877934609841332609L;
+
+				@Override
+				public String apply( Elemento t )
+				{
+					return t.getNotas();
+				}
+			} );
+			grid.addColumn( Elemento::getObservacoes ).setCaption( ElementoTags.OBSERVACOES.getTagDescription() ).setHidable( true ).setHidden( true ).setDescriptionGenerator( new DescriptionGenerator< Elemento >()
+			{
+								private static final long serialVersionUID = 3913814674210101147L;
+
+				@Override
+				public String apply( Elemento t )
+				{
+					return t.getObservacoes();
+				}
+			} );
+			
 			grid.addSelectionListener( new SelectionListener< Elemento >()
 			{
 				private static final long serialVersionUID = 1626537027266542111L;

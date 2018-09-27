@@ -1,5 +1,7 @@
 package scouts.cne.pt.model;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -98,5 +100,27 @@ public enum ElementoTags
 			value = value.replace( tags.getTagReplace(), Objects.toString( elemento.getAtributo( tags.getTagId() ), "" ) );
 		}
 		return value;
+	}
+
+	public static List< ElementoTags > getGoogleImportTags()
+	{
+		List< ElementoTags > tags = new LinkedList<>();
+		tags.add( ElementoTags.NOME );
+		tags.add( ElementoTags.DATA_NASCIMENTO );
+		tags.add( ElementoTags.DATA_PROMESSA );
+		tags.add( ElementoTags.MORADA );
+		tags.add( ElementoTags.TELEFONE );
+		tags.add( ElementoTags.TELEMOVEL );
+		tags.add( ElementoTags.EMAIL );
+		tags.add( ElementoTags.TOTEM );
+		// MAE
+		tags.add( ElementoTags.NOME_MAE );
+		tags.add( ElementoTags.EMAIL_MAE );
+		tags.add( ElementoTags.TELEFONE_MAE );
+		// Pai
+		tags.add( ElementoTags.NOME_PAI );
+		tags.add( ElementoTags.EMAIL_PAI );
+		tags.add( ElementoTags.TELEFONE_PAI );
+		return tags;
 	}
 }

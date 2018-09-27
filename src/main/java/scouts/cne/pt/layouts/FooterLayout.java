@@ -45,10 +45,13 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Window.CloseEvent;
+import com.vaadin.ui.Window.CloseListener;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.component.EmailerWindow;
+import scouts.cne.pt.component.ImportContactsConfigWindow;
 import scouts.cne.pt.component.ImportContactsReportLayout;
 import scouts.cne.pt.component.MailingListWindow;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
@@ -73,6 +76,7 @@ public class FooterLayout extends Panel implements HasLogger
 	private final Button				btnEmailer;
 	private EscolherElementosLayout		elementosLayout;
 	private GoogleAuthenticationBean	googleAuthentication;
+	private final ImportContactsConfigWindow importContactsConfigWindow;
 
 	/**
 	 * constructor
@@ -86,10 +90,11 @@ public class FooterLayout extends Panel implements HasLogger
 		setSizeFull();
 		this.elementosLayout = elementosLayout;
 		this.googleAuthentication = googleAuthentication;
+		this.importContactsConfigWindow = new ImportContactsConfigWindow();
 		
 		btnAutorizacao = new Button( "Autorizar", VaadinIcons.GOOGLE_PLUS_SQUARE );
 		
-		btImportacao = new Button( "Iniciar Importação (0)", VaadinIcons.USER_STAR );
+		btImportacao = new Button( "Importação (0)", VaadinIcons.USER_STAR );
 		btImportacao.setEnabled( false );
 		btImportacao.setVisible( false );
 		btImportacao.setDisableOnClick( true );
@@ -97,11 +102,26 @@ public class FooterLayout extends Panel implements HasLogger
 		{
 			if ( ( googleAuthentication.getRefreshToken() != null ) && ( elementosLayout.getSelecionados() > 0 ) )
 			{
-				importProcess();
-				btImportacao.setEnabled( true );
+				getUI().addWindow( importContactsConfigWindow );
 			}
 		} );
 
+		importContactsConfigWindow.addCloseListener( new CloseListener()
+		{
+			private static final long serialVersionUID = 5581538180777961098L;
+
+			@Override
+			public void windowClose( CloseEvent e )
+			{
+				if ( !importContactsConfigWindow.isCancel() )
+				{
+					importProcess();
+				}
+				btImportacao.setEnabled( true );
+			}
+		} );
+		
+		
 		btImportacaoVCard = new Button( "Download como VCard (0)", VaadinIcons.DOWNLOAD_ALT );
 		btImportacaoVCard.setEnabled( false );
 		StreamResource myResource = createVCardFile();
@@ -329,7 +349,10 @@ public class FooterLayout extends Panel implements HasLogger
 				}
 				ElementoImport elementoImport;
 				ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
-				elementoImport = ContactUtils.convertElementoToContactEntry( elemento, elementoProcessar, listTelefonesExistentes );
+				elementoImport = ContactUtils.convertElementoToContactEntry(	elemento,
+																				elementoProcessar,
+																				listTelefonesExistentes,
+																				importContactsConfigWindow.getMapProperties() );
 				importReports.put( elementoImport.getImportContactReport().getNin(), elementoImport );
 				if ( elementoProcessar != null )
 				{

@@ -221,6 +221,7 @@ public class MyUI extends UI implements HasLogger
 						}
 					}
 				}
+				showTray( "Olá " + googleAuthentication.getUserFullName() );
 				getLogger().info( "Hello {} with email {}.", googleAuthentication.getUserFullName(), googleAuthentication.getUserEmail() );
 			}
 			catch ( Exception e )

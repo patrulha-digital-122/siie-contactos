@@ -4,14 +4,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
 import javax.swing.text.MaskFormatter;
-
 import org.apache.commons.lang3.StringUtils;
-
+import com.google.gdata.data.DateTime;
 import com.google.gdata.data.contacts.Birthday;
 import com.google.gdata.data.contacts.ContactEntry;
+import com.google.gdata.data.contacts.Event;
 import com.google.gdata.data.contacts.Gender;
 import com.google.gdata.data.contacts.Relation;
 import com.google.gdata.data.contacts.UserDefinedField;
@@ -25,8 +26,10 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
-
+import com.google.gdata.data.extensions.When;
+import com.vaadin.ui.CheckBox;
 import scouts.cne.pt.model.Elemento;
+import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
 
@@ -38,7 +41,8 @@ public class ContactUtils
 {
 	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
 			ContactEntry contactEntry,
-			Set< String > listTelefonesExistentes )
+																Set< String > listTelefonesExistentes,
+																Map< ElementoTags, CheckBox > mapConfigs )
 	{
 		ImportContactReport importContactReport = new ImportContactReport(elemento.getNin());
 
@@ -51,10 +55,28 @@ public class ContactUtils
 			removeNINandNIF( contactEntry );
 		}
 		updateUserDefinedField( contactEntry, "NIN", elemento.getNin(), importContactReport );
-		updateNome( contactEntry, elemento, importContactReport );
-		updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel(), importContactReport );
-		updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone(), importContactReport );
-		updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
+		updateUserDefinedField( contactEntry, "NIF", elemento.getNif(), importContactReport );
+		if ( updatePropertie( mapConfigs, ElementoTags.TOTEM ) )
+		{
+			updateUserDefinedField( contactEntry, ElementoTags.TOTEM.getTagDescription(), elemento.getTotem(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.NOME ) )
+		{
+			updateNome( contactEntry, elemento, importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.TELEMOVEL ) )
+		{
+			updatePhoneNumber( contactEntry, "Telemóvel", elemento.getTelemovel(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.TELEFONE ) )
+		{
+			updatePhoneNumber( contactEntry, "Telefone", elemento.getTelefone(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.EMAIL ) )
+		{
+			updateEmail( contactEntry, "Pessoal", elemento.getEmail(), importContactReport );
+		}
+
 		if ( elemento.getCategoria().equals( SECCAO.DIRIGENTES ) )
 		{
 			listTelefonesExistentes.add( elemento.getTelemovel() );
@@ -62,27 +84,65 @@ public class ContactUtils
 		}
 		else
 		{
-			if ( !listTelefonesExistentes.contains( elemento.getTelefoneMae() ) )
+			if ( !listTelefonesExistentes.contains( elemento.getTelefoneMae() ) && updatePropertie( mapConfigs, ElementoTags.TELEFONE_MAE ) )
 			{
 				updatePhoneNumber( contactEntry, "Mãe", elemento.getTelefoneMae(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefoneMae() );
 			}
-			if ( !listTelefonesExistentes.contains( elemento.getTelefonePai() ) )
+			if ( !listTelefonesExistentes.contains( elemento.getTelefonePai() ) && updatePropertie( mapConfigs, ElementoTags.TELEFONE_PAI ) )
 			{
 				updatePhoneNumber( contactEntry, "Pai", elemento.getTelefonePai(), importContactReport );
 				listTelefonesExistentes.add( elemento.getTelefonePai() );
 			}
-			// updateEmail( contactEntry, "Principal", elemento.getEmailPrincipalGoogle(), importContactReport );
-			updateEmail( contactEntry, "Mãe", elemento.getEmailMae(), importContactReport );
-			updateEmail( contactEntry, "Pai", elemento.getEmailPai(), importContactReport );
+			if ( updatePropertie( mapConfigs, ElementoTags.EMAIL_MAE ) )
+			{
+				updateEmail( contactEntry, "Mãe", elemento.getEmailMae(), importContactReport );
+			}
+			if ( updatePropertie( mapConfigs, ElementoTags.EMAIL_PAI ) )
+			{
+				updateEmail( contactEntry, "Pai", elemento.getEmailPai(), importContactReport );
+			}
 		}
-		updateUserDefinedField( contactEntry, "NIF", elemento.getNif(), importContactReport );
-		updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento(), importContactReport );
-		updatePais( contactEntry, "Mãe", elemento.getNomeMae(), importContactReport );
-		updatePais( contactEntry, "Pai", elemento.getNomePai(), importContactReport );
-		updateMorada( contactEntry, "Casa", elemento, importContactReport );
+		if ( updatePropertie( mapConfigs, ElementoTags.DATA_NASCIMENTO ) )
+		{
+			updateAniversario( contactEntry, "Aniversário", elemento.getDataNascimento(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.DATA_PROMESSA ) )
+		{
+			updateEvent( contactEntry, ElementoTags.DATA_PROMESSA.getTagDescription(), elemento.getDataPromessa(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.NOME_MAE ) )
+		{
+			updatePais( contactEntry, "Mãe", elemento.getNomeMae(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.NOME_PAI ) )
+		{
+			updatePais( contactEntry, "Pai", elemento.getNomePai(), importContactReport );
+		}
+		if ( updatePropertie( mapConfigs, ElementoTags.MORADA ) )
+		{
+			updateMorada( contactEntry, "Casa", elemento, importContactReport );
+		}
 		contactEntry.setGender( elemento.isMasculino() ? new Gender( Gender.Value.MALE ) : new Gender( Gender.Value.FEMALE ) );
 		return new ElementoImport( contactEntry, elemento, importContactReport );
+	}
+
+	/**
+	 * The <b>updatePropertie</b> method returns {@link boolean}
+	 * 
+	 * @author anco62000465 2018-09-27
+	 * @param mapConfigs
+	 * @param totem
+	 * @return
+	 */
+	private static boolean updatePropertie( Map< ElementoTags, CheckBox > mapConfigs, ElementoTags tags )
+	{
+		CheckBox checkBox = mapConfigs.get( tags );
+		if ( checkBox != null )
+		{
+			return checkBox.getValue();
+		}
+		return false;
 	}
 
 	/**
@@ -313,6 +373,38 @@ public class ContactUtils
 			importContactReport.addUpdateField( label, birthday.getWhen(), format );
 			birthday.setWhen( format );
 		}
+	}
+
+	private static void updateEvent( ContactEntry contactEntry, String label, Date date, ImportContactReport importContactReport )
+	{
+		if ( date == null )
+		{
+			return;
+		}
+
+		When when = new When();
+		when.setStartTime( new DateTime( date ) );
+		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
+		String format = dateFormat.format( date );
+		List< Event > events = contactEntry.getEvents();
+		for ( Event event : events )
+		{
+			if ( StringUtils.equals( event.getLabel(), label ) )
+			{
+				if ( event.getWhen() != null && !event.getWhen().getStartTime().equals( when.getStartTime() ) )
+				{
+					event.setWhen( when );
+					importContactReport.addNewField( label, format );
+				}
+				return;
+			}
+		}
+
+		Event event = new Event();
+		event.setLabel( label );
+		event.setWhen( when );
+		contactEntry.getEvents().add( event );
+		importContactReport.addNewField( label, format );
 	}
 
 	private static void updatePais( ContactEntry contactEntry, String lable, String name, ImportContactReport importContactReport )

@@ -52,4 +52,12 @@ public interface HasLogger
 	{
 		Notification.show( "Warning", e, Type.WARNING_MESSAGE );
 	}
+
+	default void showTray( String string )
+	{
+		Notification notification = new Notification( string, Type.TRAY_NOTIFICATION );
+		notification.setDelayMsec( 3 * 1000 );
+		notification.setIcon( VaadinIcons.HANDS_UP );
+		notification.show( Page.getCurrent() );
+	}
 }

@@ -126,6 +126,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			Column< Elemento, Date > dataNascimentoColumn =
 							grid.addColumn( Elemento::getDataNascimento ).setCaption( ElementoTags.DATA_NASCIMENTO.getTagDescription() );
 			dataNascimentoColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );
+
 			Column< Elemento, Date > dataPromessaColumn = grid.addColumn( Elemento::getDataPromessa )
 							.setCaption( ElementoTags.DATA_PROMESSA.getTagDescription() ).setHidable( true ).setHidden( true );
 			dataPromessaColumn.setRenderer( new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" ) );

@@ -129,28 +129,7 @@ public class Elemento implements Comparable< Elemento >
 	public Date getDataNascimento()
 	{
 		Object dataNascimento = getAtributo( "dtnasc" );
-		if ( dataNascimento instanceof String )
-		{
-			String strData = ( String ) dataNascimento;
-			if ( strData.isEmpty() )
-			{
-				return null;
-			}
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
-			try
-			{
-				return simpleDateFormat.parse( ( String ) dataNascimento );
-			}
-			catch ( ParseException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		else if ( dataNascimento instanceof Date )
-		{
-			return ( Date ) dataNascimento;
-		}
-		return null;
+		return getDate( dataNascimento );
 	}
 
 	/**
@@ -347,28 +326,7 @@ public class Elemento implements Comparable< Elemento >
 	public Date getDataPromessa()
 	{
 		Object dataNascimento = getAtributo( "dtpromessa" );
-		if ( dataNascimento instanceof String )
-		{
-			String strData = ( String ) dataNascimento;
-			if ( strData.isEmpty() )
-			{
-				return null;
-			}
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
-			try
-			{
-				return simpleDateFormat.parse( ( String ) dataNascimento );
-			}
-			catch ( ParseException e )
-			{
-				e.printStackTrace();
-			}
-		}
-		else if ( dataNascimento instanceof Date )
-		{
-			return ( Date ) dataNascimento;
-		}
-		return null;
+		return getDate( dataNascimento );
 	}
 
 	/**
@@ -417,6 +375,48 @@ public class Elemento implements Comparable< Elemento >
 	public String toString()
 	{
 		return "Elemento [listaAtributos=" + listaAtributos + "]";
+	}
+
+	/**
+	 * The <b>getDate</b> method returns {@link Date}
+	 * 
+	 * @author anco62000465 2018-09-27
+	 * @param dataNascimento
+	 * @return
+	 */
+	private Date getDate( Object dataNascimento )
+	{
+		if ( dataNascimento instanceof String )
+		{
+			String strData = ( String ) dataNascimento;
+			if ( strData.isEmpty() )
+			{
+				return null;
+			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd/MM/yyyy" );
+			try
+			{
+				return simpleDateFormat.parse( ( String ) dataNascimento );
+			}
+			catch ( ParseException e )
+			{
+				e.printStackTrace();
+			}
+			simpleDateFormat = new SimpleDateFormat( "dd-MM-yyyy" );
+			try
+			{
+				return simpleDateFormat.parse( ( String ) dataNascimento );
+			}
+			catch ( ParseException e )
+			{
+				e.printStackTrace();
+			}
+		}
+		else if ( dataNascimento instanceof Date )
+		{
+			return ( Date ) dataNascimento;
+		}
+		return null;
 	}
 
 	/**

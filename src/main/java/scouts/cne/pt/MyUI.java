@@ -212,7 +212,7 @@ public class MyUI extends UI implements HasLogger
 				List< EmailAddress > emailAddresses = person.getEmailAddresses();
 				for ( EmailAddress emailAddress : emailAddresses )
 				{
-					if ( emailAddress.getMetadata().getPrimary() )
+					if ( emailAddress.getMetadata() != null && emailAddress.getMetadata().getPrimary() )
 					{
 						googleAuthentication.setUserEmail( emailAddress.getValue() );
 						if ( !person.getNames().isEmpty() )

@@ -87,6 +87,7 @@ public class ImportContactsConfigWindow extends Window
 			mainLayout.addComponent( checkBox );
 		}
 		Button btnOk = new Button( "Iniciar", VaadinIcons.OPEN_BOOK );
+		btnOk.setDisableOnClick(true);
 		btnOk.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = -2108089736744022194L;

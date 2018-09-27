@@ -335,6 +335,15 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	}
 
 	/**
+	 * @return the emailMae
+	 */
+	public Date getDataAdmissao()
+	{
+		Object object = getAtributo( ElementoTags.DATA_ADMISSAO.getTagId() );
+		return getDate( object );
+	}
+
+	/**
 	 * @return the nif
 	 */
 	public String getNif()
@@ -488,6 +497,6 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	@Override
 	public int compareTo( Elemento o )
 	{
-		return getCategoria().compareTo( o.getCategoria() );
+		return getNome().compareTo( o.getNome() );
 	}
 }

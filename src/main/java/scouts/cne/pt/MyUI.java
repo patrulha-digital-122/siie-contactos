@@ -15,6 +15,7 @@ import com.google.api.services.people.v1.model.EmailAddress;
 import com.google.api.services.people.v1.model.Person;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.CustomizedSystemMessages;
 import com.vaadin.server.DefaultErrorHandler;
@@ -29,6 +30,7 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -69,14 +71,15 @@ public class MyUI extends UI implements HasLogger
 	private GoogleServerAuthenticationBean	googleServerAuthentication;
 	private EscolherElementosLayout			elementosLayout;
 	private FooterLayout					importarLayout;
+	private Button btnUpdate;
 
 	@Override
 	protected void init( VaadinRequest vaadinRequest )
 	{
 		getLogger().info( "EmbedId " + getEmbedId() );
 		VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setSpacing( true );
-		mainLayout.setMargin( new MarginInfo( true, true, false, true ) );
+		mainLayout.setSpacing( false );
+		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
 		mainLayout.setSizeFull();
 		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		setContent( mainLayout );
@@ -117,19 +120,10 @@ public class MyUI extends UI implements HasLogger
 		String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
 		if ( siieGDriveFile != null )
 		{
-			new Thread( () ->
-			{
-				try
-				{
-					siieService.loadElementosGDrive( siieGDriveFile );
-				}
-				catch ( SIIIEImporterException e )
-				{
-					showError( e );
-				}
-				elementosLayout.refreshGrids();
-			} ).start();
+			loadContacts(siieGDriveFile);
 		}
+
+		btnUpdate = new Button("Actualizar tabela", VaadinIcons.REFRESH);
 
 		if ( (siieLocalFile == null) && (siieGDriveFile == null) )
 		{
@@ -144,9 +138,15 @@ public class MyUI extends UI implements HasLogger
 		}
 		else
 		{
+
+			btnUpdate.setWidth("100%");
+			btnUpdate.addClickListener(event -> loadContacts(siieGDriveFile));
+			btnUpdate.setDisableOnClick(true);
 			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( elementosLayout, importarLayout );
 			verticalSplitPanel.setSplitPosition( 85 );
-			mainLayout.addComponent( verticalSplitPanel );
+			mainLayout.addComponents( btnUpdate, verticalSplitPanel );
+			mainLayout.setExpandRatio(btnUpdate, 1);
+			mainLayout.setExpandRatio(verticalSplitPanel, 10);
 		}
 
 		//
@@ -194,6 +194,22 @@ public class MyUI extends UI implements HasLogger
 				window.setContent( new VerticalLayout( new Label( cause.toString(), ContentMode.HTML ) ) );
 				getUI().addWindow( window );
 			}
+		} );
+	}
+
+	private void loadContacts(String siieGDriveFile) {
+		access( () ->
+		{
+			try
+			{
+				siieService.loadElementosGDrive( siieGDriveFile );
+			}
+			catch ( SIIIEImporterException e )
+			{
+				showError( e );
+			}
+			elementosLayout.refreshGrids();
+			btnUpdate.setEnabled(true);
 		} );
 	}
 

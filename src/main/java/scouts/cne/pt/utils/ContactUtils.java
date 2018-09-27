@@ -115,6 +115,10 @@ public class ContactUtils
 		{
 			updateEvent( contactEntry, ElementoTags.DATA_PROMESSA.getTagDescription(), elemento.getDataPromessa(), importContactReport );
 		}
+		if ( updatePropertie( mapConfigs, ElementoTags.DATA_ADMISSAO ) )
+		{
+			updateEvent( contactEntry, ElementoTags.DATA_ADMISSAO.getTagDescription(), elemento.getDataAdmissao(), importContactReport );
+		}
 		if ( updatePropertie( mapConfigs, ElementoTags.NOME_MAE ) )
 		{
 			updatePais( contactEntry, "Mãe", elemento.getNomeMae(), importContactReport );
@@ -386,13 +390,14 @@ public class ContactUtils
 			return;
 		}
 
-		When when = new When();
-		DateTime dateTime = new DateTime( date );
-		when.setStartTime( dateTime );
-		when.setEndTime(dateTime);
-
 		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd" );
 		String format = dateFormat.format( date );
+
+		When when = new When();
+		DateTime v = new DateTime(date);
+		v.setDateOnly(true);
+		when.setStartTime(v);
+
 		List< Event > events = contactEntry.getEvents();
 		for ( Event event : events )
 		{

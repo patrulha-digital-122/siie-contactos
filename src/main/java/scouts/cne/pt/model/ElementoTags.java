@@ -11,10 +11,11 @@ import java.util.Objects;
 public enum ElementoTags
 {
 	NIN( "nin", "NIN" ),
-	NOME( "nome", "Nome do elemento" ),
-	NIF( "nif", "Numero identificação fiscal" ),
+	NOME( "nome", "Nome completo" ),
+	NIF( "nif", "Número identificação fiscal" ),
 	DATA_NASCIMENTO( "dtNasc", "Data de nascimento" ),
 	DATA_PROMESSA( "dtpromessa", "Data da Promessa" ),
+	DATA_ADMISSAO( "dtadmissao", "Data de Admissão" ),
 	MORADA( "morada", "Morada" ),
 	LOCALIDADE( "localidade", "Localidade" ),
 	CP4( "cp4", "Código Postal (os primeiros 4 digitos)" ),
@@ -107,7 +108,8 @@ public enum ElementoTags
 		List< ElementoTags > tags = new LinkedList<>();
 		tags.add( ElementoTags.NOME );
 		tags.add( ElementoTags.DATA_NASCIMENTO );
-		// tags.add( ElementoTags.DATA_PROMESSA );
+		tags.add( ElementoTags.DATA_PROMESSA );
+		tags.add( ElementoTags.DATA_ADMISSAO );
 		tags.add( ElementoTags.MORADA );
 		tags.add( ElementoTags.TELEFONE );
 		tags.add( ElementoTags.TELEMOVEL );

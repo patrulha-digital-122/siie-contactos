@@ -3,14 +3,15 @@ package scouts.cne.pt.model;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
-
+import java.util.Map;
 import javax.mail.internet.InternetAddress;
-
 import org.apache.commons.lang3.StringUtils;
-
 import scouts.cne.pt.app.HasLogger;
 
 /**
@@ -18,11 +19,7 @@ import scouts.cne.pt.app.HasLogger;
  */
 public class Elemento implements Comparable< Elemento >, HasLogger
 {
-	/**
-	 *
-	 */
-	private static final long	serialVersionUID	= 5041677499210798668L;
-	private final HashMap< String, Object >	listaAtributos;
+	private final HashMap< String, Object > listaAtributos;
 
 	/**
 	 *
@@ -30,6 +27,14 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	public Elemento()
 	{
 		listaAtributos = new HashMap<>();
+	}
+
+	/**
+	 * @return the nome
+	 */
+	public String getAgrupamento()
+	{
+		return getAtributo( "agrupamento" ).toString();
 	}
 
 	/**
@@ -45,8 +50,8 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getNomeProprio()
 	{
-		LinkedList< String > l = new LinkedList<>();
-		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		final LinkedList< String > l = new LinkedList<>();
+		for ( final String string : getAtributo( "nome" ).toString().split( " " ) )
 		{
 			l.add( string );
 		}
@@ -58,8 +63,8 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getNomeApelido()
 	{
-		LinkedList< String > l = new LinkedList<>();
-		for ( String string : getAtributo( "nome" ).toString().split( " " ) )
+		final LinkedList< String > l = new LinkedList<>();
+		for ( final String string : getAtributo( "nome" ).toString().split( " " ) )
 		{
 			l.add( string );
 		}
@@ -119,7 +124,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getCodigoPostal()
 	{
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append( getAtributo( "cp4" ).toString() );
 		sb.append( "-" );
 		sb.append( getAtributo( "cp3" ).toString() );
@@ -133,7 +138,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public Date getDataNascimento()
 	{
-		Object dataNascimento = getAtributo( "dtnasc" );
+		final Object dataNascimento = getAtributo( "dtnasc" );
 		return getDate( dataNascimento );
 	}
 
@@ -175,7 +180,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getEmailPrincipalGoogle()
 	{
-		StringBuilder stringBuilder = new StringBuilder();
+		final StringBuilder stringBuilder = new StringBuilder();
 		if ( !getEmail().isEmpty() )
 		{
 			stringBuilder.append( getEmail() );
@@ -227,6 +232,38 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	public String getProfissao()
 	{
 		return ( String ) getAtributo( "profissao" );
+	}
+
+	/**
+	 * @return the nomePai
+	 */
+	public String getNomeEncEdu()
+	{
+		return ( String ) getAtributo( "nomeencedu" );
+	}
+
+	/**
+	 * @return the telefonePai
+	 */
+	public String getTelefoneEncEdu()
+	{
+		return ( String ) getAtributo( "telefoneencedu" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getEmailEncEdu()
+	{
+		return ( String ) getAtributo( "emailencedu" );
+	}
+
+	/**
+	 * @return the emailPai
+	 */
+	public String getProfissaoEncEdu()
+	{
+		return ( String ) getAtributo( "profissaoencedu" );
 	}
 
 	/**
@@ -330,7 +367,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public Date getDataPromessa()
 	{
-		Object dataNascimento = getAtributo( "dtpromessa" );
+		final Object dataNascimento = getAtributo( "dtpromessa" );
 		return getDate( dataNascimento );
 	}
 
@@ -339,7 +376,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public Date getDataAdmissao()
 	{
-		Object object = getAtributo( ElementoTags.DATA_ADMISSAO.getTagId() );
+		final Object object = getAtributo( ElementoTags.DATA_ADMISSAO.getTagId() );
 		return getDate( object );
 	}
 
@@ -356,9 +393,10 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getNin()
 	{
-		String string = getAtributo("nin").toString();
-		if (!string.isEmpty()) {
-			string = StringUtils.leftPad(string, 13, "0");
+		String string = getAtributo( "nin" ).toString();
+		if ( !string.isEmpty() )
+		{
+			string = StringUtils.leftPad( string, 13, "0" );
 		}
 		return string;
 	}
@@ -376,7 +414,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public Object getAtributo( String tag )
 	{
-		Object object = listaAtributos.get( tag );
+		final Object object = listaAtributos.get( tag );
 		if ( object == null )
 		{
 			return "";
@@ -406,7 +444,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	{
 		if ( objectDate instanceof String )
 		{
-			String strData = ( String ) objectDate;
+			final String strData = ( String ) objectDate;
 			if ( strData.isEmpty() )
 			{
 				return null;
@@ -416,18 +454,18 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 			{
 				return simpleDateFormat.parse( ( String ) objectDate );
 			}
-			catch ( ParseException e )
+			catch ( final ParseException e )
 			{
-				getLogger().error(e.getMessage());
+				getLogger().error( e.getMessage() );
 			}
 			simpleDateFormat = new SimpleDateFormat( "dd-MM-yyyy" );
 			try
 			{
 				return simpleDateFormat.parse( ( String ) objectDate );
 			}
-			catch ( ParseException e )
+			catch ( final ParseException e )
 			{
-				getLogger().error(e.getMessage());
+				getLogger().error( e.getMessage() );
 			}
 		}
 		else if ( objectDate instanceof Date )
@@ -443,13 +481,13 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmail()
 	{
-		if ( ( getEmail() != null ) && getEmail().contains( "@" ) )
+		if ( getEmail() != null && getEmail().contains( "@" ) )
 		{
 			try
 			{
 				return new InternetAddress( getEmail(), getNome() );
 			}
-			catch ( UnsupportedEncodingException e )
+			catch ( final UnsupportedEncodingException e )
 			{
 			}
 		}
@@ -462,13 +500,13 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmailPai()
 	{
-		if ( ( getEmailPai() != null ) && getEmailPai().contains( "@" ) )
+		if ( getEmailPai() != null && getEmailPai().contains( "@" ) )
 		{
 			try
 			{
 				return new InternetAddress( getEmailPai(), getNomePai().toString() );
 			}
-			catch ( UnsupportedEncodingException e )
+			catch ( final UnsupportedEncodingException e )
 			{
 			}
 		}
@@ -481,13 +519,13 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmailMae()
 	{
-		if ( ( getEmailMae() != null ) && getEmailMae().contains( "@" ) )
+		if ( getEmailMae() != null && getEmailMae().contains( "@" ) )
 		{
 			try
 			{
 				return new InternetAddress( getEmailMae(), getNomeMae().toString() );
 			}
-			catch ( UnsupportedEncodingException e )
+			catch ( final UnsupportedEncodingException e )
 			{
 			}
 		}
@@ -498,5 +536,81 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	public int compareTo( Elemento o )
 	{
 		return getNome().compareTo( o.getNome() );
+	}
+
+	public Map< String, String > getPDFSIIEMap()
+	{
+		final Map< String, String > map = new HashMap<>();
+		map.put( "AGRNUCREGSC", getAgrupamento() );
+		map.put( "NIN", StringUtils.leftPad( getNin(), 17, "-" ) );
+		LocalDateTime dateTime = LocalDateTime.ofInstant( getDataAdmissao().toInstant(), ZoneId.systemDefault() );
+		map.put( "DATA ADMISSÃO", StringUtils.leftPad( dateTime.format( DateTimeFormatter.ofPattern( "d" ) ), 2, "0" ) );
+		map.put( "undefined", StringUtils.leftPad( dateTime.format( DateTimeFormatter.ofPattern( "M" ) ), 2, "0" ) );
+		map.put( "undefined_2", dateTime.format( DateTimeFormatter.ofPattern( "y" ) ) );
+		map.put( "CATEGORIA", getCategoria().getNome() );
+
+		if ( getNome().length() <= 30 )
+		{
+			map.put( "NOME COMPLETO", getNome() );
+		}
+		else
+		{
+			map.put( "NOME COMPLETO", getNome().substring( 0, 30 ) );
+			map.put( "SEXO", getNome().substring( 30 ) );
+		}
+
+		if ( isMasculino() )
+		{
+			map.put( "Masculino", "X" );
+			map.put( "Feminino", " " );
+		}
+		else
+		{
+			map.put( "Masculino", " " );
+			map.put( "Feminino", "X" );
+		}
+
+		map.put( "NIF", StringUtils.leftPad( getNif(), 14, "-" ) );
+
+		dateTime = LocalDateTime.ofInstant( getDataNascimento().toInstant(), ZoneId.systemDefault() );
+		map.put( "DATA NASCIMENTO", StringUtils.leftPad( dateTime.format( DateTimeFormatter.ofPattern( "d" ) ), 2, "0" ) );
+		map.put( "undefined_3", StringUtils.leftPad( dateTime.format( DateTimeFormatter.ofPattern( "M" ) ), 2, "0" ) );
+		map.put( "undefined_4", dateTime.format( DateTimeFormatter.ofPattern( "y" ) ) );
+
+		map.put( "NATURALIDADE", getNaturalidade() );
+		map.put( "MORADA", getMorada() );
+		map.put( "LOCALIDADE", getLocalidade() );
+		map.put( "CODIGO POSTAL", StringUtils.trim( getAtributo( "cp4" ).toString() ) );
+		map.put( "undefined_5", StringUtils.trim( getAtributo( "cp3" ).toString() ) );
+		map.put( "CONCELHO", "" );
+		map.put( "DISTRITO", "" );
+		if ( StringUtils.isNotBlank( getTelemovel() ) )
+		{
+			map.put( "TELEMÓVEL", StringUtils.leftPad( getTelemovel(), 13, "-" ) );
+		}
+		if ( StringUtils.isNotBlank( getTelefone() ) )
+		{
+			map.put( "TELEFONE", StringUtils.leftPad( getTelefone(), 13, "-" ) );
+		}
+		map.put( "CORREIO ELETRÓNICO", getEmail() );
+		map.put( "HABILITAÇÕES", "" );
+		map.put( "PROFISSÃO", getProfissao() );
+		// Pai
+		map.put( "PAI", getNomePai() );
+		map.put( "PROFISSÃO_2", getProfissaoPai() );
+		map.put( "TELEMÓVEL_2", getTelefonePai() );
+		map.put( "CORREIO ELETRÓNICO_2", getEmailPai() );
+		// Mae
+		map.put( "MÃE", getNomeMae() );
+		map.put( "PROFISSÃO_3", getProfissaoMae() );
+		map.put( "TELEMÓVEL_3", getTelefoneMae() );
+		map.put( "CORREIO ELETRÓNICO_3", getEmailMae() );
+		// Enc Edu
+		map.put( "ENC EDUCAÇÃO", getNomeEncEdu() );
+		map.put( "PROFISSÃO_4", getProfissaoEncEdu() );
+		map.put( "TELEMÓVEL_4", getTelefoneEncEdu() );
+		map.put( "CORREIO ELETRÓNICO_4", getEmailEncEdu() );
+
+		return map;
 	}
 }

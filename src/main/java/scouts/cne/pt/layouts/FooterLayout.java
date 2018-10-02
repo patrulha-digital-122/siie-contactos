@@ -15,9 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
@@ -50,10 +48,10 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window.CloseListener;
-
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.component.AutorizationFilesWindow;
 import scouts.cne.pt.component.EmailerWindow;
 import scouts.cne.pt.component.ImportContactsConfigWindow;
 import scouts.cne.pt.component.ImportContactsReportLayout;
@@ -72,15 +70,16 @@ import scouts.cne.pt.utils.ElementoImport;
  */
 public class FooterLayout extends Panel implements HasLogger
 {
-	private static final long			serialVersionUID	= -6763770502811814642L;
-	private final Button				btnAutorizacao;
-	private Button						btImportacao;
-	private Button						btImportacaoVCard;
-	private final Button				btnCopyMailingList;
-	private final Button				btnEmailer;
-	private EscolherElementosLayout		elementosLayout;
-	private GoogleAuthenticationBean	googleAuthentication;
-	private final ImportContactsConfigWindow importContactsConfigWindow;
+	private static final long					serialVersionUID	= -6763770502811814642L;
+	private final Button						btnAutorizacao;
+	private final Button						btImportacao;
+	private final Button						btImportacaoVCard;
+	private final Button						btnCopyMailingList;
+	private final Button						btnEmailer;
+	private final Button						btnAuthFile;
+	private final EscolherElementosLayout		elementosLayout;
+	private final GoogleAuthenticationBean		googleAuthentication;
+	private final ImportContactsConfigWindow	importContactsConfigWindow;
 
 	/**
 	 * constructor
@@ -94,17 +93,18 @@ public class FooterLayout extends Panel implements HasLogger
 		setSizeFull();
 		this.elementosLayout = elementosLayout;
 		this.googleAuthentication = googleAuthentication;
-		this.importContactsConfigWindow = new ImportContactsConfigWindow();
+		importContactsConfigWindow = new ImportContactsConfigWindow();
 
 		btnAutorizacao = new Button( "Autorizar", VaadinIcons.GOOGLE_PLUS_SQUARE );
-
+		final boolean bAlreadyHaveRefreshToken = StringUtils.isNotBlank( googleAuthentication.getRefreshToken() );
+		btnAutorizacao.setEnabled( !bAlreadyHaveRefreshToken );
 		btImportacao = new Button( "Importação (0)", VaadinIcons.USER_STAR );
 		btImportacao.setEnabled( false );
-		btImportacao.setVisible( false );
+		btImportacao.setVisible( bAlreadyHaveRefreshToken );
 		btImportacao.setDisableOnClick( true );
 		btImportacao.addClickListener( event ->
 		{
-			if ( ( googleAuthentication.getRefreshToken() != null ) && ( elementosLayout.getSelecionados() > 0 ) )
+			if ( googleAuthentication.getRefreshToken() != null && elementosLayout.getSelecionados() > 0 )
 			{
 				getUI().addWindow( importContactsConfigWindow );
 			}
@@ -125,16 +125,15 @@ public class FooterLayout extends Panel implements HasLogger
 			}
 		} );
 
-
 		btImportacaoVCard = new Button( "Download como VCard (0)", VaadinIcons.DOWNLOAD_ALT );
 		btImportacaoVCard.setEnabled( false );
-		StreamResource myResource = createVCardFile();
-		FileDownloader fileDownloader = new FileDownloader( myResource );
+		final StreamResource myResource = createVCardFile();
+		final FileDownloader fileDownloader = new FileDownloader( myResource );
 		fileDownloader.extend( btImportacaoVCard );
-		Label labelFooter = new Label(
-				"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
-				ContentMode.HTML );
-		Button btnFaq = new Button( "Ajuda - FAQ", VaadinIcons.QUESTION );
+		final Label labelFooter = new Label(
+						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
+						ContentMode.HTML );
+		final Button btnFaq = new Button( "Ajuda - FAQ", VaadinIcons.QUESTION );
 		btnFaq.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = -2312531713940582397L;
@@ -161,7 +160,7 @@ public class FooterLayout extends Panel implements HasLogger
 
 		btnEmailer = new Button( "Email's", VaadinIcons.MAILBOX );
 		btnEmailer.setEnabled( false );
-		btnEmailer.setVisible( false );
+		btnEmailer.setVisible( bAlreadyHaveRefreshToken );
 		btnEmailer.addClickListener( new ClickListener()
 		{
 			private static final long serialVersionUID = 8916961174824919931L;
@@ -172,29 +171,44 @@ public class FooterLayout extends Panel implements HasLogger
 				getUI().addWindow( new EmailerWindow( elementosLayout.getElementosSelecionados().values(), googleAuthentication ) );
 			}
 		} );
-		HorizontalLayout horizontalLayoutBtn = new HorizontalLayout();
+
+		// Ficheiro autorização
+		btnAuthFile = new Button( "Ficheiro Autorização - MAF/SIIE", VaadinIcons.DOWNLOAD );
+		btnAuthFile.setEnabled( false );
+		btnAuthFile.addClickListener( new ClickListener()
+		{
+			private static final long serialVersionUID = -2312531713940582397L;
+
+			@Override
+			public void buttonClick( ClickEvent event )
+			{
+				getUI().addWindow( new AutorizationFilesWindow( elementosLayout.getElementosSelecionados().values(), googleAuthentication ) );
+			}
+		} );
+
+		final HorizontalLayout horizontalLayoutBtn = new HorizontalLayout();
 		horizontalLayoutBtn.setWidth( "100%" );
 		horizontalLayoutBtn.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		horizontalLayoutBtn.addComponents( btnAutorizacao, btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
 		horizontalLayoutBtn.addComponent( btnEmailer );
+		horizontalLayoutBtn.addComponent( btnAuthFile );
 
-		VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
+		final VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
 		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
 		verticalLayout.setMargin( true );
 		setContent( verticalLayout );
 	}
 
-
 	/**
 	 * Getter for btnAutorizacao
+	 * 
 	 * @author anco62000465 2018-09-26
-	 * @return the btnAutorizacao  {@link Button}
+	 * @return the btnAutorizacao {@link Button}
 	 */
 	public Button getBtnAutorizacao()
 	{
 		return btnAutorizacao;
 	}
-
 
 	/**
 	 * Getter for btImportacao
@@ -240,6 +254,11 @@ public class FooterLayout extends Panel implements HasLogger
 		return btnEmailer;
 	}
 
+	public Button getBtnAuthFile()
+	{
+		return btnAuthFile;
+	}
+
 	/**
 	 * The <b>createVCardFile</b> method returns {@link StreamResource}
 	 *
@@ -262,7 +281,7 @@ public class FooterLayout extends Panel implements HasLogger
 				{
 					return new FileInputStream( ContactVCardUtils.getVCardFile( elementosLayout.getElementosSelecionados().values() ) );
 				}
-				catch ( IOException e )
+				catch ( final IOException e )
 				{
 					getLogger().error( e.getMessage(), e );
 				}
@@ -275,21 +294,21 @@ public class FooterLayout extends Panel implements HasLogger
 	{
 		try
 		{
-			Map< String, Elemento > elementosParaImportar = elementosLayout.getElementosSelecionados();
+			final Map< String, Elemento > elementosParaImportar = elementosLayout.getElementosSelecionados();
 			if ( elementosParaImportar.isEmpty() )
 			{
 				return;
 			}
-			GoogleCredential credential = googleAuthentication.getGoogleCredentials();
+			final GoogleCredential credential = googleAuthentication.getGoogleCredentials();
 			if ( credential == null )
 			{
 				showWarning( "Aplicação sem autorização..." );
 				return;
 			}
-			String applicationName = googleAuthentication.getApplicationName();
-			ContactsService contactsService = new ContactsService( applicationName );
+			final String applicationName = googleAuthentication.getApplicationName();
+			final ContactsService contactsService = new ContactsService( applicationName );
 			contactsService.setOAuth2Credentials( credential );
-			URL feedUrl = new URL( "https://www.google.com/m8/feeds/contacts/default/full" );
+			final URL feedUrl = new URL( "https://www.google.com/m8/feeds/contacts/default/full" );
 			ContactFeed resultFeed = contactsService.getFeed( feedUrl, ContactFeed.class );
 			// Print the results
 			// Add a normal progress bar
@@ -298,8 +317,8 @@ public class FooterLayout extends Panel implements HasLogger
 			// );
 			// showDebugNotification( "Elementos para importar: " +
 			// elementosParaImportar.size() );
-			Map< String, ContactEntry > elementosExistentes = new HashMap<>();
-			List< ContactEntry > listContc = new ArrayList<>( resultFeed.getEntries() );
+			final Map< String, ContactEntry > elementosExistentes = new HashMap<>();
+			final List< ContactEntry > listContc = new ArrayList<>( resultFeed.getEntries() );
 			while ( resultFeed.getNextLink() != null )
 			{
 				resultFeed = contactsService.getFeed( new URL( resultFeed.getNextLink().getHref() ), ContactFeed.class );
@@ -307,10 +326,10 @@ public class FooterLayout extends Panel implements HasLogger
 			}
 			// showDebugNotification( "Resultados recebidos: " +
 			// resultFeed.getTotalResults() + " / " + listContc.size() );
-			Set< String > listTelefonesExistentes = new TreeSet<>();
-			for ( ContactEntry contactEntry : listContc )
+			final Set< String > listTelefonesExistentes = new TreeSet<>();
+			for ( final ContactEntry contactEntry : listContc )
 			{
-				for ( PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
+				for ( final PhoneNumber phoneNumber : contactEntry.getPhoneNumbers() )
 				{
 					String strPhoneNumber = phoneNumber.getPhoneNumber();
 					strPhoneNumber = strPhoneNumber.replace( " ", "" );
@@ -323,11 +342,11 @@ public class FooterLayout extends Panel implements HasLogger
 					}
 					listTelefonesExistentes.add( strPhoneNumber );
 				}
-				for ( UserDefinedField userDefinedField : contactEntry.getUserDefinedFields() )
+				for ( final UserDefinedField userDefinedField : contactEntry.getUserDefinedFields() )
 				{
 					if ( StringUtils.equals( userDefinedField.getKey(), "NIN" ) )
 					{
-						String strNIN = StringUtils.trimToEmpty( userDefinedField.getValue() );
+						final String strNIN = StringUtils.trimToEmpty( userDefinedField.getValue() );
 						if ( elementosParaImportar.containsKey( strNIN ) )
 						{
 							elementosExistentes.put( strNIN, contactEntry );
@@ -335,15 +354,15 @@ public class FooterLayout extends Panel implements HasLogger
 					}
 				}
 			}
-			Map< SECCAO, ContactGroupEntry > processarGrupo = processarGrupo( contactsService, elementosParaImportar );
-			List< ContactFeed > listBatchFeeds = new ArrayList<>();
+			final Map< SECCAO, ContactGroupEntry > processarGrupo = processarGrupo( contactsService, elementosParaImportar );
+			final List< ContactFeed > listBatchFeeds = new ArrayList<>();
 			ContactFeed batchRequestFeed = new ContactFeed();
 			listBatchFeeds.add( batchRequestFeed );
 			int i = 0;
-			List< Elemento > values = new ArrayList<>( elementosParaImportar.values() );
-			Map< String, ElementoImport > importReports = new HashMap<>();
+			final List< Elemento > values = new ArrayList<>( elementosParaImportar.values() );
+			final Map< String, ElementoImport > importReports = new HashMap<>();
 			Collections.sort( values );
-			for ( Elemento elemento : values )
+			for ( final Elemento elemento : values )
 			{
 				if ( ++i > 98 )
 				{
@@ -352,11 +371,11 @@ public class FooterLayout extends Panel implements HasLogger
 					i = 0;
 				}
 				ElementoImport elementoImport;
-				ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
+				final ContactEntry elementoProcessar = elementosExistentes.get( elemento.getNin() );
 				elementoImport = ContactUtils.convertElementoToContactEntry(	elemento,
-						elementoProcessar,
-						listTelefonesExistentes,
-						importContactsConfigWindow.getMapProperties() );
+																				elementoProcessar,
+																				listTelefonesExistentes,
+																				importContactsConfigWindow.getMapProperties() );
 				importReports.put( elementoImport.getImportContactReport().getNin(), elementoImport );
 				if ( elementoProcessar != null )
 				{
@@ -370,20 +389,20 @@ public class FooterLayout extends Panel implements HasLogger
 					BatchUtils.setBatchId( elementoImport.getContactEntry(), "create" );
 					BatchUtils.setBatchOperationType( elementoImport.getContactEntry(), BatchOperationType.INSERT );
 				}
-				Map< String, ContactGroupEntry > groupsToDelete = new HashMap<>();
-				ContactGroupEntry myContacts = processarGrupo.get( SECCAO.NONE );
-				for ( Entry< SECCAO, ContactGroupEntry > entry : processarGrupo.entrySet() )
+				final Map< String, ContactGroupEntry > groupsToDelete = new HashMap<>();
+				final ContactGroupEntry myContacts = processarGrupo.get( SECCAO.NONE );
+				for ( final Entry< SECCAO, ContactGroupEntry > entry : processarGrupo.entrySet() )
 				{
-					SECCAO seccao = entry.getKey();
-					ContactGroupEntry groupEntry = entry.getValue();
-					if ( ( elemento.getCategoria() != seccao ) && ( groupEntry.getSystemGroup() == null ) )
+					final SECCAO seccao = entry.getKey();
+					final ContactGroupEntry groupEntry = entry.getValue();
+					if ( elemento.getCategoria() != seccao && groupEntry.getSystemGroup() == null )
 					{
 						groupsToDelete.put( groupEntry.getId(), groupEntry );
 					}
 				}
-				ContactGroupEntry contactGroupEntry = processarGrupo.get( elemento.getCategoria() );
+				final ContactGroupEntry contactGroupEntry = processarGrupo.get( elemento.getCategoria() );
 				boolean associarGroup = true;
-				for ( GroupMembershipInfo groupMembershipInfo : elementoImport.getContactEntry().getGroupMembershipInfos() )
+				for ( final GroupMembershipInfo groupMembershipInfo : elementoImport.getContactEntry().getGroupMembershipInfos() )
 				{
 					if ( groupsToDelete.containsKey( groupMembershipInfo.getHref() ) )
 					{
@@ -397,73 +416,76 @@ public class FooterLayout extends Panel implements HasLogger
 				}
 				if ( associarGroup )
 				{
-					GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
+					final GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
 					groupMembershipInfo.setHref( contactGroupEntry.getId() );
 					elementoImport.getContactEntry().getGroupMembershipInfos().add( groupMembershipInfo );
 				}
 				if ( myContacts != null )
 				{
-					GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
+					final GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo();
 					groupMembershipInfo.setHref( myContacts.getId() );
 					elementoImport.getContactEntry().getGroupMembershipInfos().add( groupMembershipInfo );
 				}
 				batchRequestFeed.getEntries().add( elementoImport.getContactEntry() );
 			}
-			List< ElementoImport > listOk = new ArrayList<>();
-			List< ElementoImport > listCriados = new ArrayList<>();
-			List< ElementoImport > listErro = new ArrayList<>();
-			List< ElementoImport > listNaoModificado = new ArrayList<>();
-			for ( ContactFeed contactFeed : listBatchFeeds )
+			final List< ElementoImport > listOk = new ArrayList<>();
+			final List< ElementoImport > listCriados = new ArrayList<>();
+			final List< ElementoImport > listErro = new ArrayList<>();
+			final List< ElementoImport > listNaoModificado = new ArrayList<>();
+			for ( final ContactFeed contactFeed : listBatchFeeds )
 			{
 				// Submit the batch request to the server.
-				ContactFeed responseFeed =
-						contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
+				final ContactFeed responseFeed =
+								contactsService.batch( new URL( "https://www.google.com/m8/feeds/contacts/default/full/batch" ), contactFeed );
 				// Check the status of each operation.
-				for ( ContactEntry entry : responseFeed.getEntries() )
+				for ( final ContactEntry entry : responseFeed.getEntries() )
 				{
 					// String batchId = BatchUtils.getBatchId( entry );
-					BatchStatus status = BatchUtils.getBatchStatus( entry );
-					ElementoImport e = importReports.get( getNinFromContactEntry( entry.getUserDefinedFields() ) );
+					final BatchStatus status = BatchUtils.getBatchStatus( entry );
+					final ElementoImport e = importReports.get( getNinFromContactEntry( entry.getUserDefinedFields() ) );
 
 					String fullName = "?";
-					if ((entry.getName() != null) && (entry.getName().getFullName() != null)) {
+					if ( entry.getName() != null && entry.getName().getFullName() != null )
+					{
 						fullName = entry.getName().getFullName().getValue();
-					} else {
-						fullName = Objects.toString(entry.getId(), "?");
+					}
+					else
+					{
+						fullName = Objects.toString( entry.getId(), "?" );
 					}
 					switch ( status.getCode() )
 					{
-					case 200:
-						getLogger().error( "Contacto actualizado: {}", fullName );
-						listOk.add( e );
-						break;
-					case 201:
-						getLogger().error( "Contacto criados: {}", fullName );
-						e.getContactEntry().setId( entry.getId() );
-						listCriados.add( e );
-						break;
-					case 304:
-						getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
-						listNaoModificado.add( e );
-						break;
-					default:
-						getLogger().error(	"Erro a processar : {} | {} :: {}",
-								entry.getPlainTextContent(),
-								status.getCode(),
-								status.getReason() );
-						ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
-								TagCreator.b( String.valueOf( status.getCode() ) ),
-								TagCreator.text( " | Motivo: " ),
-								TagCreator.b( status.getReason() ) ) );
-						ElementoImport elementoImport = new ElementoImport( entry, null,
-								new ImportContactReport( getNinFromContactEntry( entry.getUserDefinedFields() ) ) );
-						elementoImport.getImportContactReport().getLstLabels().add( join.render() );
-						listErro.add( elementoImport );
-						break;
+						case 200:
+							getLogger().error( "Contacto actualizado: {}", fullName );
+							listOk.add( e );
+							break;
+						case 201:
+							getLogger().error( "Contacto criados: {}", fullName );
+							e.getContactEntry().setId( entry.getId() );
+							listCriados.add( e );
+							break;
+						case 304:
+							getLogger().error( "Contacto não actualizados: {}", entry.getName().getFullName() );
+							listNaoModificado.add( e );
+							break;
+						default:
+							getLogger().error(	"Erro a processar : {} | {} :: {}",
+												entry.getPlainTextContent(),
+												status.getCode(),
+												status.getReason() );
+							final ContainerTag join = TagCreator.p( TagCreator.join(	TagCreator.text( "Código do erro: " ),
+																						TagCreator.b( String.valueOf( status.getCode() ) ),
+																						TagCreator.text( " | Motivo: " ),
+																						TagCreator.b( status.getReason() ) ) );
+							final ElementoImport elementoImport = new ElementoImport( entry, null,
+											new ImportContactReport( getNinFromContactEntry( entry.getUserDefinedFields() ) ) );
+							elementoImport.getImportContactReport().getLstLabels().add( join.render() );
+							listErro.add( elementoImport );
+							break;
 					}
 				}
 			}
-			Window window = new Window( "Resultado" );
+			final Window window = new Window( "Resultado" );
 			window.setContent( new ImportContactsReportLayout( listOk, listCriados, listErro, listNaoModificado ) );
 			// Center it in the browser window
 			window.center();
@@ -474,7 +496,7 @@ public class FooterLayout extends Panel implements HasLogger
 			// Open it in the UI
 			getUI().addWindow( window );
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			showError( e );
 		}
@@ -482,7 +504,7 @@ public class FooterLayout extends Panel implements HasLogger
 
 	private String getNinFromContactEntry( List< UserDefinedField > userDefinedFields )
 	{
-		Optional< UserDefinedField > findFirst = userDefinedFields.stream().filter( p -> StringUtils.equals( p.getKey(), "NIN" ) ).findFirst();
+		final Optional< UserDefinedField > findFirst = userDefinedFields.stream().filter( p -> StringUtils.equals( p.getKey(), "NIN" ) ).findFirst();
 		if ( findFirst.isPresent() )
 		{
 			return findFirst.get().getValue();
@@ -505,8 +527,8 @@ public class FooterLayout extends Panel implements HasLogger
 	 */
 	private Map< SECCAO, ContactGroupEntry > processarGrupo( ContactsService contactsService, Map< String, Elemento > elementosParaImportar )
 	{
-		Map< String, SECCAO > listSeccaoNecessaris = new HashMap<>();
-		for ( Elemento elemento : elementosParaImportar.values() )
+		final Map< String, SECCAO > listSeccaoNecessaris = new HashMap<>();
+		for ( final Elemento elemento : elementosParaImportar.values() )
 		{
 			listSeccaoNecessaris.put( elemento.getCategoria().getNome(), elemento.getCategoria() );
 		}
@@ -515,13 +537,13 @@ public class FooterLayout extends Panel implements HasLogger
 		try
 		{
 			feedUrl = new URL( "https://www.google.com/m8/feeds/groups/default/full" );
-			Query myQuery = new Query( feedUrl );
-			ContactGroupFeed resultFeed = contactsService.query( myQuery, ContactGroupFeed.class );
+			final Query myQuery = new Query( feedUrl );
+			final ContactGroupFeed resultFeed = contactsService.query( myQuery, ContactGroupFeed.class );
 			// Print the results
 			ContactGroupEntry contactGroupEntry = null;
-			Map< SECCAO, ContactGroupEntry > mapGrupos = new EnumMap<>( SECCAO.class );
+			final Map< SECCAO, ContactGroupEntry > mapGrupos = new EnumMap<>( SECCAO.class );
 			ContactGroupEntry myContacts = null;
-			for ( ContactGroupEntry entry : resultFeed.getEntries() )
+			for ( final ContactGroupEntry entry : resultFeed.getEntries() )
 			{
 				if ( listSeccaoNecessaris.containsKey( entry.getTitle().getPlainText() ) )
 				{
@@ -529,25 +551,24 @@ public class FooterLayout extends Panel implements HasLogger
 					listSeccaoNecessaris.remove( entry.getTitle().getPlainText() );
 				}
 				// Adicionar aos contactos pessoais
-				if ( ( entry.getSystemGroup() != null ) && ( entry.getSystemGroup().getId() != null ) &&
-						"Contacts".equals( entry.getSystemGroup().getId() ) )
+				if ( entry.getSystemGroup() != null && entry.getSystemGroup().getId() != null && "Contacts".equals( entry.getSystemGroup().getId() ) )
 				{
 					myContacts = entry;
 				}
 			}
-			for ( SECCAO seccao : listSeccaoNecessaris.values() )
+			for ( final SECCAO seccao : listSeccaoNecessaris.values() )
 			{
 				if ( !mapGrupos.containsKey( seccao ) )
 				{
 					// Cria um novo grupo
 					contactGroupEntry = new ContactGroupEntry();
 					contactGroupEntry.setTitle( new PlainTextConstruct( seccao.getNome() ) );
-					ExtendedProperty additionalInfo = new ExtendedProperty();
+					final ExtendedProperty additionalInfo = new ExtendedProperty();
 					additionalInfo.setName( "Informações do grupo" );
 					additionalInfo.setValue( seccao.getDescricao() );
 					contactGroupEntry.addExtendedProperty( additionalInfo );
 					// Ask the service to insert the new entry
-					URL postUrl = new URL( "https://www.google.com/m8/feeds/groups/default/full" );
+					final URL postUrl = new URL( "https://www.google.com/m8/feeds/groups/default/full" );
 					mapGrupos.put( seccao, contactsService.insert( postUrl, contactGroupEntry ) );
 				}
 			}

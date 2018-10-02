@@ -50,7 +50,7 @@ import scouts.cne.pt.services.SIIEService;
 @PreserveOnRefresh
 // <meta name="google-site-verification" content="FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" />
 @MetaTags(
-		{ @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
+{ @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
 public class MyUI extends UI implements HasLogger
 {
 	/**
@@ -70,13 +70,13 @@ public class MyUI extends UI implements HasLogger
 	private GoogleServerAuthenticationBean	googleServerAuthentication;
 	private EscolherElementosLayout			elementosLayout;
 	private FooterLayout					importarLayout;
-	private Button btnUpdate;
+	private Button							btnUpdate;
 
 	@Override
 	protected void init( VaadinRequest vaadinRequest )
 	{
 		getLogger().info( "EmbedId " + getEmbedId() );
-		VerticalLayout mainLayout = new VerticalLayout();
+		final VerticalLayout mainLayout = new VerticalLayout();
 		mainLayout.setSpacing( false );
 		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
 		mainLayout.setSizeFull();
@@ -88,8 +88,8 @@ public class MyUI extends UI implements HasLogger
 		importarLayout = new FooterLayout( elementosLayout, googleAuthentication );
 		try
 		{
-			GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
-					googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
+			final GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
+							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
 			browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
 			browserWindowOpener.extend( importarLayout.getBtnAutorizacao() );
@@ -99,7 +99,7 @@ public class MyUI extends UI implements HasLogger
 			e.printStackTrace();
 		}
 		// process parameters
-		String siieLocalFile = vaadinRequest.getParameter( parameterSIIE_FILE );
+		final String siieLocalFile = vaadinRequest.getParameter( parameterSIIE_FILE );
 		if ( siieLocalFile != null )
 		{
 			new Thread( () ->
@@ -110,27 +110,27 @@ public class MyUI extends UI implements HasLogger
 					siieService.loadExploradoresSIIE();
 					elementosLayout.refreshGrids();
 				}
-				catch ( Exception e )
+				catch ( final Exception e )
 				{
 					showError( e );
 				}
 			} ).start();
 		}
-		String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
+		final String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
 		if ( siieGDriveFile != null )
 		{
-			loadContacts(siieGDriveFile);
+			loadContacts( siieGDriveFile );
 		}
 
-		btnUpdate = new Button("Actualizar tabela", VaadinIcons.REFRESH);
+		btnUpdate = new Button( "Actualizar tabela", VaadinIcons.REFRESH );
 
-		if ( (siieLocalFile == null) && (siieGDriveFile == null) )
+		if ( siieLocalFile == null && siieGDriveFile == null )
 		{
-			UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
-			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
+			final UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
+			final VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
 			verticalSplitPanel.setSplitPosition( 20 );
 
-			VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
+			final VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
 			verticalSplitPanel2.setSplitPosition( 85 );
 
 			mainLayout.addComponent( verticalSplitPanel2 );
@@ -138,14 +138,18 @@ public class MyUI extends UI implements HasLogger
 		else
 		{
 
-			btnUpdate.setWidth("100%");
-			btnUpdate.addClickListener(event -> loadContacts(siieGDriveFile));
-			btnUpdate.setDisableOnClick(true);
-			VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( elementosLayout, importarLayout );
+			final VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( elementosLayout, importarLayout );
 			verticalSplitPanel.setSplitPosition( 85 );
-			mainLayout.addComponents( btnUpdate, verticalSplitPanel );
-			mainLayout.setExpandRatio(btnUpdate, 1);
-			mainLayout.setExpandRatio(verticalSplitPanel, 10);
+			if ( siieGDriveFile != null )
+			{
+				btnUpdate.setWidth( "100%" );
+				btnUpdate.addClickListener( event -> loadContacts( siieGDriveFile ) );
+				btnUpdate.setDisableOnClick( true );
+				mainLayout.addComponent( btnUpdate );
+				mainLayout.setExpandRatio( btnUpdate, 1 );
+			}
+			mainLayout.addComponent( verticalSplitPanel );
+			mainLayout.setExpandRatio( verticalSplitPanel, 10 );
 		}
 
 		//
@@ -156,7 +160,7 @@ public class MyUI extends UI implements HasLogger
 			@Override
 			public SystemMessages getSystemMessages( SystemMessagesInfo systemMessagesInfo )
 			{
-				CustomizedSystemMessages messages = new CustomizedSystemMessages();
+				final CustomizedSystemMessages messages = new CustomizedSystemMessages();
 				messages.setCommunicationErrorCaption( "Comm Err" );
 				messages.setCommunicationErrorMessage( "This is bad." );
 				messages.setCommunicationErrorNotificationEnabled( true );
@@ -171,7 +175,7 @@ public class MyUI extends UI implements HasLogger
 			public void error( com.vaadin.server.ErrorEvent event )
 			{
 				// Find the final cause
-				StringBuilder cause = new StringBuilder();
+				final StringBuilder cause = new StringBuilder();
 				for ( Throwable t = event.getThrowable(); t != null; t = t.getCause() )
 				{
 					if ( t.getCause() == null )
@@ -184,7 +188,7 @@ public class MyUI extends UI implements HasLogger
 					t.printStackTrace();
 				}
 				// Display the error message in a custom fashion
-				Window window = new Window( "Erro" );
+				final Window window = new Window( "Erro" );
 				window.center();
 				window.setResizable( true );
 				window.setModal( true );
@@ -196,19 +200,20 @@ public class MyUI extends UI implements HasLogger
 		} );
 	}
 
-	private void loadContacts(String siieGDriveFile) {
+	private void loadContacts( String siieGDriveFile )
+	{
 		access( () ->
 		{
 			try
 			{
 				siieService.loadElementosGDrive( siieGDriveFile );
 			}
-			catch ( SIIIEImporterException e )
+			catch ( final SIIIEImporterException e )
 			{
 				showError( e );
 			}
 			elementosLayout.refreshGrids();
-			btnUpdate.setEnabled(true);
+			btnUpdate.setEnabled( true );
 		} );
 	}
 
@@ -220,17 +225,18 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnAutorizacao().setVisible( false );
 		importarLayout.getBtImportacao().setVisible( true );
 		importarLayout.getBtnEmailer().setVisible( true );
-		access(() ->
+		access( () ->
 		{
 			PeopleService peopleService;
 			try
 			{
 				peopleService = googleAuthentication.getPeopleService();
-				Person person = peopleService.people().get( "people/me" ).setPersonFields( "names,emailAddresses" ).execute();
-				List< EmailAddress > emailAddresses = person.getEmailAddresses();
-				for ( EmailAddress emailAddress : emailAddresses )
+				final Person person = peopleService.people().get( "people/me" ).setPersonFields( "names,emailAddresses" ).execute();
+				final List< EmailAddress > emailAddresses = person.getEmailAddresses();
+				for ( final EmailAddress emailAddress : emailAddresses )
 				{
-					if ( (emailAddress.getMetadata() != null) &&(emailAddress.getMetadata().getPrimary() != null) && emailAddress.getMetadata().getPrimary() )
+					if ( emailAddress.getMetadata() != null && emailAddress.getMetadata().getPrimary() != null &&
+						emailAddress.getMetadata().getPrimary() )
 					{
 						googleAuthentication.setUserEmail( emailAddress.getValue() );
 						if ( !person.getNames().isEmpty() )
@@ -243,7 +249,7 @@ public class MyUI extends UI implements HasLogger
 				getLogger().info( "Hello '{}' with email '{}'.", googleAuthentication.getUserFullName(), googleAuthentication.getUserEmail() );
 				showTray( "Olá " + googleAuthentication.getUserFullName() );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				e.printStackTrace();
 			}
@@ -259,5 +265,6 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnCopyMailingList().setCaption( String.format( "Mailing list (%d)", iSelecionados ) );
 		importarLayout.getBtnCopyMailingList().setEnabled( iSelecionados > 0 );
 		importarLayout.getBtnEmailer().setEnabled( iSelecionados > 0 );
+		importarLayout.getBtnAuthFile().setEnabled( iSelecionados > 0 );
 	}
 }

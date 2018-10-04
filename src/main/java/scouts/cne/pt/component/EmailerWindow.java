@@ -1,5 +1,6 @@
 package scouts.cne.pt.component;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -42,6 +43,7 @@ import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.emails.EmailTemplate;
 import scouts.cne.pt.model.emails.Templates;
 import scouts.cne.pt.utils.HTMLUtils;
+import scouts.cne.pt.utils.PDFUtils;
 
 /**
  * @author anco62000465 2018-09-24
@@ -50,21 +52,22 @@ import scouts.cne.pt.utils.HTMLUtils;
 public class EmailerWindow extends Window implements Serializable, HasLogger
 {
 	private static final long				serialVersionUID	= 3816724843669785606L;
-	private GoogleAuthenticationBean	googleAuthentication;
-	private RichTextArea				richTextArea;
-	private Panel						listTagsPanel;
+	private final GoogleAuthenticationBean	googleAuthentication;
+	private RichTextArea					richTextArea;
+	private Panel							listTagsPanel;
 	private Button							btnPreview;
 	private Button							btnEnviarEmail;
-	private Button						btnPrevious;
-	private Button						btnNext;
+	private Button							btnPrevious;
+	private Button							btnNext;
 	private Label							labelPopUp;
-	private TextField					txtEmailSubject;
-	private CheckBox					chbWithParents;
-	private CheckBox					chbEmailSplitted;
+	private TextField						txtEmailSubject;
+	private CheckBox						chbWithParents;
+	private CheckBox						chbEmailSplitted;
+	private CheckBox						chbAttachAutorization;
 	private final VerticalLayout			mainLayout;
-	private final HorizontalLayout		bodyLayout;
-	private final List< Elemento >		lstElementos;
-	private int							iElementCount		= 1;
+	private final HorizontalLayout			bodyLayout;
+	private final List< Elemento >			lstElementos;
+	private int								iElementCount		= 1;
 
 	/**
 	 * constructor
@@ -80,7 +83,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		setCaptionAsHtml( true );
 		center();
 		setResizable( true );
-		setHeight( "600px" );
+		setHeight( "700px" );
 		setWidth( "1000px" );
 		setModal( true );
 		mainLayout = new VerticalLayout();
@@ -93,9 +96,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		initListTag();
 		initBtnEnviarEmail();
 
-		HorizontalSplitPanel editorLayout = getEditorLayout();
-		HorizontalLayout configLayout = getConfigLayout();
-		VerticalSplitPanel layoutPreviousNext = getLayoutPreviousNext();
+		final HorizontalSplitPanel editorLayout = getEditorLayout();
+		final HorizontalLayout configLayout = getConfigLayout();
+		final VerticalSplitPanel layoutPreviousNext = getLayoutPreviousNext();
 		initBtnPreview( editorLayout, layoutPreviousNext );
 		bodyLayout = new HorizontalLayout();
 		bodyLayout.setSizeFull();
@@ -104,19 +107,20 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		bodyLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 		bodyLayout.addComponent( editorLayout );
 
-		HorizontalLayout buttonsLayout = getButtonsLayout();
-		
+		final HorizontalLayout buttonsLayout = getButtonsLayout();
+
 		mainLayout.addComponents( configLayout, bodyLayout, buttonsLayout );
 		mainLayout.setExpandRatio( configLayout, 1 );
 		mainLayout.setExpandRatio( bodyLayout, 6 );
 		mainLayout.setExpandRatio( buttonsLayout, 1 );
-		
+
 		setContent( mainLayout );
 	}
 
 	/**
 	 * The <b>initBtnEnviarEmail</b> method returns {@link void}
-	 * @author anco62000465 2018-09-25 
+	 * 
+	 * @author anco62000465 2018-09-25
 	 */
 	private void initBtnEnviarEmail()
 	{
@@ -140,10 +144,10 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 					{
 						message = sendOneEmail();
 					}
-					
+
 					showInfo( message );
 				}
-				catch ( Exception e )
+				catch ( final Exception e )
 				{
 					showError( e );
 					return;
@@ -163,12 +167,12 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			 */
 			private String sendSplittedEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
 			{
-				Gmail service = googleAuthentication.getGmailService();
-				List< String > lstSentEmails = new ArrayList<>();
+				final Gmail service = googleAuthentication.getGmailService();
+				final List< String > lstSentEmails = new ArrayList<>();
 				int iSentMailsCount = 0;
-				for ( Elemento elemento : lstElementos )
+				for ( final Elemento elemento : lstElementos )
 				{
-					List< InternetAddress > lstEmails = new ArrayList<>();
+					final List< InternetAddress > lstEmails = new ArrayList<>();
 					lstEmails.add( new InternetAddress( elemento.getEmailPrincipal(), elemento.getNome() ) );
 					if ( chbWithParents.getValue() )
 					{
@@ -181,14 +185,22 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 							lstEmails.add( new InternetAddress( elemento.getEmailPai(), elemento.getNomePai() ) );
 						}
 					}
-					String strHTMLEmail = ElementoTags.convertHTML( richTextArea.getValue(), elemento );
-					MimeMessage createEmail = HTMLUtils.createEmail(	null,
-																		lstEmails,
-																		null,
-																		getFromInternetAddress(),
-																		txtEmailSubject.getValue(),
-																		strHTMLEmail );
-					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+					final String strHTMLEmail = ElementoTags.convertHTML( richTextArea.getValue(), elemento );
+
+					File fichaInscricao = null;
+					if ( chbAttachAutorization.getValue() )
+					{
+						fichaInscricao = PDFUtils.getFichaInscricao( elemento );
+					}
+
+					final MimeMessage createEmail = HTMLUtils.createEmail(	null,
+																			lstEmails,
+																			null,
+																			getFromInternetAddress(),
+																			txtEmailSubject.getValue(),
+																			strHTMLEmail,
+																			fichaInscricao );
+					final Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
 					getLogger().info( "Enviado SplittedEmail: {}", message.toPrettyString() );
 					lstEmails.forEach( p -> lstSentEmails.add( p.getAddress() ) );
 					iSentMailsCount++;
@@ -209,9 +221,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			 */
 			private String sendOneEmail() throws GeneralSecurityException, IOException, UnsupportedEncodingException, MessagingException
 			{
-				Gmail service = googleAuthentication.getGmailService();
-				List< InternetAddress > lstEmails = new ArrayList<>();
-				for ( Elemento elemento : lstElementos )
+				final Gmail service = googleAuthentication.getGmailService();
+				final List< InternetAddress > lstEmails = new ArrayList<>();
+				for ( final Elemento elemento : lstElementos )
 				{
 					lstEmails.add( new InternetAddress( elemento.getEmailPrincipal(), elemento.getNome() ) );
 					if ( chbWithParents.getValue() )
@@ -229,13 +241,14 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 
 				if ( !lstEmails.isEmpty() )
 				{
-					MimeMessage createEmail = HTMLUtils.createEmail(	null,
-																		null,
-																		lstEmails,
-																		getFromInternetAddress(),
-																		txtEmailSubject.getValue(),
-																		richTextArea.getValue() );
-					Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
+					final MimeMessage createEmail = HTMLUtils.createEmail(	null,
+																			null,
+																			lstEmails,
+																			getFromInternetAddress(),
+																			txtEmailSubject.getValue(),
+																			richTextArea.getValue(),
+																			null );
+					final Message message = service.users().messages().send( "me", HTMLUtils.createMessageWithEmail( createEmail ) ).execute();
 					getLogger().info( "Enviado email: {}", message.toPrettyString() );
 					return "Email enviado com sucesso para " + lstEmails.size() + " endereços.";
 				}
@@ -251,18 +264,19 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 
 	/**
 	 * The <b>getButtonsLayout</b> method returns {@link Component}
+	 * 
 	 * @author anco62000465 2018-09-25
-	 * @return 
+	 * @return
 	 */
 	private HorizontalLayout getButtonsLayout()
 	{
-		HorizontalLayout horizontalLayout = new HorizontalLayout();
+		final HorizontalLayout horizontalLayout = new HorizontalLayout();
 		horizontalLayout.setSizeFull();
 		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 
 		try
 		{
-			ComboBox< EmailTemplate > comboBox = new ComboBox<>( "Lista de templates", getTemplates() );
+			final ComboBox< EmailTemplate > comboBox = new ComboBox<>( "Lista de templates", getTemplates() );
 			comboBox.setIcon( VaadinIcons.LIST );
 			comboBox.setPlaceholder( "Escolha um template" );
 			comboBox.setItemCaptionGenerator( EmailTemplate::getNome );
@@ -275,7 +289,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			} );
 			horizontalLayout.addComponent( comboBox );
 		}
-		catch ( IOException e )
+		catch ( final IOException e )
 		{
 			printError( e );
 		}
@@ -292,8 +306,8 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	 */
 	private void initBtnPreview( HorizontalSplitPanel editorLayout, VerticalSplitPanel layoutPreviousNext )
 	{
-		String captionPreView = "Pré-visualizar mensagem";
-		String captionEditView = "Editar mensagem";
+		final String captionPreView = "Pré-visualizar mensagem";
+		final String captionEditView = "Editar mensagem";
 		btnPreview = new Button( captionPreView, click ->
 		{
 			if ( btnPreview.getCaption().equals( captionPreView ) )
@@ -322,11 +336,11 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private VerticalSplitPanel getLayoutPreviousNext()
 	{
 
-		HorizontalLayout footerLayout = new HorizontalLayout();
+		final HorizontalLayout footerLayout = new HorizontalLayout();
 		footerLayout.setSizeFull();
 		footerLayout.setMargin( false );
 		footerLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		Label label = new Label( iElementCount + " de " + lstElementos.size() );
+		final Label label = new Label( iElementCount + " de " + lstElementos.size() );
 		btnPrevious = new Button( "Anterior", click ->
 		{
 			iElementCount -= 1;
@@ -365,10 +379,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 
 		footerLayout.addComponents( btnPrevious, label, btnNext );
 
-
 		labelPopUp = new Label( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( 0 ) ), ContentMode.HTML );
 
-		VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( labelPopUp, footerLayout );
+		final VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( labelPopUp, footerLayout );
 		verticalSplitPanel.setSplitPosition( 90 );
 		verticalSplitPanel.setWidth( "100%" );
 		return verticalSplitPanel;
@@ -397,12 +410,12 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	{
 		listTagsPanel = new Panel( "Lista de propriedades" );
 		listTagsPanel.setDescription( "Para utilizar alguma destas propriedades, basta clicar." );
-		VerticalLayout verticalLayout = new VerticalLayout();
+		final VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
 		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_LEFT );
-		for ( ElementoTags elementoTags : ElementoTags.values() )
+		for ( final ElementoTags elementoTags : ElementoTags.values() )
 		{
-			Button button = new Button( elementoTags.getTagDescription() );
+			final Button button = new Button( elementoTags.getTagDescription() );
 			button.setDescription( elementoTags.getTagDescription() );
 			button.addClickListener( new ClickListener()
 			{
@@ -412,12 +425,12 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				public void buttonClick( ClickEvent event )
 				{
 					// get possible transfer data
-					StringBuilder sb = new StringBuilder( richTextArea.getValue() );
+					final StringBuilder sb = new StringBuilder( richTextArea.getValue() );
 					sb.append( elementoTags.getTagReplace() );
 					richTextArea.setValue( sb.toString() );
 				}
 			} );
-			
+
 			verticalLayout.addComponent( button );
 		}
 		listTagsPanel.setContent( verticalLayout );
@@ -431,7 +444,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	 */
 	private HorizontalSplitPanel getEditorLayout()
 	{
-		HorizontalSplitPanel horizontalSplitPanel = new HorizontalSplitPanel( richTextArea, listTagsPanel );
+		final HorizontalSplitPanel horizontalSplitPanel = new HorizontalSplitPanel( richTextArea, listTagsPanel );
 		horizontalSplitPanel.setSplitPosition( 75 );
 		horizontalSplitPanel.setWidth( "100%" );
 		return horizontalSplitPanel;
@@ -451,35 +464,47 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		chbWithParents = new CheckBox( "Utilizar email dos pais", true );
 		chbEmailSplitted = new CheckBox( "Enviar emails em separado", true );
 		chbEmailSplitted.setDescription( "Se esta opção estiver activa envia um email para cada elemento, caso contrário envia o mesmo email para todos os conactos selecionados (em Bcc)" );
-		HorizontalLayout horizontalLayout = new HorizontalLayout();
+		chbAttachAutorization = new CheckBox( "Anexar ficheiro autorização SIIE pré-preenchido", false );
+		chbAttachAutorization
+						.setDescription( "Se esta opção estiver activa anexa ao email o ficheiro de autorização do SIIE pré-preenchido com os dados existentes." );
+
+		chbEmailSplitted.addValueChangeListener( event ->
+		{
+			if ( !event.getValue() )
+			{
+				chbAttachAutorization.setValue( false );
+			}
+
+			chbAttachAutorization.setEnabled( event.getValue() );
+		} );
+		final HorizontalLayout horizontalLayout = new HorizontalLayout();
 		horizontalLayout.setSizeFull();
 		horizontalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		horizontalLayout.addComponents( txtEmailSubject, chbWithParents, chbEmailSplitted );
+		horizontalLayout.addComponents( txtEmailSubject, chbWithParents, chbEmailSplitted, chbAttachAutorization );
 		return horizontalLayout;
 	}
 
 	private List< EmailTemplate > getTemplates() throws IOException
 	{
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		Templates templates = new Templates();
-		
-		EmailTemplate emailTemplateDados = new EmailTemplate();
+		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		final Templates templates = new Templates();
+
+		final EmailTemplate emailTemplateDados = new EmailTemplate();
 		emailTemplateDados.setNome( "Email Confirmação dados pessoais" );
 		emailTemplateDados.setValue( HTMLUtils.getDefaultEmail() );
 		templates.getEmailTemplateList().add( emailTemplateDados );
-		
+
 		try ( InputStream inputStream = classLoader.getResourceAsStream( "emailTemplates.json" ) )
 		{
-			ObjectMapper mapper = new ObjectMapper();
-			Templates templatesTemp = mapper.readValue( inputStream, Templates.class );
+			final ObjectMapper mapper = new ObjectMapper();
+			final Templates templatesTemp = mapper.readValue( inputStream, Templates.class );
 			templates.getEmailTemplateList().addAll( templatesTemp.getEmailTemplateList() );
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			printError( e );
 		}
-		
-		
+
 		return templates.getEmailTemplateList();
 	}
 }

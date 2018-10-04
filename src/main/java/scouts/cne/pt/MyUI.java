@@ -102,7 +102,7 @@ public class MyUI extends UI implements HasLogger
 		final String siieLocalFile = vaadinRequest.getParameter( parameterSIIE_FILE );
 		if ( siieLocalFile != null )
 		{
-			new Thread( () ->
+			access( () ->
 			{
 				siieService.setFile( new File( siieLocalFile ) );
 				try
@@ -114,7 +114,7 @@ public class MyUI extends UI implements HasLogger
 				{
 					showError( e );
 				}
-			} ).start();
+			} );
 		}
 		final String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
 		if ( siieGDriveFile != null )

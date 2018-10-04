@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -477,9 +477,15 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 		return null;
 	}
 
-	public List< InternetAddress > getListEmails()
+	public List< InternetAddress > getListEmails( boolean bUseParentsEmails )
 	{
-		final List< InternetAddress > list = Arrays.asList( getInternetAddressEmail(), getInternetAddressEmailMae(), getInternetAddressEmailPai() );
+		final List< InternetAddress > list = new ArrayList< InternetAddress >();
+		list.add( getInternetAddressEmail() );
+		if ( bUseParentsEmails )
+		{
+			list.add( getInternetAddressEmailMae() );
+			list.add( getInternetAddressEmailPai() );
+		}
 		return list;
 	}
 
@@ -489,11 +495,12 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmail()
 	{
-		if ( getEmail() != null && getEmail().contains( "@" ) )
+		String email = getEmail();
+		if ( email != null && email.contains( "@" ) )
 		{
 			try
 			{
-				return new InternetAddress( getEmail(), getNome() );
+				return new InternetAddress( email, getNome() );
 			}
 			catch ( final UnsupportedEncodingException e )
 			{

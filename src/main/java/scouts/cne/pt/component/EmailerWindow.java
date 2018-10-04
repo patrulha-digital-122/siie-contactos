@@ -95,7 +95,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 
 		lstElementos.forEach( p ->
 		{
-			iTotalEmailsCount += p.getListEmails().size();
+			iTotalEmailsCount += p.getListEmails( true ).size();
 		} );
 
 		initRichText();
@@ -179,19 +179,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				int iSentMailsCount = 0;
 				for ( final Elemento elemento : lstElementos )
 				{
-					final List< InternetAddress > lstEmails = new ArrayList<>();
-					lstEmails.add( new InternetAddress( elemento.getEmailPrincipal(), elemento.getNome() ) );
-					if ( chbWithParents.getValue() )
-					{
-						if ( StringUtils.isNotBlank( elemento.getEmailMae() ) )
-						{
-							lstEmails.add( new InternetAddress( elemento.getEmailMae(), elemento.getNomeMae() ) );
-						}
-						if ( StringUtils.isNotBlank( elemento.getEmailPai() ) )
-						{
-							lstEmails.add( new InternetAddress( elemento.getEmailPai(), elemento.getNomePai() ) );
-						}
-					}
+					final List< InternetAddress > lstEmails = elemento.getListEmails( chbWithParents.getValue() );
 					final String strHTMLEmail = ElementoTags.convertHTML( richTextArea.getValue(), elemento );
 
 					File fichaInscricao = null;
@@ -272,6 +260,10 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private String getBtnEnviarEmailCaption()
 	{
 		final String BTN_ENVIAR_EMAIL_CAPTION = "Enviar %d email's para %d contactos";
+
+		iTotalEmailsCount = 0;
+		lstElementos.forEach( p -> iTotalEmailsCount += p.getListEmails( chbWithParents.getValue() ).size() );
+
 		if ( chbEmailSplitted.getValue() )
 		{
 			return String.format( BTN_ENVIAR_EMAIL_CAPTION, lstElementos.size(), iTotalEmailsCount );
@@ -482,6 +474,10 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		txtEmailSubject.setIcon( VaadinIcons.COMMENT_ELLIPSIS_O );
 		txtEmailSubject.setWidth( "100%" );
 		chbWithParents = new CheckBox( "Utilizar email dos pais", true );
+		chbWithParents.addValueChangeListener( event ->
+		{
+			btnEnviarEmail.setCaption( getBtnEnviarEmailCaption() );
+		} );
 		chbEmailSplitted = new CheckBox( "Enviar emails em separado", true );
 		chbEmailSplitted.setDescription( "Se esta opção estiver activa envia um email para cada elemento, caso contrário envia o mesmo email para todos os conactos selecionados (em Bcc)" );
 		chbEmailSplitted.addValueChangeListener( event ->

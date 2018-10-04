@@ -10,10 +10,10 @@ import java.util.Objects;
  */
 public enum ElementoTags
 {
-	NIN( "nin", "NIN" ),
+	NIN( "nin", "Número de Identificação Nacional - CNE" ),
 	NOME( "nome", "Nome completo" ),
-	NIF( "nif", "Número identificação fiscal" ),
-	DATA_NASCIMENTO( "dtNasc", "Data de nascimento" ),
+	NIF( "nif", "Número Identificação Fiscal" ),
+	DATA_NASCIMENTO( "dtNasc", "Data de Nascimento" ),
 	DATA_PROMESSA( "dtpromessa", "Data da Promessa" ),
 	DATA_ADMISSAO( "dtadmissao", "Data de Admissão" ),
 	MORADA( "morada", "Morada" ),
@@ -27,10 +27,10 @@ public enum ElementoTags
 	PROFISSAO_PAI( "profissaopai", "Profissão do Pai" ),
 	TELEFONE_PAI( "telefonepai", "Telefone do Pai" ),
 	EMAIL_PAI( "emailpai", "E-mail do Pai" ),
-	NOME_MAE( "nomemae", "Nome do Mãe" ),
-	PROFISSAO_MAE( "profissaomae", "Profissão do Mãe" ),
-	TELEFONE_MAE( "telefonemae", "Telefone do Mãe" ),
-	EMAIL_MAE( "emailmae", "E-mail do Mãe" ),
+	NOME_MAE( "nomemae", "Nome da Mãe" ),
+	PROFISSAO_MAE( "profissaomae", "Profissão da Mãe" ),
+	TELEFONE_MAE( "telefonemae", "Telefone da Mãe" ),
+	EMAIL_MAE( "emailmae", "E-mail da Mãe" ),
 	NOTAS( "notas", "Notas" ),
 	OBSERVACOES( "observacoes", "Observações" ),
 	TOTEM( "totem", "Totem" ),
@@ -96,16 +96,16 @@ public enum ElementoTags
 	 */
 	public static String convertHTML( String value, Elemento elemento )
 	{
-		for ( ElementoTags tags : values() )
+		for ( final ElementoTags tags : values() )
 		{
-			value = value.replace( tags.getTagReplace(), Objects.toString( elemento.getAtributo( tags.getTagId() ), "" ) );
+			value = value.replace( tags.getTagReplace(), Objects.toString( elemento.getAtributo( tags.getTagId().toLowerCase() ), "" ) );
 		}
 		return value;
 	}
 
 	public static List< ElementoTags > getGoogleImportTags()
 	{
-		List< ElementoTags > tags = new LinkedList<>();
+		final List< ElementoTags > tags = new LinkedList<>();
 		tags.add( ElementoTags.NOME );
 		tags.add( ElementoTags.DATA_NASCIMENTO );
 		tags.add( ElementoTags.DATA_PROMESSA );
@@ -114,15 +114,17 @@ public enum ElementoTags
 		tags.add( ElementoTags.TELEFONE );
 		tags.add( ElementoTags.TELEMOVEL );
 		tags.add( ElementoTags.EMAIL );
-		tags.add( ElementoTags.TOTEM );
 		// MAE
 		tags.add( ElementoTags.NOME_MAE );
 		tags.add( ElementoTags.EMAIL_MAE );
 		tags.add( ElementoTags.TELEFONE_MAE );
+		tags.add( ElementoTags.PROFISSAO_MAE );
 		// Pai
 		tags.add( ElementoTags.NOME_PAI );
 		tags.add( ElementoTags.EMAIL_PAI );
 		tags.add( ElementoTags.TELEFONE_PAI );
+		tags.add( ElementoTags.PROFISSAO_PAI );
+
 		return tags;
 	}
 }

@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.mail.MessagingException;
@@ -17,9 +18,12 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
+import com.vaadin.data.HasValue.ValueChangeEvent;
+import com.vaadin.data.HasValue.ValueChangeListener;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -51,7 +55,7 @@ import scouts.cne.pt.utils.PDFUtils;
  */
 public class EmailerWindow extends Window implements Serializable, HasLogger
 {
-	private static final long				serialVersionUID	= 3816724843669785606L;
+	private static final long				serialVersionUID		= 3816724843669785606L;
 	private final GoogleAuthenticationBean	googleAuthentication;
 	private RichTextArea					richTextArea;
 	private Panel							listTagsPanel;
@@ -67,8 +71,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private final VerticalLayout			mainLayout;
 	private final HorizontalLayout			bodyLayout;
 	private final List< Elemento >			lstElementos;
-	private int								iElementCount		= 1;
-	private int								iTotalEmailsCount	= 0;
+	private int								iElementCount			= 1;
+	private int								iTotalEmailsCount		= 0;
+	private int								iRichtextCursorPosition	= 0;
 
 	/**
 	 * constructor
@@ -80,6 +85,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		super();
 		this.googleAuthentication = googleAuthentication;
 		lstElementos = new LinkedList<>( lst );
+		Collections.sort( lstElementos );
 		setCaption( "Enviar email's" );
 		setCaptionAsHtml( true );
 		center();
@@ -297,7 +303,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			comboBox.setWidth( "100%" );
 			comboBox.addValueChangeListener( event ->
 			{
-				richTextArea.setValue( event.getValue().getValue() );
+				final String value = event.getValue().getValue();
+				richTextArea.setValue( value );
+				iRichtextCursorPosition = value.length();
 			} );
 			horizontalLayout.addComponent( comboBox );
 		}
@@ -326,9 +334,10 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 			{
 				bodyLayout.removeAllComponents();
 				iElementCount = 1;
-				btnNext.click();
+				btnPrevious.setEnabled( false );
 				bodyLayout.addComponent( layoutPreviousNext );
 				btnPreview.setCaption( captionEditView );
+				labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( 0 ) ) );
 			}
 			else
 			{
@@ -356,7 +365,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		btnPrevious = new Button( "Anterior", click ->
 		{
 			iElementCount -= 1;
-			if ( iElementCount <= lstElementos.size() )
+			if ( iElementCount > -1 && iElementCount <= lstElementos.size() )
 			{
 				labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( iElementCount - 1 ) ) );
 			}
@@ -373,7 +382,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		{
 			iElementCount += 1;
 
-			if ( iElementCount <= lstElementos.size() )
+			if ( iElementCount > -1 && iElementCount <= lstElementos.size() )
 			{
 				labelPopUp.setValue( ElementoTags.convertHTML( richTextArea.getValue(), lstElementos.get( iElementCount - 1 ) ) );
 			}
@@ -410,6 +419,22 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	{
 		richTextArea = new RichTextArea();
 		richTextArea.setSizeFull();
+		richTextArea.setValueChangeMode( ValueChangeMode.LAZY );
+
+		richTextArea.addValueChangeListener( new ValueChangeListener< String >()
+		{
+			private static final long serialVersionUID = -6780560210204275144L;
+
+			@Override
+			public void valueChange( ValueChangeEvent< String > event )
+			{
+				if ( event.isUserOriginated() )
+				{
+
+					iRichtextCursorPosition = StringUtils.indexOfDifference( event.getValue(), event.getOldValue() );
+				}
+			}
+		} );
 	}
 
 	/**
@@ -436,9 +461,11 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				@Override
 				public void buttonClick( ClickEvent event )
 				{
-					// get possible transfer data
-					final StringBuilder sb = new StringBuilder( richTextArea.getValue() );
+					final StringBuilder sb = new StringBuilder();
+					sb.append( richTextArea.getValue().substring( 0, iRichtextCursorPosition ) );
+					sb.append( " " );
 					sb.append( elementoTags.getTagReplace() );
+					sb.append( richTextArea.getValue().substring( iRichtextCursorPosition ) );
 					richTextArea.setValue( sb.toString() );
 				}
 			} );

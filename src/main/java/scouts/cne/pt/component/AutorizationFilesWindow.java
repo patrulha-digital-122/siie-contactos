@@ -85,7 +85,7 @@ public class AutorizationFilesWindow extends Window implements Serializable, Has
 			" elementos. As autorizações serão enviadas indidualmente pelo email " + googleAuthentication.getUserEmail() );
 		labelSendEmail.setWidth( "100%" );
 
-		mainLayout.addComponents( labelZipAll, btnZipAll, labelDownloadAll, btnDownloadAll, labelSendEmail, btnSendEmail );
+		mainLayout.addComponents( labelZipAll, btnZipAll, labelDownloadAll, btnDownloadAll );
 		setContent( mainLayout );
 	}
 

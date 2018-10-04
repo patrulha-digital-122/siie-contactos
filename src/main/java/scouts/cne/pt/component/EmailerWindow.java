@@ -68,6 +68,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 	private final HorizontalLayout			bodyLayout;
 	private final List< Elemento >			lstElementos;
 	private int								iElementCount		= 1;
+	private int								iTotalEmailsCount	= 0;
 
 	/**
 	 * constructor
@@ -92,6 +93,11 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		mainLayout.setSizeFull();
 		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 
+		lstElementos.forEach( p ->
+		{
+			iTotalEmailsCount += p.getListEmails().size();
+		} );
+
 		initRichText();
 		initListTag();
 		initBtnEnviarEmail();
@@ -115,6 +121,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		mainLayout.setExpandRatio( buttonsLayout, 1 );
 
 		setContent( mainLayout );
+
 	}
 
 	/**
@@ -260,6 +267,19 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				return new InternetAddress( googleAuthentication.getUserEmail(), googleAuthentication.getUserFullName() );
 			}
 		} );
+	}
+
+	private String getBtnEnviarEmailCaption()
+	{
+		final String BTN_ENVIAR_EMAIL_CAPTION = "Enviar %d email's para %d contactos";
+		if ( chbEmailSplitted.getValue() )
+		{
+			return String.format( BTN_ENVIAR_EMAIL_CAPTION, lstElementos.size(), iTotalEmailsCount );
+		}
+		else
+		{
+			return String.format( BTN_ENVIAR_EMAIL_CAPTION, 1, iTotalEmailsCount );
+		}
 	}
 
 	/**
@@ -464,6 +484,12 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 		chbWithParents = new CheckBox( "Utilizar email dos pais", true );
 		chbEmailSplitted = new CheckBox( "Enviar emails em separado", true );
 		chbEmailSplitted.setDescription( "Se esta opção estiver activa envia um email para cada elemento, caso contrário envia o mesmo email para todos os conactos selecionados (em Bcc)" );
+		chbEmailSplitted.addValueChangeListener( event ->
+		{
+			btnEnviarEmail.setCaption( getBtnEnviarEmailCaption() );
+		} );
+		btnEnviarEmail.setCaption( getBtnEnviarEmailCaption() );
+
 		chbAttachAutorization = new CheckBox( "Anexar ficheiro autorização SIIE pré-preenchido", false );
 		chbAttachAutorization
 						.setDescription( "Se esta opção estiver activa anexa ao email o ficheiro de autorização do SIIE pré-preenchido com os dados existentes." );

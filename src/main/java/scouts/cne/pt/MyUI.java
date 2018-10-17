@@ -11,31 +11,27 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeReque
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.model.EmailAddress;
 import com.google.api.services.people.v1.model.Person;
-import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.annotations.Push;
-import com.vaadin.annotations.Title;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.CustomizedSystemMessages;
 import com.vaadin.server.DefaultErrorHandler;
-import com.vaadin.server.Responsive;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.SystemMessagesInfo;
 import com.vaadin.server.SystemMessagesProvider;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
 import scouts.cne.pt.app.HasLogger;
@@ -47,11 +43,8 @@ import scouts.cne.pt.layouts.UploadFileLayout;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.services.SIIEService;
 
-@Route( "inicio" )
-@UIScope
-@Push
-@Title( "SIIE - importer" )
-@PreserveOnRefresh
+@Route( "" )
+@PageTitle( "SIIE - importer" )
 @MetaTags(
 { @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
 public class MyUI extends VerticalLayout implements HasLogger, HasUrlParameter< String >
@@ -79,12 +72,11 @@ public class MyUI extends VerticalLayout implements HasLogger, HasUrlParameter< 
 
 	public MyUI()
 	{
-
 		setSpacing( false );
-		setMargin( new MarginInfo( false, true, false, true ) );
+		// setMargin( new MarginInfo( false, true, false, true ) );
 		setSizeFull();
-		setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		Responsive.makeResponsive( this );
+		setAlignItems( Alignment.CENTER );
+		// setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
 
 		elementosLayout = new EscolherElementosLayout( this, siieService );
 		importarLayout = new FooterLayout( elementosLayout, googleAuthentication );
@@ -127,7 +119,7 @@ public class MyUI extends VerticalLayout implements HasLogger, HasUrlParameter< 
 		if ( siieLocalFile == null && siieGDriveFile == null )
 		{
 			final UploadFileLayout uploadFileLayout = new UploadFileLayout( siieService, elementosLayout );
-			final VerticalSplitPanel verticalSplitPanel = new VerticalSplitPanel( uploadFileLayout, elementosLayout );
+			final SplitLayout verticalSplitPanel = new SplitLayout( uploadFileLayout, elementosLayout );
 			verticalSplitPanel.setSplitPosition( 20 );
 
 			final VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
@@ -269,7 +261,7 @@ public class MyUI extends VerticalLayout implements HasLogger, HasUrlParameter< 
 	}
 
 	@Override
-	public void setParameter( BeforeEvent event, String parameter )
+	public void setParameter( BeforeEvent event, @OptionalParameter String parameter )
 	{
 		if ( parameter != null )
 		{

@@ -28,10 +28,10 @@ import scouts.cne.pt.utils.HTMLUtils;
  */
 public class UploadFileLayout extends Panel implements HasLogger, FinishedListener
 {
-	private static final long serialVersionUID = 5253307196908771291L;
+	private static final long				serialVersionUID	= 5253307196908771291L;
 	private final SIIEService				siieService;
 	private final EscolherElementosLayout	escolherElementosLayout;
-	private FileUploader					fileUploader;
+	private final FileUploader				fileUploader;
 
 	/**
 	 * constructor
@@ -45,27 +45,28 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		setSizeFull();
 		this.siieService = siieService;
 		this.escolherElementosLayout = escolherElementosLayout;
-		this.fileUploader = new FileUploader( siieService );
+		fileUploader = new FileUploader( siieService );
 
-		VerticalLayout uploadFromGoogleDriveLayout = getUploadFromGoogleDriveLayout();
-		VerticalLayout uploadFromLocalFileLayout = getUploadFromLocalFileLayout();
+		final VerticalLayout uploadFromGoogleDriveLayout = getUploadFromGoogleDriveLayout();
+		final VerticalLayout uploadFromLocalFileLayout = getUploadFromLocalFileLayout();
 
-		HorizontalSplitPanel horizontalLayout = new HorizontalSplitPanel( uploadFromLocalFileLayout, uploadFromGoogleDriveLayout );
+		final HorizontalSplitPanel horizontalLayout = new HorizontalSplitPanel( uploadFromLocalFileLayout, uploadFromGoogleDriveLayout );
 		horizontalLayout.setWidth( "100%" );
 		horizontalLayout.setHeight( "100%" );
 
-		VerticalLayout mainLayout = new VerticalLayout( horizontalLayout );
+		final VerticalLayout mainLayout = new VerticalLayout( horizontalLayout );
 		mainLayout.setSizeFull();
 		mainLayout.setMargin( false );
 		setContent( mainLayout );
 	}
 
-	private VerticalLayout getUploadFromLocalFileLayout() {
+	private VerticalLayout getUploadFromLocalFileLayout()
+	{
 
-		Label label = new Label( HTMLUtils.strHTMLHelpFicheiroSIIE, ContentMode.HTML );
+		final Label label = new Label( HTMLUtils.strHTMLHelpFicheiroSIIE, ContentMode.HTML );
 		label.setWidth( "100%" );
 
-		Upload upload = new Upload();
+		final Upload upload = new Upload();
 		upload.setReceiver( fileUploader );
 		upload.setButtonCaption( "Upload" );
 		upload.setImmediateMode( true );
@@ -74,7 +75,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 		upload.addFinishedListener( this );
 		upload.setReceiver( fileUploader );
 
-		VerticalLayout verticalLayout = new VerticalLayout();
+		final VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
 		verticalLayout.setSpacing( false );
 		verticalLayout.setMargin( new MarginInfo( false, true ) );
@@ -83,6 +84,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 
 		return verticalLayout;
 	}
+
 	/**
 	 * The <b>getUploadFromGoogleDriveLayout</b> method returns {@link VerticalLayout}
 	 *
@@ -92,12 +94,12 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 	private VerticalLayout getUploadFromGoogleDriveLayout()
 	{
 
-		TextField textField = new TextField( "Colocar link para ficheiro do google drive" );
+		final TextField textField = new TextField( "Colocar link para ficheiro do google drive" );
 		textField.setWidth( "100%" );
-		Button button = new Button( "Upload", VaadinIcons.UPLOAD );
+		final Button button = new Button( "Upload", VaadinIcons.UPLOAD );
 		button.setDisableOnClick( true );
 		button.setResponsive( true );
-		Label labelAjuda = new Label();
+		final Label labelAjuda = new Label();
 		labelAjuda.setWidth( "100%" );
 		labelAjuda.setVisible( false );
 		button.addClickListener( new ClickListener()
@@ -114,7 +116,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 					labelAjuda.setValue( "No futuro poderá utilizar este url: https://cnhefe122.herokuapp.com/?" + MyUI.parameterSHEET_ID + "=" +
 						URLEncoder.encode( textField.getValue(), "UTF-8" ) );
 				}
-				catch ( Exception e )
+				catch ( final Exception e )
 				{
 					showError( e );
 					labelAjuda.setValue( e.getMessage() );
@@ -124,7 +126,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 			}
 		} );
 
-		VerticalLayout verticalLayout = new VerticalLayout();
+		final VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setWidth( "100%" );
 		verticalLayout.setMargin( new MarginInfo( false, true ) );
 		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
@@ -149,7 +151,7 @@ public class UploadFileLayout extends Panel implements HasLogger, FinishedListen
 			siieService.loadExploradoresSIIE();
 			escolherElementosLayout.refreshGrids();
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			showError( e );
 		}

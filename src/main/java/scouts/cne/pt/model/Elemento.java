@@ -421,7 +421,17 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 		{
 			return "";
 		}
-		return object;
+
+		if ( ElementoTags.NIN.getTagId().equalsIgnoreCase( tag ) )
+		{
+			final String strNin = object.toString();
+
+			return StringUtils.leftPad( strNin, 13, "0" );
+		}
+		else
+		{
+			return object;
+		}
 	}
 
 	/*
@@ -495,7 +505,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmail()
 	{
-		String email = getEmail();
+		final String email = getEmail();
 		if ( email != null && email.contains( "@" ) )
 		{
 			try

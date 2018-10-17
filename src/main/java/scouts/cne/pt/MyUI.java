@@ -14,6 +14,11 @@ import com.google.api.services.people.v1.model.Person;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.BrowserWindowOpener;
 import com.vaadin.server.CustomizedSystemMessages;
@@ -22,12 +27,10 @@ import com.vaadin.server.Responsive;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.SystemMessagesInfo;
 import com.vaadin.server.SystemMessagesProvider;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -44,14 +47,14 @@ import scouts.cne.pt.layouts.UploadFileLayout;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.services.SIIEService;
 
-@SpringUI
+@Route( "inicio" )
+@UIScope
 @Push
 @Title( "SIIE - importer" )
 @PreserveOnRefresh
-// <meta name="google-site-verification" content="FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" />
 @MetaTags(
 { @Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" ) } )
-public class MyUI extends UI implements HasLogger
+public class MyUI extends VerticalLayout implements HasLogger, HasUrlParameter< String >
 {
 	/**
 	 *
@@ -59,8 +62,8 @@ public class MyUI extends UI implements HasLogger
 	private static final long				serialVersionUID	= -8505226283440302479L;
 	VaadinResponse							currentResponse;
 	public static String					AUTH_COOKIE_CODE	= "CODE";
-	public static String					parameterSIIE_FILE	= "siieFile";
-	public static String					parameterSHEET_ID	= "sheetId";
+	public static String					parameterSIIE_FILE	= "siieFile=";
+	public static String					parameterSHEET_ID	= "sheetId=";
 	private BrowserWindowOpener				browserWindowOpener;
 	@Autowired
 	SIIEService								siieService;
@@ -71,25 +74,24 @@ public class MyUI extends UI implements HasLogger
 	private EscolherElementosLayout			elementosLayout;
 	private FooterLayout					importarLayout;
 	private Button							btnUpdate;
+	private String							siieLocalFile;
+	private String							siieGDriveFile;
 
-	@Override
-	protected void init( VaadinRequest vaadinRequest )
+	public MyUI()
 	{
-		getLogger().info( "EmbedId " + getEmbedId() );
-		final VerticalLayout mainLayout = new VerticalLayout();
-		mainLayout.setSpacing( false );
-		mainLayout.setMargin( new MarginInfo( false, true, false, true ) );
-		mainLayout.setSizeFull();
-		mainLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		setContent( mainLayout );
-		setTheme( "mytheme" );
-		Responsive.makeResponsive( mainLayout );
-		elementosLayout = new EscolherElementosLayout( getEmbedId(), siieService );
+
+		setSpacing( false );
+		setMargin( new MarginInfo( false, true, false, true ) );
+		setSizeFull();
+		setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
+		Responsive.makeResponsive( this );
+
+		elementosLayout = new EscolherElementosLayout( this, siieService );
 		importarLayout = new FooterLayout( elementosLayout, googleAuthentication );
 		try
 		{
 			final GoogleAuthorizationCodeRequestUrl googleAuthorizationCodeRequestUrl =
-							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( getEmbedId() );
+							googleAuthentication.getGoogleAuthorizationCodeRequestUrl( com.vaadin.flow.component.UI.getCurrent().getUIId() );
 			browserWindowOpener = new BrowserWindowOpener( googleAuthorizationCodeRequestUrl.build() );
 			browserWindowOpener.setFeatures( "height=600,width=600" );
 			browserWindowOpener.extend( importarLayout.getBtnAutorizacao() );
@@ -99,10 +101,9 @@ public class MyUI extends UI implements HasLogger
 			e.printStackTrace();
 		}
 		// process parameters
-		final String siieLocalFile = vaadinRequest.getParameter( parameterSIIE_FILE );
 		if ( siieLocalFile != null )
 		{
-			access( () ->
+			VaadinSession.getCurrent().access( () ->
 			{
 				siieService.setFile( new File( siieLocalFile ) );
 				try
@@ -116,7 +117,6 @@ public class MyUI extends UI implements HasLogger
 				}
 			} );
 		}
-		final String siieGDriveFile = vaadinRequest.getParameter( parameterSHEET_ID );
 		if ( siieGDriveFile != null )
 		{
 			loadContacts( siieGDriveFile );
@@ -133,7 +133,7 @@ public class MyUI extends UI implements HasLogger
 			final VerticalSplitPanel verticalSplitPanel2 = new VerticalSplitPanel( verticalSplitPanel, importarLayout );
 			verticalSplitPanel2.setSplitPosition( 85 );
 
-			mainLayout.addComponent( verticalSplitPanel2 );
+			addComponent( verticalSplitPanel2 );
 		}
 		else
 		{
@@ -145,11 +145,11 @@ public class MyUI extends UI implements HasLogger
 				btnUpdate.setWidth( "100%" );
 				btnUpdate.addClickListener( event -> loadContacts( siieGDriveFile ) );
 				btnUpdate.setDisableOnClick( true );
-				mainLayout.addComponent( btnUpdate );
-				mainLayout.setExpandRatio( btnUpdate, 1 );
+				addComponent( btnUpdate );
+				setExpandRatio( btnUpdate, 1 );
 			}
-			mainLayout.addComponent( verticalSplitPanel );
-			mainLayout.setExpandRatio( verticalSplitPanel, 10 );
+			addComponent( verticalSplitPanel );
+			setExpandRatio( verticalSplitPanel, 10 );
 		}
 
 		//
@@ -202,7 +202,7 @@ public class MyUI extends UI implements HasLogger
 
 	private void loadContacts( String siieGDriveFile )
 	{
-		access( () ->
+		VaadinSession.getCurrent().access( () ->
 		{
 			try
 			{
@@ -225,7 +225,7 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnAutorizacao().setVisible( false );
 		importarLayout.getBtImportacao().setVisible( true );
 		importarLayout.getBtnEmailer().setVisible( true );
-		access( () ->
+		VaadinSession.getCurrent().access( () ->
 		{
 			PeopleService peopleService;
 			try
@@ -266,5 +266,21 @@ public class MyUI extends UI implements HasLogger
 		importarLayout.getBtnCopyMailingList().setEnabled( iSelecionados > 0 );
 		importarLayout.getBtnEmailer().setEnabled( iSelecionados > 0 );
 		importarLayout.getBtnAuthFile().setEnabled( iSelecionados > 0 );
+	}
+
+	@Override
+	public void setParameter( BeforeEvent event, String parameter )
+	{
+		if ( parameter != null )
+		{
+			if ( parameter.startsWith( parameterSIIE_FILE ) )
+			{
+				siieLocalFile = parameter.replace( parameterSIIE_FILE, "" );
+			}
+			else if ( parameter.startsWith( parameterSHEET_ID ) )
+			{
+				siieGDriveFile = parameter.replace( parameterSHEET_ID, "" );
+			}
+		}
 	}
 }

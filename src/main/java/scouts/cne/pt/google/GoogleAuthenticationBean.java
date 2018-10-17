@@ -9,6 +9,7 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -23,12 +24,9 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
-import com.vaadin.spring.annotation.SpringComponent;
-import com.vaadin.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
 
-@SpringComponent
-@UIScope
+@Service
 public class GoogleAuthenticationBean implements Serializable, HasLogger
 {
 	/**
@@ -65,12 +63,12 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	{
 		// Build flow and trigger user authorization request.
 		return new GoogleAuthorizationCodeFlow.Builder( getHttpTransport(), getJsonfactry(), getGoogleClientSecrets(), SCOPES )
-				.setAccessType( "offline" ).setApprovalPrompt( "force" ).build();
+						.setAccessType( "offline" ).setApprovalPrompt( "force" ).build();
 	}
 
 	public NetHttpTransport getHttpTransport() throws GeneralSecurityException, IOException
 	{
-		NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
+		final NetHttpTransport.Builder builder = new NetHttpTransport.Builder();
 		return builder.build();
 	}
 
@@ -82,34 +80,34 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	private GoogleClientSecrets getGoogleClientSecrets() throws IOException
 	{
 		GoogleClientSecrets googleClientSecrets = new GoogleClientSecrets();
-		String strGoogleClientSecrets = System.getenv().get( "GOOGLE_CLIENT_SECRETS" );
+		final String strGoogleClientSecrets = System.getenv().get( "GOOGLE_CLIENT_SECRETS" );
 		if ( StringUtils.isNotBlank( strGoogleClientSecrets ) )
 		{
 			try ( StringReader stringReader = new StringReader( strGoogleClientSecrets ) )
 			{
 				return GoogleClientSecrets.load( getJsonfactry(), stringReader );
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				printError( e );
 			}
 		}
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		InputStream in = classLoader.getResourceAsStream( "client_secrets.json" );
+		final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		final InputStream in = classLoader.getResourceAsStream( "client_secrets.json" );
 		try ( InputStreamReader inputStreamReader = new InputStreamReader( in ) )
 		{
 			googleClientSecrets = GoogleClientSecrets.load( getJsonfactry(), inputStreamReader );
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			printError( e );
 		}
 		return googleClientSecrets;
 	}
 
-	public GoogleAuthorizationCodeRequestUrl getGoogleAuthorizationCodeRequestUrl( String sessionId ) throws GeneralSecurityException, IOException
+	public GoogleAuthorizationCodeRequestUrl getGoogleAuthorizationCodeRequestUrl( int i ) throws GeneralSecurityException, IOException
 	{
-		return getGoogleAuthorizationCodeFlow().newAuthorizationUrl().setRedirectUri( getRedicetUrl() ).setState( sessionId );
+		return getGoogleAuthorizationCodeFlow().newAuthorizationUrl().setRedirectUri( getRedicetUrl() ).setState( String.valueOf( i ) );
 	}
 
 	private String getRedicetUrl() throws IOException
@@ -146,10 +144,10 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	{
 		if ( googleCredential == null )
 		{
-			GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
+			final GoogleClientSecrets googleClientSecrets = getGoogleClientSecrets();
 			try
 			{
-				TokenResponse response = new AuthorizationCodeTokenRequest( getHttpTransport(), getJsonfactry(),
+				final TokenResponse response = new AuthorizationCodeTokenRequest( getHttpTransport(), getJsonfactry(),
 								new GenericUrl( googleClientSecrets.getDetails().getTokenUri() ), refreshToken )
 												.setClientAuthentication( new ClientParametersAuthentication(
 																googleClientSecrets.getDetails().getClientId(),

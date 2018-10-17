@@ -14,21 +14,17 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Service;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.vaadin.spring.annotation.SpringComponent;
-import com.vaadin.spring.annotation.UIScope;
-
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
@@ -36,8 +32,7 @@ import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.utils.ValidationUtils;
 
-@SpringComponent
-@UIScope
+@Service
 public class SIIEService implements Serializable, HasLogger
 {
 	/**
@@ -54,7 +49,7 @@ public class SIIEService implements Serializable, HasLogger
 	{
 		super();
 		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
-		for ( SECCAO seccao : SECCAO.getListaSeccoes() )
+		for ( final SECCAO seccao : SECCAO.getListaSeccoes() )
 		{
 			mapSeccaoElemento.put( seccao, new ArrayList<>() );
 		}
@@ -71,7 +66,7 @@ public class SIIEService implements Serializable, HasLogger
 	public void loadElementosGDrive( String id ) throws SIIIEImporterException
 	{
 		map = new HashMap<>();
-		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		for ( final Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
 		{
 			entry.getValue().clear();
 		}
@@ -97,28 +92,28 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				iSheetid = Integer.parseInt( m.group( 1 ) );
 			}
-			if ( StringUtils.isBlank( spreadsheetId ) || (iSheetid < 1) )
+			if ( StringUtils.isBlank( spreadsheetId ) || iSheetid < 1 )
 			{
 				throw new SIIIEImporterException(
-						"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
+								"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
 			}
 			googleServerAuthentication.getSheetsService();
-			Sheets service = googleServerAuthentication.getSheetsService();
+			final Sheets service = googleServerAuthentication.getSheetsService();
 			Spreadsheet spreadsheet = null;
 			try
 			{
 				spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				throw new SIIIEImporterException(
-						"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
+								"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
 			}
 			String strSheetName = null;
-			for ( Sheet sheet : spreadsheet.getSheets() )
+			for ( final Sheet sheet : spreadsheet.getSheets() )
 			{
 				getLogger().info( "Check sheetId: {} == {}", sheet.getProperties().getSheetId(), iSheetid );
-				if ( sheet.getProperties().getSheetId().equals(iSheetid ))
+				if ( sheet.getProperties().getSheetId().equals( iSheetid ) )
 				{
 					strSheetName = sheet.getProperties().getTitle();
 					break;
@@ -127,12 +122,12 @@ public class SIIEService implements Serializable, HasLogger
 			if ( strSheetName != null )
 			{
 				getLogger().info( "Start reading sheet {} on spreadsheet {}", strSheetName, spreadsheetId );
-				ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
-				List< List< Object > > values = response.getValues();
-				HashMap< Integer, String > headerRow = new HashMap<>();
-				Iterator< List< Object > > rowIterator = values.iterator();
+				final ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
+				final List< List< Object > > values = response.getValues();
+				final HashMap< Integer, String > headerRow = new HashMap<>();
+				final Iterator< List< Object > > rowIterator = values.iterator();
 				// read header
-				List< Object > rowHeader = rowIterator.next();
+				final List< Object > rowHeader = rowIterator.next();
 				for ( int i = 0; i < rowHeader.size(); i++ )
 				{
 					String value = Objects.toString( rowHeader.get( i ), "" );
@@ -163,8 +158,8 @@ public class SIIEService implements Serializable, HasLogger
 				}
 				while ( rowIterator.hasNext() )
 				{
-					List< Object > row = rowIterator.next();
-					Elemento elemento = new Elemento();
+					final List< Object > row = rowIterator.next();
+					final Elemento elemento = new Elemento();
 					for ( int i = 0; i < row.size(); i++ )
 					{
 						elemento.getListaAtributos().put( headerRow.get( i ), Objects.toString( row.get( i ), "" ) );
@@ -191,7 +186,7 @@ public class SIIEService implements Serializable, HasLogger
 	public void loadExploradoresSIIE() throws Exception
 	{
 		map = new HashMap<>();
-		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		for ( final Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
 		{
 			entry.getValue().clear();
 		}
@@ -199,16 +194,16 @@ public class SIIEService implements Serializable, HasLogger
 		try ( FileInputStream fis = new FileInputStream( file ); XSSFWorkbook myWorkBook = new XSSFWorkbook( fis ) )
 		{
 			// Return first sheet from the XLSX workbook
-			XSSFSheet mySheet = myWorkBook.getSheetAt( 0 );
+			final XSSFSheet mySheet = myWorkBook.getSheetAt( 0 );
 			// Get iterator to all the rows in current sheet
-			Iterator< Row > rowIterator = mySheet.iterator();
+			final Iterator< Row > rowIterator = mySheet.iterator();
 			// Traversing over each row of XLSX file
-			HashMap< Integer, String > headerRow = new HashMap<>();
+			final HashMap< Integer, String > headerRow = new HashMap<>();
 			Row row = rowIterator.next();
 			Iterator< Cell > cellIterator = row.cellIterator();
 			while ( cellIterator.hasNext() )
 			{
-				Cell cell = cellIterator.next();
+				final Cell cell = cellIterator.next();
 				String value = cell.getStringCellValue();
 				value = value.replace( " ", "" );
 				value = value.replace( "-", "" );
@@ -238,30 +233,30 @@ public class SIIEService implements Serializable, HasLogger
 			while ( rowIterator.hasNext() )
 			{
 				row = rowIterator.next();
-				Elemento elemento = new Elemento();
+				final Elemento elemento = new Elemento();
 				cellIterator = row.cellIterator();
 				while ( cellIterator.hasNext() )
 				{
-					Cell cell = cellIterator.next();
+					final Cell cell = cellIterator.next();
 					switch ( cell.getCellType() )
 					{
-					case Cell.CELL_TYPE_BLANK:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-						break;
-					case Cell.CELL_TYPE_STRING:
-					case Cell.CELL_TYPE_FORMULA:
-						elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
-								StringUtils.trimToEmpty( cell.getStringCellValue() ) );
-						break;
-					case Cell.CELL_TYPE_BOOLEAN:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
-						break;
-					case Cell.CELL_TYPE_NUMERIC:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
-						break;
-					default:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-						break;
+						case Cell.CELL_TYPE_BLANK:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
+						case Cell.CELL_TYPE_STRING:
+						case Cell.CELL_TYPE_FORMULA:
+							elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
+																StringUtils.trimToEmpty( cell.getStringCellValue() ) );
+							break;
+						case Cell.CELL_TYPE_BOOLEAN:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
+							break;
+						case Cell.CELL_TYPE_NUMERIC:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
+							break;
+						default:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
 					}
 				}
 				if ( elemento.isActivo() )
@@ -271,7 +266,7 @@ public class SIIEService implements Serializable, HasLogger
 				}
 			}
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			throw e;
 		}

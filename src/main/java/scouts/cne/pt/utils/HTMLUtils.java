@@ -134,9 +134,15 @@ public class HTMLUtils
 						.ul( TagCreator.each(	ElementoTags.getGoogleImportTags(),
 												e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
 																						TagCreator.text( e.getTagReplace() ) ) ) ) ) );
+		final UnescapedText linhaUnchange =
+						TagCreator.join( TagCreator.text( "Aproveitamos a partilhamos alguns dados sobre a tua vida escutista:" ), TagCreator.br() );
+		final UnescapedText eachUnchange = TagCreator.join( TagCreator
+						.ul( TagCreator.each(	ElementoTags.getUnchagedTags(),
+												e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
+																						TagCreator.text( e.getTagReplace() ) ) ) ) ) );
 		final UnescapedText linhaDespedida = TagCreator
 						.join( TagCreator.text( "Obrigado. " ), TagCreator.br(), TagCreator.br(), TagCreator.text( "Canhotas," ), TagCreator.br() );
-		final ContainerTag p = TagCreator.p( linhaOla, linhaInicio, each, linhaDespedida );
+		final ContainerTag p = TagCreator.p( linhaOla, linhaInicio, each, linhaUnchange, eachUnchange, linhaDespedida );
 		return p.render();
 	}
 }

@@ -107,9 +107,8 @@ public enum ElementoTags
 	{
 		final List< ElementoTags > tags = new LinkedList<>();
 		tags.add( ElementoTags.NOME );
+		tags.add( ElementoTags.NIF );
 		tags.add( ElementoTags.DATA_NASCIMENTO );
-		tags.add( ElementoTags.DATA_PROMESSA );
-		tags.add( ElementoTags.DATA_ADMISSAO );
 		tags.add( ElementoTags.MORADA );
 		tags.add( ElementoTags.TELEFONE );
 		tags.add( ElementoTags.TELEMOVEL );
@@ -124,6 +123,16 @@ public enum ElementoTags
 		tags.add( ElementoTags.EMAIL_PAI );
 		tags.add( ElementoTags.TELEFONE_PAI );
 		tags.add( ElementoTags.PROFISSAO_PAI );
+
+		return tags;
+	}
+
+	public static List< ElementoTags > getUnchagedTags()
+	{
+		final List< ElementoTags > tags = new LinkedList<>();
+		tags.add( ElementoTags.NIN );
+		tags.add( ElementoTags.DATA_PROMESSA );
+		tags.add( ElementoTags.DATA_ADMISSAO );
 
 		return tags;
 	}

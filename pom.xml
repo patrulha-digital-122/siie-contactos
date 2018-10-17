@@ -28,7 +28,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<!-- If there are no local customizations, this can also be "fetch" or 
 			"cdn" -->
-		<vaadin.widgetset.mode>cdn</vaadin.widgetset.mode>
+		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
 		<full-artifact-name>target/${project.artifactId}-${project.version}.jar</full-artifact-name>
 	</properties>
 

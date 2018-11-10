@@ -186,6 +186,9 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				for ( final Elemento elemento : lstElementos )
 				{
 					final List< InternetAddress > lstEmails = elemento.getListEmails( chbWithParents.getValue() );
+
+					elemento.addEmailSeccao(lstEmails);
+
 					final String strHTMLEmail = ElementoTags.convertHTML( richTextArea.getValue(), elemento );
 
 					File fichaInscricao = null;

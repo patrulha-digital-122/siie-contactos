@@ -36,7 +36,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public String getAgrupamento()
 	{
-		return getAtributo( "agrupamento" ).toString();
+		return StringUtils.trimToEmpty( getAtributo( "agrupamento" ).toString() );
 	}
 
 	/**
@@ -489,12 +489,20 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 
 	public List< InternetAddress > getListEmails( boolean bUseParentsEmails )
 	{
-		final List< InternetAddress > list = new ArrayList< InternetAddress >();
+		final List< InternetAddress > list = new ArrayList< >();
 		list.add( getInternetAddressEmail() );
 		if ( bUseParentsEmails )
 		{
-			list.add( getInternetAddressEmailMae() );
-			list.add( getInternetAddressEmailPai() );
+			InternetAddress internetAddressEmailMae = getInternetAddressEmailMae();
+			if(internetAddressEmailMae != null)
+			{
+				list.add( internetAddressEmailMae );
+			}
+			InternetAddress internetAddressEmailPai = getInternetAddressEmailPai();
+			if(internetAddressEmailPai != null)
+			{
+				list.add( internetAddressEmailPai );
+			}
 		}
 		return list;
 	}
@@ -506,7 +514,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	public InternetAddress getInternetAddressEmail()
 	{
 		final String email = getEmail();
-		if ( email != null && email.contains( "@" ) )
+		if ( ( email != null ) && email.contains( "@" ) )
 		{
 			try
 			{
@@ -526,7 +534,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmailPai()
 	{
-		if ( getEmailPai() != null && getEmailPai().contains( "@" ) )
+		if ( ( getEmailPai() != null ) && getEmailPai().contains( "@" ) )
 		{
 			try
 			{
@@ -546,7 +554,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	 */
 	public InternetAddress getInternetAddressEmailMae()
 	{
-		if ( getEmailMae() != null && getEmailMae().contains( "@" ) )
+		if ( ( getEmailMae() != null ) && getEmailMae().contains( "@" ) )
 		{
 			try
 			{
@@ -640,5 +648,43 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 		map.put( "CORREIO ELETRÓNICO_4", getEmailEncEdu() );
 
 		return map;
+	}
+
+	public void addEmailSeccao( List< InternetAddress > lstEmails )
+	{
+		if(!getAgrupamento().isEmpty() && ( getCategoria() != SECCAO.NONE ))
+		{
+			String email = "";
+			String nome = "Agrupamento " + getAgrupamento() + " - " + getCategoria().getNome();
+			switch ( getCategoria() )
+			{
+				case LOBITOS:
+					email = "lobitos." + getAgrupamento();
+					break;
+				case EXPLORADORES:
+					email = "exploradores." + getAgrupamento();
+					break;
+				case PIONEIROS:
+					email = "pioneiros." + getAgrupamento();
+					break;
+				case CAMINHEIROS:
+					email = "caminheiros." + getAgrupamento();
+					break;
+				case DIRIGENTES:
+					email = "geral." + getAgrupamento();
+					break;
+				default:
+					return;
+			}
+			try
+			{
+				email = email + "@escutismo.pt";
+				lstEmails.add( new InternetAddress( email, nome ) );
+			}
+			catch ( UnsupportedEncodingException e )
+			{
+				getLogger().error( e.getMessage() );
+			}
+		}
 	}
 }

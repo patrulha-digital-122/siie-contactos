@@ -32,13 +32,13 @@ public class HTMLUtils
 	private static Logger	logger					= LoggerFactory.getLogger( HTMLUtils.class );
 
 	public static MimeMessage createEmail(	List< InternetAddress > listTo,
-											List< InternetAddress > listCc,
-											List< InternetAddress > listBcc,
-											InternetAddress fromInternetAddress,
-											String subject,
-											String bodyText,
-											File attachFile )
-		throws MessagingException
+	                                      	List< InternetAddress > listCc,
+	                                      	List< InternetAddress > listBcc,
+	                                      	InternetAddress fromInternetAddress,
+	                                      	String subject,
+	                                      	String bodyText,
+	                                      	File attachFile )
+	                                      					throws MessagingException
 	{
 		final Properties props = new Properties();
 		final Session session = Session.getDefaultInstance( props, null );
@@ -48,13 +48,16 @@ public class HTMLUtils
 		{
 			listTo.forEach( p ->
 			{
-				try
+				if ( p != null )
 				{
-					message.addRecipient( javax.mail.Message.RecipientType.TO, p );
-				}
-				catch ( final MessagingException e )
-				{
-					logger.error( e.getMessage(), e );
+					try
+					{
+						message.addRecipient( javax.mail.Message.RecipientType.TO, p );
+					}
+					catch ( final MessagingException e )
+					{
+						logger.error( e.getMessage(), e );
+					}
 				}
 			} );
 		}
@@ -62,13 +65,16 @@ public class HTMLUtils
 		{
 			listCc.forEach( p ->
 			{
-				try
+				if ( p != null )
 				{
-					message.addRecipient( javax.mail.Message.RecipientType.CC, p );
-				}
-				catch ( final MessagingException e )
-				{
-					logger.error( e.getMessage(), e );
+					try
+					{
+						message.addRecipient( javax.mail.Message.RecipientType.CC, p );
+					}
+					catch ( final MessagingException e )
+					{
+						logger.error( e.getMessage(), e );
+					}
 				}
 			} );
 		}
@@ -76,13 +82,16 @@ public class HTMLUtils
 		{
 			listBcc.forEach( p ->
 			{
-				try
+				if ( p != null )
 				{
-					message.addRecipient( javax.mail.Message.RecipientType.BCC, p );
-				}
-				catch ( final MessagingException e )
-				{
-					logger.error( e.getMessage(), e );
+					try
+					{
+						message.addRecipient( javax.mail.Message.RecipientType.BCC, p );
+					}
+					catch ( final MessagingException e )
+					{
+						logger.error( e.getMessage(), e );
+					}
 				}
 			} );
 		}
@@ -124,22 +133,22 @@ public class HTMLUtils
 	public static String getDefaultEmail()
 	{
 		final UnescapedText linhaOla = TagCreator.join(	TagCreator.text( "Olá " ),
-														TagCreator.text( ElementoTags.NOME.getTagReplace() ),
-														TagCreator.text( "," ),
-														TagCreator.br() );
+		                                               	TagCreator.text( ElementoTags.NOME.getTagReplace() ),
+		                                               	TagCreator.text( "," ),
+		                                               	TagCreator.br() );
 		final UnescapedText linhaInicio = TagCreator.join(	TagCreator
-						.text( "Com o inicio do ano escutista é altura de confirmar se os dados pessoais que temos estão actualizados. Por isso pedimos que nos informe se algum destes dados está incompleto/desactualizado:" ),
-															TagCreator.br() );
+		                                                  	.text( "Com o inicio do ano escutista é altura de confirmar se os dados pessoais que temos estão actualizados. Por isso pedimos que nos informe se algum destes dados está incompleto/desactualizado:" ),
+		                                                  	TagCreator.br() );
 		final UnescapedText each = TagCreator.join( TagCreator
-						.ul( TagCreator.each(	ElementoTags.getGoogleImportTags(),
-												e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
-																						TagCreator.text( e.getTagReplace() ) ) ) ) ) );
+		                                            .ul( TagCreator.each(	ElementoTags.getGoogleImportTags(),
+		                                                                 	e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
+		                                                                 	                                    	TagCreator.text( e.getTagReplace() ) ) ) ) ) );
 		final UnescapedText linhaUnchange =
 						TagCreator.join( TagCreator.text( "Aproveitamos a partilhamos alguns dados sobre a tua vida escutista:" ), TagCreator.br() );
 		final UnescapedText eachUnchange = TagCreator.join( TagCreator
-						.ul( TagCreator.each(	ElementoTags.getUnchagedTags(),
-												e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
-																						TagCreator.text( e.getTagReplace() ) ) ) ) ) );
+		                                                    .ul( TagCreator.each(	ElementoTags.getUnchagedTags(),
+		                                                                         	e -> TagCreator.li( TagCreator.join(	TagCreator.b( TagCreator.text( e.getTagDescription() + ": " ) ),
+		                                                                         	                                    	TagCreator.text( e.getTagReplace() ) ) ) ) ) );
 		final UnescapedText linhaDespedida = TagCreator
 						.join( TagCreator.text( "Obrigado. " ), TagCreator.br(), TagCreator.br(), TagCreator.text( "Canhotas," ), TagCreator.br() );
 		final ContainerTag p = TagCreator.p( linhaOla, linhaInicio, each, linhaUnchange, eachUnchange, linhaDespedida );

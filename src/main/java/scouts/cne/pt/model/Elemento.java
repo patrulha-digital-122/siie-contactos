@@ -490,7 +490,11 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 	public List< InternetAddress > getListEmails( boolean bUseParentsEmails )
 	{
 		final List< InternetAddress > list = new ArrayList< >();
-		list.add( getInternetAddressEmail() );
+		InternetAddress internetAddressEmail = getInternetAddressEmail();
+		if ( internetAddressEmail != null )
+		{
+			list.add( internetAddressEmail );
+		}
 		if ( bUseParentsEmails )
 		{
 			InternetAddress internetAddressEmailMae = getInternetAddressEmailMae();
@@ -671,8 +675,7 @@ public class Elemento implements Comparable< Elemento >, HasLogger
 					email = "caminheiros." + getAgrupamento();
 					break;
 				case DIRIGENTES:
-					email = "geral." + getAgrupamento();
-					break;
+					return;
 				default:
 					return;
 			}

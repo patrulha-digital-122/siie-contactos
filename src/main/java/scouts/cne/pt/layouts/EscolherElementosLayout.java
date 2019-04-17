@@ -1,7 +1,5 @@
 package scouts.cne.pt.layouts;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -12,22 +10,16 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import com.vaadin.annotations.Push;
-import com.vaadin.event.selection.SelectionEvent;
-import com.vaadin.event.selection.SelectionListener;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.data.selection.SelectionEvent;
+import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.server.FileResource;
-import com.vaadin.server.VaadinService;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.components.grid.DescriptionGenerator;
-import com.vaadin.ui.renderers.DateRenderer;
-import scouts.cne.pt.MyUI;
+import scouts.cne.pt.MainView;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
@@ -39,16 +31,16 @@ import scouts.cne.pt.services.SIIEService;
  *
  */
 @Push
-public class EscolherElementosLayout extends Panel implements HasLogger
+public class EscolherElementosLayout extends MasterVerticalView implements HasLogger
 {
 	/**
 	 *
 	 */
 	private static final long						serialVersionUID	= 5253307196908771291L;
-	private TabSheet								tabsheetContactos;
+	private Tabs									tabsheetContactos;
 	private final Map< SECCAO, List< Elemento > >	mapSelecionados;
 	private int										iSelecionados		= 0;
-	private final MyUI								myUI;
+	private final MainView								myUI;
 	@Value( "classpath:L.jpg" )
 	private Resource								resourceLobitos;
 	private final Map< SECCAO, Grid< Elemento > >	mapGrid;
@@ -62,9 +54,10 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 	 * @param string
 	 * @param siieService
 	 */
-	public EscolherElementosLayout( MyUI myUI, SIIEService siieService )
+	public EscolherElementosLayout( MainView myUI, SIIEService siieService )
 	{
-		super( "Segundo Passo - Escolher os elementos a importar para os contactos do Google" );
+		super();
+		// "Segundo Passo - Escolher os elementos a importar para os contactos do Google"
 		setSizeFull();
 		mapSelecionados = new EnumMap<>( SECCAO.class );
 		mapGrid = new HashMap<>();
@@ -75,7 +68,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 		}
 		this.myUI = myUI;
 		this.siieService = siieService;
-		setContent( getLayout() );
+		add( getLayout() );
 	}
 
 	/**
@@ -84,7 +77,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 	 * @author anco62000465 2018-01-27
 	 * @return the tabsheetContactos {@link TabSheet}
 	 */
-	public TabSheet getTabsheetContactos()
+	public Tabs getTabsheetContactos()
 	{
 		return tabsheetContactos;
 	}
@@ -94,19 +87,17 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 		final VerticalLayout verticalLayout = new VerticalLayout();
 		verticalLayout.setSizeFull();
 		verticalLayout.setSpacing( false );
-		verticalLayout.setMargin( new MarginInfo( false, true, false, true ) );
-		verticalLayout.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		tabsheetContactos = new TabSheet();
+		verticalLayout.setDefaultHorizontalComponentAlignment( Alignment.CENTER );
+		tabsheetContactos = new Tabs();
 		tabsheetContactos.setSizeFull();
 		createTable();
-		verticalLayout.addComponent( tabsheetContactos );
+		verticalLayout.add( tabsheetContactos );
 		return verticalLayout;
 	}
 
 	private void createTable()
 	{
-		final String basepath = VaadinService.getCurrent().getBaseDirectory().getAbsolutePath();
-		tabsheetContactos.removeAllComponents();
+		tabsheetContactos.removeAll();
 		for ( final SECCAO seccao : SECCAO.getListaSeccoes() )
 		{
 			// Tab dos Lobitos
@@ -116,66 +107,82 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			mapGrid.put( seccao, grid );
 			grid.setSizeFull();
 			grid.setSelectionMode( SelectionMode.MULTI );
-			verticalLayout.addComponent( grid );
-			grid.addColumn( Elemento::getNome ).setCaption( ElementoTags.NOME.getTagDescription() );
-			grid.addColumn( Elemento::getNin ).setCaption( ElementoTags.NIN.getTagDescription() );
-			grid.addColumn( Elemento::getEmail ).setCaption( ElementoTags.EMAIL.getTagDescription() );
-			grid.addColumn( Elemento::getNif ).setCaption( ElementoTags.NIF.getTagDescription() );
-			final DateRenderer dateRenderer = new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" );
-			grid.addColumn( Elemento::getDataNascimento, dateRenderer ).setCaption( ElementoTags.DATA_NASCIMENTO.getTagDescription() );
+			verticalLayout.add( grid );
+			grid.addColumn( Elemento::getNome ).setHeader( ElementoTags.NOME.getTagDescription() );
+			grid.addColumn( Elemento::getNin ).setHeader( ElementoTags.NIN.getTagDescription() );
+			grid.addColumn( Elemento::getEmail ).setHeader( ElementoTags.EMAIL.getTagDescription() );
+			grid.addColumn( Elemento::getNif ).setHeader( ElementoTags.NIF.getTagDescription() );
+			// final DateRenderer dateRenderer = new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" );
+			// grid.addColumn( Elemento::getDataNascimento, dateRenderer ).setHeader(
+			// ElementoTags.DATA_NASCIMENTO.getTagDescription() );
+			//
+			// grid.addColumn( Elemento::getDataPromessa, dateRenderer ).setHeader(
+			// ElementoTags.DATA_PROMESSA.getTagDescription() ).setHidable( true )
+			// .setHidden( true );
+			//
+			// grid.addColumn( Elemento::getDataAdmissao, dateRenderer ).setHeader(
+			// ElementoTags.DATA_ADMISSAO.getTagDescription() ).setHidable( true )
+			// .setHidden( true );
+			//
+			// grid.addColumn( Elemento::getTotem ).setHeader( ElementoTags.TOTEM.getTagDescription() ).setVisible( true
+			// ).setHidden( true );
+			// grid.addColumn( Elemento::getTelemovel ).setHeader( ElementoTags.TELEMOVEL.getTagDescription()
+			// ).setHidable( true ).setHidden( true );
+			// grid.addColumn( Elemento::getTelefone ).setHeader( ElementoTags.TELEFONE.getTagDescription()
+			// ).setHidable( true ).setHidden( true );
+			// grid.addColumn( Elemento::getMorada ).setHeader( ElementoTags.MORADA.getTagDescription() ).setHidable(
+			// true ).setHidden( true );
+			// grid.addColumn( Elemento::getCodigoPostal ).setHeader( "Código Postal" ).setHidable( true ).setHidden(
+			// true );
+			// grid.addColumn( Elemento::getNomeMae ).setHeader( ElementoTags.NOME_MAE.getTagDescription() ).setHidable(
+			// true ).setHidden( true );
+			// grid.addColumn( Elemento::getTelefoneMae ).setHeader( ElementoTags.TELEFONE_MAE.getTagDescription()
+			// ).setHidable( true )
+			// .setHidden( true );
+			// grid.addColumn( Elemento::getEmailMae ).setHeader( ElementoTags.EMAIL_MAE.getTagDescription()
+			// ).setHidable( true ).setHidden( true );
+			// grid.addColumn( Elemento::getProfissaoMae ).setHeader( ElementoTags.PROFISSAO_MAE.getTagDescription()
+			// ).setHidable( true )
+			// .setHidden( true );
+			// grid.addColumn( Elemento::getNomePai ).setHeader( ElementoTags.NOME_PAI.getTagDescription() ).setHidable(
+			// true ).setHidden( true );
+			// grid.addColumn( Elemento::getTelefonePai ).setHeader( ElementoTags.TELEFONE_PAI.getTagDescription()
+			// ).setHidable( true )
+			// .setHidden( true );
+			// grid.addColumn( Elemento::getEmailPai ).setHeader( ElementoTags.EMAIL_PAI.getTagDescription()
+			// ).setHidable( true ).setHidden( true );
+			// grid.addColumn( Elemento::getProfissaoPai ).setHeader( ElementoTags.PROFISSAO_PAI.getTagDescription()
+			// ).setHidable( true )
+			// .setHidden( true );
+			// grid.addColumn( Elemento::getNotas ).setHeader( ElementoTags.NOTAS.getTagDescription() ).setHidable( true
+			// ).setHidden( true )
+			// .setDescriptionGenerator( new DescriptionGenerator< Elemento >()
+			// {
+			// private static final long serialVersionUID = -6877934609841332609L;
+			//
+			// @Override
+			// public String apply( Elemento t )
+			// {
+			// return t.getNotas();
+			// }
+			// } );
+			// grid.addColumn( Elemento::getObservacoes ).setHeader( ElementoTags.OBSERVACOES.getTagDescription()
+			// ).setHidable( true ).setHidden( true )
+			// .setDescriptionGenerator( new DescriptionGenerator< Elemento >()
+			// {
+			// private static final long serialVersionUID = 3913814674210101147L;
+			//
+			// @Override
+			// public String apply( Elemento t )
+			// {
+			// return t.getObservacoes();
+			// }
+			// } );
 
-			grid.addColumn( Elemento::getDataPromessa, dateRenderer ).setCaption( ElementoTags.DATA_PROMESSA.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-
-			grid.addColumn( Elemento::getDataAdmissao, dateRenderer ).setCaption( ElementoTags.DATA_ADMISSAO.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-
-			grid.addColumn( Elemento::getTotem ).setCaption( ElementoTags.TOTEM.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getTelemovel ).setCaption( ElementoTags.TELEMOVEL.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getTelefone ).setCaption( ElementoTags.TELEFONE.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getMorada ).setCaption( ElementoTags.MORADA.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getCodigoPostal ).setCaption( "Código Postal" ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getNomeMae ).setCaption( ElementoTags.NOME_MAE.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getTelefoneMae ).setCaption( ElementoTags.TELEFONE_MAE.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-			grid.addColumn( Elemento::getEmailMae ).setCaption( ElementoTags.EMAIL_MAE.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getProfissaoMae ).setCaption( ElementoTags.PROFISSAO_MAE.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-			grid.addColumn( Elemento::getNomePai ).setCaption( ElementoTags.NOME_PAI.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getTelefonePai ).setCaption( ElementoTags.TELEFONE_PAI.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-			grid.addColumn( Elemento::getEmailPai ).setCaption( ElementoTags.EMAIL_PAI.getTagDescription() ).setHidable( true ).setHidden( true );
-			grid.addColumn( Elemento::getProfissaoPai ).setCaption( ElementoTags.PROFISSAO_PAI.getTagDescription() ).setHidable( true )
-							.setHidden( true );
-			grid.addColumn( Elemento::getNotas ).setCaption( ElementoTags.NOTAS.getTagDescription() ).setHidable( true ).setHidden( true )
-							.setDescriptionGenerator( new DescriptionGenerator< Elemento >()
-							{
-								private static final long serialVersionUID = -6877934609841332609L;
-
-								@Override
-								public String apply( Elemento t )
-								{
-									return t.getNotas();
-								}
-							} );
-			grid.addColumn( Elemento::getObservacoes ).setCaption( ElementoTags.OBSERVACOES.getTagDescription() ).setHidable( true ).setHidden( true )
-							.setDescriptionGenerator( new DescriptionGenerator< Elemento >()
-							{
-								private static final long serialVersionUID = 3913814674210101147L;
-
-								@Override
-								public String apply( Elemento t )
-								{
-									return t.getObservacoes();
-								}
-							} );
-
-			grid.addSelectionListener( new SelectionListener< Elemento >()
+			grid.addSelectionListener( new SelectionListener< Grid< Elemento >, Elemento >()
 			{
-				private static final long serialVersionUID = 1626537027266542111L;
-
 				@Override
-				public void selectionChange( SelectionEvent< Elemento > event )
+				public void selectionChange( SelectionEvent< Grid< Elemento >, Elemento > event )
 				{
 					mapSelecionados.get( seccao ).clear();
 					mapSelecionados.get( seccao ).addAll( event.getAllSelectedItems() );
@@ -186,19 +193,19 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 					}
 					iSelecionados = iCount;
 					VaadinSession.getCurrent().access( () -> myUI.updateSelectionados( iSelecionados ) );
-
 				}
 			} );
 			final String nomeTab = seccao.getNome() + " - 0";
 			try
 			{
-				final FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" + seccao.getId() + ".jpg" ) );
-				mapTabs.put( seccao, tabsheetContactos.addTab( verticalLayout, nomeTab, resource ) );
+				// final FileResource resource = new FileResource( new File( basepath + "/WEB-INF/images/" +
+				// seccao.getId() + ".jpg" ) );
+				// mapTabs.put( seccao, tabsheetContactos.getSelectedTab().add( verticalLayout ) );
 			}
 			catch ( final Exception e )
 			{
 				getLogger().error( e.getMessage(), e );
-				mapTabs.put( seccao, tabsheetContactos.addTab( verticalLayout, nomeTab ) );
+				// mapTabs.put( seccao, tabsheetContactos.add( verticalLayout ) );
 			}
 
 		}
@@ -216,7 +223,7 @@ public class EscolherElementosLayout extends Panel implements HasLogger
 			{
 				grid.setItems( items );
 				grid.getDataProvider().refreshAll();
-				mapTabs.get( seccao ).setCaption( seccao.getNome() + " - " + items.size() );
+				mapTabs.get( seccao ).setLabel( seccao.getNome() + " - " + items.size() );
 			}
 		}
 	}

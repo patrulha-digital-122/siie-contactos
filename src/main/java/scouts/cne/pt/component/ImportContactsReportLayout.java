@@ -2,13 +2,8 @@ package scouts.cne.pt.component;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Accordion;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.VerticalLayout;
-
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import j2html.TagCreator;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.utils.ElementoImport;
@@ -17,7 +12,7 @@ import scouts.cne.pt.utils.ElementoImport;
  * @author anco62000465 2018-09-19
  *
  */
-public class ImportContactsReportLayout extends Panel implements HasLogger
+public class ImportContactsReportLayout extends VerticalLayout implements HasLogger
 {
 	private static final long serialVersionUID = 6350206714629945520L;
 
@@ -39,7 +34,7 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 				"Contactos sem alterações: <font color=\"red\"><b>" + listNaoModificado.size() + "</b></font>",
 				verticalLayout );
 		processListWithoutChanges( listSemAlteracoes, "Contactos sem alterações: " + listSemAlteracoes.size(), verticalLayout );
-		setContent( verticalLayout );
+		add( verticalLayout );
 	}
 
 	/**
@@ -55,21 +50,22 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 	{
 		if ( ( list != null ) && !list.isEmpty() )
 		{
-			Accordion accordion = new Accordion();
-			accordion.setCaption( strLabelTitle );
-			accordion.setCaptionAsHtml( true );
-			accordion.setTabCaptionsAsHtml( true );
-			for ( ElementoImport elementoImport : list )
-			{
-				if ( (elementoImport != null) && !elementoImport.getImportContactReport().getLstLabels().isEmpty() )
-				{
-					final Label label = new Label( elementoImport.getHTMLImportContactReport(), ContentMode.HTML );
-					final VerticalLayout layout = new VerticalLayout( label );
-					layout.setMargin( true );
-					accordion.addTab( layout, String.format( "<p><strong>%s</strong></p>", elementoImport.getElemento().getNome() ) );
-				}
-			}
-			verticalLayout.addComponent( accordion );
+			// Accordion accordion = new Accordion();
+			// accordion.setCaption( strLabelTitle );
+			// accordion.setCaptionAsHtml( true );
+			// accordion.setTabCaptionsAsHtml( true );
+			// for ( ElementoImport elementoImport : list )
+			// {
+			// if ( (elementoImport != null) && !elementoImport.getImportContactReport().getLstLabels().isEmpty() )
+			// {
+			// final Label label = new Label( elementoImport.getHTMLImportContactReport(), ContentMode.HTML );
+			// final VerticalLayout layout = new VerticalLayout( label );
+			// layout.setMargin( true );
+			// accordion.addTab( layout, String.format( "<p><strong>%s</strong></p>",
+			// elementoImport.getElemento().getNome() ) );
+			// }
+			// }
+			// verticalLayout.addComponent( accordion );
 		}
 	}
 
@@ -77,18 +73,18 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 	{
 		if ( ( list != null ) && !list.isEmpty() )
 		{
-			Panel panel = new Panel( strLabelTitle );
+			VerticalLayout panel = new VerticalLayout();
 			VerticalLayout verticalLayoutWithoutChanges = new VerticalLayout();
-			panel.setContent(verticalLayoutWithoutChanges);
+			panel.add( verticalLayoutWithoutChanges );
 			for ( ElementoImport elementoImport : list )
 			{
 				StringBuilder sb = new StringBuilder();
 				sb.append( TagCreator.b(elementoImport.getElemento().getNome()).render() );
 				sb.append( " - " );
 				sb.append( elementoImport.getHTMLGoogleContactLink() );
-				verticalLayoutWithoutChanges.addComponent( new Label( sb.toString(), ContentMode.HTML ) );
+				verticalLayoutWithoutChanges.add( new Label( sb.toString() ) );
 			}
-			verticalLayout.addComponent( panel );
+			verticalLayout.add( panel );
 		}
 	}
 
@@ -105,14 +101,14 @@ public class ImportContactsReportLayout extends Panel implements HasLogger
 	{
 		if ( ( list != null ) && !list.isEmpty() )
 		{
-			Panel panel = new Panel( strLabelTitle );
+			VerticalLayout panel = new VerticalLayout();
 			VerticalLayout verticalLayoutWithoutChanges = new VerticalLayout();
 			for ( ElementoImport elementoImport : list )
 			{
 				verticalLayoutWithoutChanges
-				.addComponent( new Label( elementoImport.getImportContactReport().getLstLabels().get( 0 ), ContentMode.HTML ) );
+								.add( new Label( elementoImport.getImportContactReport().getLstLabels().get( 0 ) ) );
 			}
-			verticalLayout.addComponent( panel );
+			verticalLayout.add( panel );
 		}
 	}
 }

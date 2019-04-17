@@ -32,30 +32,20 @@ import com.google.gdata.data.contacts.UserDefinedField;
 import com.google.gdata.data.extensions.ExtendedProperty;
 import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
-import com.vaadin.icons.VaadinIcons;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.Window.CloseEvent;
-import com.vaadin.ui.Window.CloseListener;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import scouts.cne.pt.app.HasLogger;
-import scouts.cne.pt.component.AutorizationFilesWindow;
-import scouts.cne.pt.component.EmailerWindow;
 import scouts.cne.pt.component.ImportContactsConfigWindow;
 import scouts.cne.pt.component.ImportContactsReportLayout;
-import scouts.cne.pt.component.MailingListWindow;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ImportContactReport;
@@ -68,7 +58,7 @@ import scouts.cne.pt.utils.ElementoImport;
  * @author anco62000465 2018-09-17
  *
  */
-public class FooterLayout extends Panel implements HasLogger
+public class FooterLayout extends MasterVerticalView implements HasLogger
 {
 	private static final long					serialVersionUID	= -6763770502811814642L;
 	private final Button						btnAutorizacao;
@@ -89,16 +79,17 @@ public class FooterLayout extends Panel implements HasLogger
 	 */
 	public FooterLayout( EscolherElementosLayout elementosLayout, GoogleAuthenticationBean googleAuthentication )
 	{
-		super( "Funcionalidades disponiveis" );
+		super();
+		// "Funcionalidades disponiveis"
 		setSizeFull();
 		this.elementosLayout = elementosLayout;
 		this.googleAuthentication = googleAuthentication;
 		importContactsConfigWindow = new ImportContactsConfigWindow();
 
-		btnAutorizacao = new Button( "Autorizar", VaadinIcons.GOOGLE_PLUS_SQUARE );
+		btnAutorizacao = new Button( "Autorizar", VaadinIcon.GOOGLE_PLUS_SQUARE.create() );
 		final boolean bAlreadyHaveRefreshToken = StringUtils.isNotBlank( googleAuthentication.getRefreshToken() );
 		btnAutorizacao.setEnabled( !bAlreadyHaveRefreshToken );
-		btImportacao = new Button( "Importação (0)", VaadinIcons.USER_STAR );
+		btImportacao = new Button( "Importação (0)", VaadinIcon.USER_STAR.create() );
 		btImportacao.setEnabled( false );
 		btImportacao.setVisible( bAlreadyHaveRefreshToken );
 		btImportacao.setDisableOnClick( true );
@@ -106,97 +97,69 @@ public class FooterLayout extends Panel implements HasLogger
 		{
 			if ( googleAuthentication.getRefreshToken() != null && elementosLayout.getSelecionados() > 0 )
 			{
-				getUI().addWindow( importContactsConfigWindow );
+				getUI().get().add( importContactsConfigWindow );
 			}
 		} );
 
-		importContactsConfigWindow.addCloseListener( new CloseListener()
+		importContactsConfigWindow.addDetachListener( event ->
 		{
-			private static final long serialVersionUID = 5581538180777961098L;
-
-			@Override
-			public void windowClose( CloseEvent e )
+			if ( !importContactsConfigWindow.isCancel() )
 			{
-				if ( !importContactsConfigWindow.isCancel() )
-				{
-					importProcess();
-				}
-				btImportacao.setEnabled( true );
+				importProcess();
 			}
+			btImportacao.setEnabled( true );
 		} );
 
-		btImportacaoVCard = new Button( "Download como VCard (0)", VaadinIcons.DOWNLOAD_ALT );
+		btImportacaoVCard = new Button( "Download como VCard (0)", VaadinIcon.DOWNLOAD_ALT.create() );
 		btImportacaoVCard.setEnabled( false );
 		final StreamResource myResource = createVCardFile();
 		final FileDownloader fileDownloader = new FileDownloader( myResource );
-		fileDownloader.extend( btImportacaoVCard );
+		// fileDownloader.extend( btImportacaoVCard );
 		final Label labelFooter = new Label(
-						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>",
-						ContentMode.HTML );
-		final Button btnFaq = new Button( "Ajuda - FAQ", VaadinIcons.QUESTION );
-		btnFaq.addClickListener( new ClickListener()
+						"<p><strong>Powered by:</strong> Patrulha Digital 122 - <a href=\"mailto:patrulha.digital.122@escutismo.pt?Subject=SIIE%20Contactos%20\" target=\"_top\">patrulha.digital.122@escutismo.pt</a> </p>" );
+		final Button btnFaq = new Button( "Ajuda - FAQ", VaadinIcon.QUESTION.create() );
+		btnFaq.addClickListener( event ->
 		{
-			private static final long serialVersionUID = -2312531713940582397L;
-
-			@Override
-			public void buttonClick( ClickEvent event )
-			{
-				getUI().addWindow( new FAQWindow( btnFaq.getCaption() ) );
-			}
+			// getUI().addWindow( new FAQWindow( btnFaq.getCaption() ) );
 		} );
 
-		btnCopyMailingList = new Button( "Mailing list (0)", VaadinIcons.ENVELOPES );
+		btnCopyMailingList = new Button( "Mailing list (0)", VaadinIcon.ENVELOPES.create() );
 		btnCopyMailingList.setEnabled( false );
-		btnCopyMailingList.addClickListener( new ClickListener()
+		btnCopyMailingList.addClickListener( event ->
 		{
-			private static final long serialVersionUID = 8916961174824919931L;
-
-			@Override
-			public void buttonClick( ClickEvent event )
-			{
-				getUI().addWindow( new MailingListWindow( elementosLayout.getElementosSelecionados().values() ) );
-			}
+			// getUI().addWindow( new MailingListWindow( elementosLayout.getElementosSelecionados().values() ) );
 		} );
 
-		btnEmailer = new Button( "Email's", VaadinIcons.MAILBOX );
+		btnEmailer = new Button( "Email's", VaadinIcon.MAILBOX.create() );
 		btnEmailer.setEnabled( false );
 		btnEmailer.setVisible( bAlreadyHaveRefreshToken );
-		btnEmailer.addClickListener( new ClickListener()
+		btnEmailer.addClickListener( event ->
 		{
-			private static final long serialVersionUID = 8916961174824919931L;
+			// getUI().addWindow( new EmailerWindow( elementosLayout.getElementosSelecionados().values(),
+			// googleAuthentication ) );
 
-			@Override
-			public void buttonClick( ClickEvent event )
-			{
-				getUI().addWindow( new EmailerWindow( elementosLayout.getElementosSelecionados().values(), googleAuthentication ) );
-			}
 		} );
 
 		// Ficheiro autorização
-		btnAuthFile = new Button( "Ficheiro Autorização - MAF/SIIE", VaadinIcons.DOWNLOAD );
+		btnAuthFile = new Button( "Ficheiro Autorização - MAF/SIIE", VaadinIcon.DOWNLOAD.create() );
 		btnAuthFile.setEnabled( false );
-		btnAuthFile.addClickListener( new ClickListener()
+		btnAuthFile.addClickListener( event ->
 		{
-			private static final long serialVersionUID = -2312531713940582397L;
-
-			@Override
-			public void buttonClick( ClickEvent event )
-			{
-				getUI().addWindow( new AutorizationFilesWindow( elementosLayout.getElementosSelecionados().values(), googleAuthentication ) );
-			}
+			// getUI().addWindow( new AutorizationFilesWindow( elementosLayout.getElementosSelecionados().values(),
+			// googleAuthentication ) );
 		} );
 
 		final HorizontalLayout horizontalLayoutBtn = new HorizontalLayout();
 		horizontalLayoutBtn.setWidth( "100%" );
-		horizontalLayoutBtn.setDefaultComponentAlignment( Alignment.MIDDLE_CENTER );
-		horizontalLayoutBtn.addComponents( btnAutorizacao, btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
-		horizontalLayoutBtn.addComponent( btnEmailer );
-		horizontalLayoutBtn.addComponent( btnAuthFile );
+		horizontalLayoutBtn.setDefaultVerticalComponentAlignment( Alignment.CENTER );
+		horizontalLayoutBtn.add( btnAutorizacao, btImportacao, btImportacaoVCard, btnCopyMailingList, btnFaq );
+		horizontalLayoutBtn.add( btnEmailer );
+		horizontalLayoutBtn.add( btnAuthFile );
 
 		final VerticalLayout verticalLayout = new VerticalLayout( horizontalLayoutBtn, labelFooter );
-		verticalLayout.setComponentAlignment( labelFooter, Alignment.MIDDLE_CENTER );
+		verticalLayout.setHorizontalComponentAlignment( Alignment.CENTER );
 		verticalLayout.setMargin( true );
-		setContent( verticalLayout );
+		add( verticalLayout );
 	}
 
 	/**
@@ -485,16 +448,14 @@ public class FooterLayout extends Panel implements HasLogger
 					}
 				}
 			}
-			final Window window = new Window( "Resultado" );
-			window.setContent( new ImportContactsReportLayout( listOk, listCriados, listErro, listNaoModificado ) );
+			final Dialog window = new Dialog();
+			window.add( new ImportContactsReportLayout( listOk, listCriados, listErro, listNaoModificado ) );
 			// Center it in the browser window
-			window.center();
-			window.setResizable( true );
-			window.setModal( true );
+			window.setCloseOnOutsideClick( true );
 			window.setHeight( "500px" );
 			window.setWidth( "1000px" );
 			// Open it in the UI
-			getUI().addWindow( window );
+			// getUI().addWindow( window );
 		}
 		catch ( final Exception e )
 		{

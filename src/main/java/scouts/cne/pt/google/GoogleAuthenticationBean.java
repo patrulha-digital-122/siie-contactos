@@ -24,8 +24,10 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
+import com.vaadin.flow.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
 
+@UIScope
 @Service
 public class GoogleAuthenticationBean implements Serializable, HasLogger
 {

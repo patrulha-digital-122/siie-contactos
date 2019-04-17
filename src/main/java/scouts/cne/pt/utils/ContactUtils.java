@@ -28,7 +28,7 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
 import com.google.gdata.data.extensions.When;
-import com.vaadin.ui.CheckBox;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
@@ -43,7 +43,7 @@ public class ContactUtils
 	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
 	                                                           	ContactEntry contactEntry,
 	                                                           	Set< String > listTelefonesExistentes,
-	                                                           	Map< ElementoTags, CheckBox > mapConfigs )
+																Map< ElementoTags, Checkbox > mapConfigs )
 	{
 		ImportContactReport importContactReport = new ImportContactReport( elemento.getNin() );
 		if ( contactEntry == null )
@@ -142,9 +142,9 @@ public class ContactUtils
 	 * @param totem
 	 * @return
 	 */
-	private static boolean updatePropertie( Map< ElementoTags, CheckBox > mapConfigs, ElementoTags tags )
+	private static boolean updatePropertie( Map< ElementoTags, Checkbox > mapConfigs, ElementoTags tags )
 	{
-		CheckBox checkBox = mapConfigs.get( tags );
+		Checkbox checkBox = mapConfigs.get( tags );
 		if ( checkBox != null )
 		{
 			return checkBox.getValue();

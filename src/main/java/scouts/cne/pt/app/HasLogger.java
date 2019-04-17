@@ -8,9 +8,6 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 
 /**
- *
- */
-/**
  * HasLogger is a feature interface that provides Logging capability for anyone implementing it where logger needs to
  * operate in serializable environment without being static.
  *

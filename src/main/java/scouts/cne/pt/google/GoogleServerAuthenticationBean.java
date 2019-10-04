@@ -20,9 +20,11 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.vaadin.flow.spring.annotation.UIScope;
 import scouts.cne.pt.app.HasLogger;
 
 @Service
+@UIScope
 public class GoogleServerAuthenticationBean implements Serializable, HasLogger
 {
 	/**

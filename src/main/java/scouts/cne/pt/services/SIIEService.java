@@ -43,6 +43,7 @@ import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.CookieRestTemplate;
+import scouts.cne.pt.model.siie.Datum;
 import scouts.cne.pt.model.siie.SIIEElementos;
 import scouts.cne.pt.model.siie.SIIEUserLogin;
 import scouts.cne.pt.model.siie.SIIEUserTokenRequest;
@@ -57,8 +58,10 @@ public class SIIEService implements Serializable, HasLogger
 	 */
 	private static final long					serialVersionUID	= 1L;
 	private File								file;
+	private SIIEElementos						eSiieElementos		= new SIIEElementos();
 	private HashMap< String, Elemento >			map					= null;
 	private EnumMap< SECCAO, List< Elemento > >	mapSeccaoElemento	= null;
+	private EnumMap< SECCAO, List< Datum > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
 	private String								strAcessToken;
 	private String								strXSIIE;
 	private List< String >						lstOriginalCookies;
@@ -73,12 +76,25 @@ public class SIIEService implements Serializable, HasLogger
 		for ( final SECCAO seccao : SECCAO.getListaSeccoes() )
 		{
 			mapSeccaoElemento.put( seccao, new ArrayList<>() );
+			mapSeccaoElementos.put( seccao, new ArrayList<>() );
 		}
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
 		requestFactory.setProxy( proxy );
 		restTemplate = new CookieRestTemplate( requestFactory );
 	}
+
+	/**
+	 * Getter for siieElementos
+	 * 
+	 * @author 62000465 2019-04-24
+	 * @return the siieElementos {@link SIIEElementos}
+	 */
+	public SIIEElementos getSiieElementos()
+	{
+		return eSiieElementos;
+	}
+
 
 	/**
 	 * Getter for logged
@@ -126,7 +142,7 @@ public class SIIEService implements Serializable, HasLogger
 		return false;
 	}
 
-	public void getElementosSIIE()
+	public boolean getElementosSIIE()
 	{
 		try
 		{
@@ -149,17 +165,19 @@ public class SIIEService implements Serializable, HasLogger
 				restTemplate.setAcessToken( strAcessToken );
 				restTemplate.setCookies( lstOriginalCookies );
 				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-				showInfo( elementosFor.getStatusCode().getReasonPhrase() );
-			}
-			else
-			{
-				showError( "Erro a obter dados" );
+				eSiieElementos = elementosFor.getBody();
+				for ( Datum datum : eSiieElementos.getData() )
+				{
+					mapSeccaoElementos.get( SECCAO.findSeccao( datum.getSeccao() ) ).add( datum );
+				}
+				return true;
 			}
 		}
 		catch ( final Exception e )
 		{
-			showError( e );
+			printError( e );
 		}
+		return false;
 	}
 
 	/**
@@ -347,18 +365,18 @@ public class SIIEService implements Serializable, HasLogger
 					final Cell cell = cellIterator.next();
 					switch ( cell.getCellType() )
 					{
-						case Cell.CELL_TYPE_BLANK:
+						case BLANK:
 							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
 							break;
-						case Cell.CELL_TYPE_STRING:
-						case Cell.CELL_TYPE_FORMULA:
+						case STRING:
+						case FORMULA:
 							elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
 																StringUtils.trimToEmpty( cell.getStringCellValue() ) );
 							break;
-						case Cell.CELL_TYPE_BOOLEAN:
+						case BOOLEAN:
 							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
 							break;
-						case Cell.CELL_TYPE_NUMERIC:
+						case NUMERIC:
 							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
 							break;
 						default:
@@ -389,4 +407,10 @@ public class SIIEService implements Serializable, HasLogger
 	{
 		return mapSeccaoElemento;
 	}
+	
+	public EnumMap< SECCAO, List< Datum > > getMapSeccaoElementos()
+	{
+		return mapSeccaoElementos;
+	}
+
 }

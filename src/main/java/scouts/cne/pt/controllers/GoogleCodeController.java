@@ -1,6 +1,6 @@
 package scouts.cne.pt.controllers;
 
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.JavaScript;
 import com.vaadin.ui.UI;
@@ -9,7 +9,8 @@ import com.vaadin.ui.UI;
  * @author anco62000465 2018-01-23
  *
  */
-@Route( value = "/Callback" )
+// @Route( value = "/Callback" )
+@UIScope
 public class GoogleCodeController extends UI
 {
 	/**

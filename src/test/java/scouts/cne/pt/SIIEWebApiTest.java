@@ -9,7 +9,10 @@ import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,8 +42,8 @@ public class SIIEWebApiTest
 			CookieRestTemplate restTemplate = new CookieRestTemplate( requestFactory );
 
 			SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
-			tokenRequest.setUsername( "0512050496002" );
-			tokenRequest.setPassword( "agr122tvd" );
+			tokenRequest.setUsername( "" );
+			tokenRequest.setPassword( "" );
 
 			ResponseEntity< SIIEUserLogin > postForEntity =
 							restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
@@ -62,20 +65,28 @@ public class SIIEWebApiTest
 					headers.add( HttpHeaders.COOKIE, string );
 				}
 
+				Map< String, String > mapRequest = new LinkedHashMap<>();
+				mapRequest.put( "Dados completos", "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
+				mapRequest.put( "Dados saude", "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
+				mapRequest.put( "Noites de campo", "https://siie.escutismo.pt/elementos/List?xml=elementos/actividades/noites-campo" );
 				
-				ResponseEntity< String > forEntity =
-								restTemplate.exchange( uri, HttpMethod.GET, new HttpEntity( null, headers ), String.class );
-				if ( forEntity.hasBody() )
+				for ( Entry< String, String > entry : mapRequest.entrySet() )
 				{
-					String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-					URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-						"&%7B%22take%22%3A2%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-
-					restTemplate.setAcessToken( strAcessToken );
-					restTemplate.setCookies( lstOriginalCookies );
-
-					ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-					System.out.println( elementosFor.getBody().getCount() );
+					String info = entry.getKey();
+					String url = entry.getValue();
+					ResponseEntity< String > forEntity =
+									restTemplate.exchange( new URI( url ), HttpMethod.GET, new HttpEntity( null, headers ), String.class );
+					if ( forEntity.hasBody() )
+					{
+						String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+						URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
+							"&%7B%22take%22%3A2%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
+						restTemplate.setAcessToken( strAcessToken );
+						restTemplate.setCookies( lstOriginalCookies );
+						ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+						System.out.println( info + " :: " + elementosFor.getBody().getCount() );
+						System.out.println( elementosFor.getBody().getCount() );
+					}
 				}
 			}
 			

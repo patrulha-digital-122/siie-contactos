@@ -28,7 +28,6 @@ public interface HasLogger
 	default void showError( Exception e )
 	{
 		getLogger().error( e.getMessage(), e );
-		Notification.show( "Erro", e.getMessage(), Type.ERROR_MESSAGE );
 	}
 
 	default void showError( String e )

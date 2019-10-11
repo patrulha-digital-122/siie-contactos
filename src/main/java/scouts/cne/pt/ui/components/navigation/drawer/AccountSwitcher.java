@@ -1,5 +1,6 @@
 package scouts.cne.pt.ui.components.navigation.drawer;
 
+import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -9,9 +10,7 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import scouts.cne.pt.ui.util.UIUtils;
-
-import static scouts.cne.pt.ui.util.UIUtils.IMG_PATH;
+import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/account-switcher.css")
 public class AccountSwitcher extends Div {

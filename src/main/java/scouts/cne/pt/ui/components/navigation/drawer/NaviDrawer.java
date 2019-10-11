@@ -13,7 +13,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import elemental.json.JsonObject;
-import scouts.cne.pt.ui.util.UIUtils;
+import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/navi-drawer.css")
 @JsModule("./swipe-away.js")

@@ -4,7 +4,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
-import scouts.cne.pt.ui.util.UIUtils;
+import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/brand-expression.css")
 public class BrandExpression extends Div {

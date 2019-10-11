@@ -1,5 +1,6 @@
 package scouts.cne.pt.model.siie;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SIIEElementos
 {
 	private Long			count;
-	private List< Datum >	data;
+	private List< SIIEElemento >	data	= new ArrayList<>();
 	private Object			dataKeys;
 	private Object			result;
 
@@ -29,13 +30,13 @@ public class SIIEElementos
 	}
 
 	@JsonProperty( "Data" )
-	public List< Datum > getData()
+	public List< SIIEElemento > getData()
 	{
 		return data;
 	}
 
 	@JsonProperty( "Data" )
-	public void setData( List< Datum > value )
+	public void setData( List< SIIEElemento > value )
 	{
 		this.data = value;
 	}

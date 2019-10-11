@@ -26,7 +26,7 @@ import com.vaadin.ui.TabSheet;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.SECCAO;
-import scouts.cne.pt.model.siie.Datum;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.MasterVerticalLayout;
@@ -55,11 +55,11 @@ public class EscolherElementosView extends MasterVerticalLayout implements HasLo
 	 * 
 	 */
 	private Tabs									tabsheetContactos;
-	private final Map< SECCAO, List< Datum > >	mapSelecionados;
+	private final Map< SECCAO, List< SIIEElemento > >	mapSelecionados;
 	private int										iSelecionados		= 0;
 	@Value( "classpath:L.jpg" )
 	private Resource								resourceLobitos;
-	private final Map< SECCAO, Grid< Datum > >	mapGrid;
+	private final Map< SECCAO, Grid< SIIEElemento > >	mapGrid;
 	private final Map< SECCAO, Tab >				mapTabs;
 
 	/**
@@ -118,15 +118,15 @@ public class EscolherElementosView extends MasterVerticalLayout implements HasLo
 			// Tab dos Lobitos
 			final VerticalLayout verticalLayout = new VerticalLayout();
 			verticalLayout.setSizeFull();
-			final Grid< Datum > grid = new Grid<>();
+			final Grid< SIIEElemento > grid = new Grid<>();
 			mapGrid.put( seccao, grid );
 			grid.setSizeFull();
 			grid.setSelectionMode( SelectionMode.MULTI );
 			verticalLayout.add( grid );
-			grid.addColumn( Datum::getNome ).setHeader( ElementoTags.NOME.getTagDescription() );
-			grid.addColumn( Datum::getNin ).setHeader( ElementoTags.NIN.getTagDescription() );
-			grid.addColumn( Datum::getEmail ).setHeader( ElementoTags.EMAIL.getTagDescription() );
-			grid.addColumn( Datum::getNif ).setHeader( ElementoTags.NIF.getTagDescription() );
+			grid.addColumn( SIIEElemento::getNome ).setHeader( ElementoTags.NOME.getTagDescription() );
+			grid.addColumn( SIIEElemento::getNin ).setHeader( ElementoTags.NIN.getTagDescription() );
+			grid.addColumn( SIIEElemento::getEmail ).setHeader( ElementoTags.EMAIL.getTagDescription() );
+			grid.addColumn( SIIEElemento::getNif ).setHeader( ElementoTags.NIF.getTagDescription() );
 			// final DateRenderer dateRenderer = new DateRenderer( new SimpleDateFormat( "dd/MM/yyyy" ), "" );
 			// grid.addColumn( Elemento::getDataNascimento, dateRenderer ).setHeader(
 			// ElementoTags.DATA_NASCIMENTO.getTagDescription() );
@@ -194,15 +194,15 @@ public class EscolherElementosView extends MasterVerticalLayout implements HasLo
 			// }
 			// } );
 
-			grid.addSelectionListener( new SelectionListener< Grid< Datum >, Datum >()
+			grid.addSelectionListener( new SelectionListener< Grid< SIIEElemento >, SIIEElemento >()
 			{
 				@Override
-				public void selectionChange( SelectionEvent< Grid< Datum >, Datum > event )
+				public void selectionChange( SelectionEvent< Grid< SIIEElemento >, SIIEElemento > event )
 				{
 					mapSelecionados.get( seccao ).clear();
 					mapSelecionados.get( seccao ).addAll( event.getAllSelectedItems() );
 					int iCount = 0;
-					for ( final List< Datum > list : mapSelecionados.values() )
+					for ( final List< SIIEElemento > list : mapSelecionados.values() )
 					{
 						iCount += list.size();
 					}
@@ -227,18 +227,7 @@ public class EscolherElementosView extends MasterVerticalLayout implements HasLo
 
 	public void refreshGrids()
 	{
-		for ( final Entry< SECCAO, List< Datum > > entry : siieService.getMapSeccaoElementos().entrySet() )
-		{
-			final SECCAO seccao = entry.getKey();
-			final List< Datum > items = siieService.getMapSeccaoElementos().get( seccao );
-			final Grid< Datum > grid = mapGrid.get( seccao );
-			if ( grid != null )
-			{
-				grid.setItems( items );
-				grid.getDataProvider().refreshAll();
-				// mapTabs.get( seccao ).setLabel( seccao.getNome() + " - " + items.size() );
-			}
-		}
+
 	}
 
 	/**
@@ -247,13 +236,13 @@ public class EscolherElementosView extends MasterVerticalLayout implements HasLo
 	 * @author anco62000465 2018-01-27
 	 * @return
 	 */
-	public Map< String, Datum > getElementosSelecionados()
+	public Map< String, SIIEElemento > getElementosSelecionados()
 	{
-		final Map< String, Datum > map = new HashMap<>();
-		for ( final Entry< SECCAO, List< Datum > > entry : mapSelecionados.entrySet() )
+		final Map< String, SIIEElemento > map = new HashMap<>();
+		for ( final Entry< SECCAO, List< SIIEElemento > > entry : mapSelecionados.entrySet() )
 		{
-			final List< Datum > list = entry.getValue();
-			for ( final Datum elemento : list )
+			final List< SIIEElemento > list = entry.getValue();
+			for ( final SIIEElemento elemento : list )
 			{
 				map.put( elemento.getNin().trim(), elemento );
 			}

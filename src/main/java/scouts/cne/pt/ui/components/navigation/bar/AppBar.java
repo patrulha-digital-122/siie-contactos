@@ -22,12 +22,10 @@ import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.navigation.tab.NaviTab;
 import scouts.cne.pt.ui.components.navigation.tab.NaviTabs;
 import scouts.cne.pt.ui.util.LumoStyles;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.views.Home;
-
+import scouts.cne.pt.utils.UIUtils;
+import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
 import java.util.ArrayList;
-
-import static scouts.cne.pt.ui.util.UIUtils.IMG_PATH;
 
 @CssImport("./styles/components/app-bar.css")
 public class AppBar extends FlexBoxLayout {

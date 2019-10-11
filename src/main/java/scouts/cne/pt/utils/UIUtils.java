@@ -1,10 +1,13 @@
-package scouts.cne.pt.ui.util;
+package scouts.cne.pt.utils;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Locale;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -18,6 +21,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.layout.size.Right;
+import scouts.cne.pt.ui.util.FontSize;
+import scouts.cne.pt.ui.util.FontWeight;
+import scouts.cne.pt.ui.util.IconSize;
+import scouts.cne.pt.ui.util.LineHeight;
+import scouts.cne.pt.ui.util.LumoStyles;
+import scouts.cne.pt.ui.util.TextColor;
 import scouts.cne.pt.ui.util.css.AlignSelf;
 import scouts.cne.pt.ui.util.css.BorderRadius;
 import scouts.cne.pt.ui.util.css.BoxSizing;
@@ -31,6 +40,8 @@ import scouts.cne.pt.ui.util.css.WhiteSpace;
 public class UIUtils {
 
 	public static final String IMG_PATH = "images/";
+	public static final String								SIIE_IMG_PATH	=
+					"https://siie.escutismo.pt/Controls/Thumbnail.ashx?img=/Files/Fotos/%s/%s.jpg";
 
 	/**
 	 * Thread-unsafe formatters.
@@ -38,7 +49,9 @@ public class UIUtils {
 	private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal
 			.withInitial(() -> new DecimalFormat("###,###.00", DecimalFormatSymbols.getInstance(Locale.US)));
 	private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
-			.withInitial(() -> DateTimeFormatter.ofPattern("MMM dd, YYYY"));
+					.withInitial( () -> DateTimeFormatter.ofPattern( "dd/MMM/YYYY" ) );
+	private static final ThreadLocal< SimpleDateFormat >	dateTimeFormat	=
+					ThreadLocal.withInitial( () -> new SimpleDateFormat( "dd/MM/yyyy HH:mm:ss" ) );
 
 	/* ==== BUTTONS ==== */
 
@@ -394,6 +407,15 @@ public class UIUtils {
 
 	public static String formatDate(LocalDate date) {
 		return dateFormat.get().format(date);
+	}
+
+	public static String formatDateTime( Instant instant )
+	{
+		if ( instant != null )
+		{
+			return dateTimeFormat.get().format( new Date( instant.toEpochMilli() ) );
+		}
+		return "";
 	}
 
 	/* === NOTIFICATIONS === */

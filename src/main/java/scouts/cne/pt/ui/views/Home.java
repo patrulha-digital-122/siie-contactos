@@ -1,61 +1,143 @@
 package scouts.cne.pt.ui.views;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Right;
 import scouts.cne.pt.ui.layout.size.Uniform;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.FlexWrap;
+import scouts.cne.pt.ui.views.admin.SIIELoginView;
+import scouts.cne.pt.utils.UIUtils;
 
-@PageTitle("Welcome")
-@Route(value = "", layout = MainLayout.class)
-public class Home extends ViewFrame {
+@PageTitle( Home.VIEW_DISPLAY_NAME )
+@Route( value = "", layout = MainLayout.class )
+public class Home extends ViewFrame implements HasUrlParameter< String >, HasLogger
+{
+	
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= -3259624123726894321L;
+	public static final String	VIEW_NAME			= "home";
+	public static final String	VIEW_DISPLAY_NAME	= "Início";
+	public static final VaadinIcon	VIEW_ICON			= VaadinIcon.HOME;
+	
+	@Autowired
+	private SIIEService	siieService;
+	private final Label		labelLastLogin	= new Label();
+	private Button					siieLoginButtom		= UIUtils.createPrimaryButton( "Fazer login no SIIE", SIIELoginView.VIEW_ICON );
+	private String					siieUser;
+	private String					siiePassword;
 
-	public Home() {
-		setId("home");
-		setViewContent(createContent());
+	public Home()
+	{
+		setId( "home" );
+		setViewHeader( createHeaderContent() );
+		setViewContent( createContent() );
+		siieLoginButtom.setWidthFull();
+		siieLoginButtom.addClickListener( e ->
+		{
+			siieLoginButtom.getUI().ifPresent( ui -> ui.navigate( SIIELoginView.VIEW_NAME ) );
+		} );
 	}
 
-	private Component createContent() {
-		Html intro = new Html("<p>A responsive application template with some dummy data. Loosely based on " +
-				"the <b>responsive layout grid</b> guidelines set by " +
-				"<a href=\"https://material.io/design/layout/responsive-layout-grid.html\">Material Design</a>. " +
-				"Utilises the <a href=\"https://vaadin.com/themes/lumo\">Lumo</a> theme.</p>");
+	@Override
+	protected void onAttach( AttachEvent attachEvent )
+	{
+		super.onAttach( attachEvent );
+		siieLoginButtom.setVisible( !siieService.isAuthenticated() );
+		if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
+		{
+			labelLastLogin.setText( "A carregar dados do SIIE..." );
+			siieLoginButtom.setVisible( false );
+			new Thread( () ->
+			{
+				if ( siieService.authenticateSIIE( siieUser, siiePassword ) && siieService.updateDadosCompletosSIIE() )
+				{
+					attachEvent.getUI().access( () ->
+					{
+						showInfo( siieUser + " autenticado com sucesso" );
+						// getLogger().info( siieService.get );
+						labelLastLogin.setText( "Última vez que foram obtidas informações do SIIE :: " +
+							UIUtils.formatDateTime( siieService.getLastLogin() ) );
+						Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieUser );
+						if ( elementoByNIN.isPresent() )
+						{
+							MainLayout.get().getAppBar().getAvatar()
+											.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), siieUser ) );
+						}
+					} );
+				}
+				else
+				{
+					siieLoginButtom.setVisible( true );
+				}
+			} ).start();
+		}
+		else
+		{
+			labelLastLogin.setText( "Ainda não foi feito nenhum login para obter as informações do SIIE." );
+		}
+	}
 
-		Html productivity = new Html("<p>The starter gives you a productivity boost and a head start. " +
-				"You get an app shell with a typical hierarchical left-hand menu. The shell, the views and the " +
-				"components are all responsive and touch friendly, which makes them great for desktop and mobile" +
-				"use. The views are built with Java, which enhances Java developers' productivity by allowing them to" +
-				"do all in one language.</p>");
+	private Component createHeaderContent()
+	{
+		Html features = new Html( "<p>Este site tem o objectivo de ajudar os dirigentes em 'processar' a informação do SIIE.</p>" );
+		Anchor starter = new Anchor( "https://siie.escutismo.pt", UIUtils.createButton( "Aceder ao SIIE", VaadinIcon.EXTERNAL_LINK ) );
 
-		Html features = new Html("<p>The app comes with multiple list views to edit master-detail data. " +
-				"Views can be divided horizontally or vertically to open up the details, and the details can " +
-				"also be split into multiple tabs for extra space. The details can also be opened fullscreen " +
-				"to maximize the use of space. Additionally there is an opt-in option for opening multiple " +
-				"application views in tabs within the app, for quick comparison or navigation between data. " +
-				"You enable this feature by setting <code>MainLayout.navigationTabs</code> to true.</p>");
-
-		Anchor documentation = new Anchor("https://vaadin.com/docs/business-app/overview.html", UIUtils.createButton("Read the documentation", VaadinIcon.EXTERNAL_LINK));
-		Anchor starter = new Anchor("https://vaadin.com/start/latest/business-app", UIUtils.createButton("Start a new project with Business App", VaadinIcon.EXTERNAL_LINK));
-
-		FlexBoxLayout links = new FlexBoxLayout(documentation, starter);
-		links.setFlexWrap(FlexWrap.WRAP);
-		links.setSpacing(Right.S);
-
-		FlexBoxLayout content = new FlexBoxLayout(intro, productivity, features, links);
-		content.setFlexDirection(FlexDirection.COLUMN);
-		content.setMargin(Horizontal.AUTO);
-		content.setMaxWidth("840px");
-		content.setPadding(Uniform.RESPONSIVE_L);
+		FlexBoxLayout links = new FlexBoxLayout( starter );
+		links.setFlexWrap( FlexWrap.WRAP );
+		links.setSpacing( Right.S );
+		FlexBoxLayout content = new FlexBoxLayout( features, links );
+		content.setFlexDirection( FlexDirection.COLUMN );
+		content.setMargin( Horizontal.AUTO );
+		content.setPadding( Uniform.RESPONSIVE_L );
 		return content;
 	}
 
+	private Component createContent()
+	{
+		FlexBoxLayout content = new FlexBoxLayout( labelLastLogin, siieLoginButtom );
+		content.setAlignItems( Alignment.CENTER );
+		content.setFlexDirection( FlexDirection.COLUMN );
+		content.setMargin( Horizontal.AUTO );
+		content.setPadding( Uniform.RESPONSIVE_L );
+		return content;
+	}
+
+
+	@Override
+	public void setParameter( BeforeEvent event, @OptionalParameter String parameter )
+	{
+		Location location = event.getLocation();
+		QueryParameters queryParameters = location.getQueryParameters();
+		Map< String, List< String > > parametersMap = queryParameters.getParameters();
+		siieUser = parametersMap.getOrDefault( "siieUser", Arrays.asList( "" ) ).get( 0 );
+		siiePassword = parametersMap.getOrDefault( "siiePassword", Arrays.asList( "" ) ).get( 0 );
+	}
 }

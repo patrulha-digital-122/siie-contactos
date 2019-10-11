@@ -2,10 +2,9 @@ package scouts.cne.pt.app;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Page;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 /**
  * HasLogger is a feature interface that provides Logging capability for anyone implementing it where logger needs to
@@ -30,30 +29,37 @@ public interface HasLogger
 		getLogger().error( e.getMessage(), e );
 	}
 
-	default void showError( String e )
+	default void showError( String errorMessage )
 	{
-		getLogger().error( e );
-		Notification.show( "Erro", e, Type.ERROR_MESSAGE );
+		getLogger().error( errorMessage );
+		
+		Notification notification = new Notification();
+		notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+		notification.setText( errorMessage );
+		notification.setDuration( 3000 );
+		notification.setPosition( Position.MIDDLE );
+
+		notification.open();
 	}
 
-	default void showInfo( String e )
+	default void showInfo( String message )
 	{
-		Notification notification = new Notification( e, Type.HUMANIZED_MESSAGE );
-		notification.setDelayMsec( 10 * 1000 );
-		notification.setIcon( VaadinIcons.INFO );
-		notification.show( Page.getCurrent() );
+		getLogger().info( message );
+		Notification notification = new Notification();
+		notification.setText( message );
+		notification.setDuration( 3000 );
+		notification.open();
 	}
 
-	default void showWarning( String e )
+	default void showWarning( String message )
 	{
-		Notification.show( "Warning", e, Type.WARNING_MESSAGE );
-	}
+		getLogger().warn( message );
+		Notification notification = new Notification();
+		notification.addThemeVariants( NotificationVariant.LUMO_PRIMARY );
+		notification.setText( message );
+		notification.setDuration( 3000 );
+		notification.setPosition( Position.MIDDLE );
 
-	default void showTray( String string )
-	{
-		Notification notification = new Notification( string, Type.TRAY_NOTIFICATION );
-		notification.setDelayMsec( 3 * 1000 );
-		notification.setIcon( VaadinIcons.HANDS_UP );
-		notification.show( Page.getCurrent() );
+		notification.open();
 	}
 }

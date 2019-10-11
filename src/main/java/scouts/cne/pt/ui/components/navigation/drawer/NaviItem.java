@@ -12,8 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
-import scouts.cne.pt.ui.util.UIUtils;
-
+import scouts.cne.pt.utils.UIUtils;
 import java.util.ArrayList;
 import java.util.List;
 

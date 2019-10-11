@@ -151,7 +151,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		<dependency>
+			<groupId>org.vaadin.olli</groupId>
+			<artifactId>clipboardhelper</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
@@ -309,7 +313,7 @@
 					<executable>false</executable>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>

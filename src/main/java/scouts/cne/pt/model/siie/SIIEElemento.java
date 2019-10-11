@@ -1,17 +1,25 @@
 package scouts.cne.pt.model.siie;
 
+import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import scouts.cne.pt.model.siie.types.SIIECategoria;
+import scouts.cne.pt.model.siie.types.SIIESeccao;
+import scouts.cne.pt.model.siie.types.SIIESexo;
+import scouts.cne.pt.model.siie.types.SIIESituacao;
 
 /**
  * @author 62000465 2019-02-28
  *
  */
-public class Datum
+@JsonPropertyOrder( "Datum" )
+public class SIIEElemento
 {
 	private String	nin;
 	private String	agrupamento;
 	private String	nome;
-	private String	datanascimento;
+	private Instant			datanascimento;
 	private String	cartaotxt;
 	private Long	anoadmissao;
 	private Long	rid;
@@ -25,9 +33,9 @@ public class Datum
 	private String	codigopostal;
 	private String	regiao;
 	private String	nucleo;
-	private String	dataadmissao;
-	private String	siglasituacao;
-	private String	siglasexo;
+	private Instant			dataadmissao;
+	private SIIESituacao	siglasituacao;
+	private SIIESexo		siglasexo;
 	private String	profissao;
 	private String	email;
 	private String	notas;
@@ -42,15 +50,15 @@ public class Datum
 	private String	enceducacaotelefone;
 	private String	www;
 	private Long	cid;
-	private String	siglacategoria;
+	private SIIECategoria	siglacategoria;
 	private String	categoria;
 	private String	observacoes;
 	private String	elemnucleo;
 	private String	elemregiao;
 	private Boolean	elemNacional;
 	private Boolean	ccartao;
-	private String	datapromessa;
-	private String	siglaseccao;
+	private Instant			datapromessa;
+	private SIIESeccao		siglaseccao;
 	private Boolean	florlis;
 	private String	florlisnin;
 	private String	deficiencia;
@@ -71,8 +79,8 @@ public class Datum
 	private String	expr1;
 	private String	tutor;
 	private Boolean	registocriminal;
-	private Boolean	expr2;
-	private Object	registocriminaldata;
+	private Boolean			imagensnao;
+	private Instant			registocriminaldata;
 	private String	nif;
 	private String	cc;
 	private String	totem;
@@ -115,13 +123,14 @@ public class Datum
 	}
 
 	@JsonProperty( "datanascimento" )
-	public String getDatanascimento()
+	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
+	public Instant getDatanascimento()
 	{
 		return datanascimento;
 	}
 
 	@JsonProperty( "datanascimento" )
-	public void setDatanascimento( String value )
+	public void setDatanascimento( Instant value )
 	{
 		this.datanascimento = value;
 	}
@@ -283,37 +292,42 @@ public class Datum
 	}
 
 	@JsonProperty( "dataadmissao" )
-	public String getDataadmissao()
+	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
+	public Instant getDataadmissao()
 	{
 		return dataadmissao;
 	}
 
 	@JsonProperty( "dataadmissao" )
-	public void setDataadmissao( String value )
+	public void setDataadmissao( Instant value )
 	{
 		this.dataadmissao = value;
 	}
 
 	@JsonProperty( "siglasituacao" )
-	public String getSiglasituacao()
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public SIIESituacao getSiglasituacao()
 	{
 		return siglasituacao;
 	}
 
 	@JsonProperty( "siglasituacao" )
-	public void setSiglasituacao( String value )
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public void setSiglasituacao( SIIESituacao value )
 	{
 		this.siglasituacao = value;
 	}
 
 	@JsonProperty( "siglasexo" )
-	public String getSiglasexo()
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public SIIESexo getSiglasexo()
 	{
 		return siglasexo;
 	}
 
 	@JsonProperty( "siglasexo" )
-	public void setSiglasexo( String value )
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public void setSiglasexo( SIIESexo value )
 	{
 		this.siglasexo = value;
 	}
@@ -487,13 +501,15 @@ public class Datum
 	}
 
 	@JsonProperty( "siglacategoria" )
-	public String getSiglacategoria()
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public SIIECategoria getSiglacategoria()
 	{
 		return siglacategoria;
 	}
 
 	@JsonProperty( "siglacategoria" )
-	public void setSiglacategoria( String value )
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public void setSiglacategoria( SIIECategoria value )
 	{
 		this.siglacategoria = value;
 	}
@@ -571,25 +587,28 @@ public class Datum
 	}
 
 	@JsonProperty( "datapromessa" )
-	public String getDatapromessa()
+	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
+	public Instant getDatapromessa()
 	{
 		return datapromessa;
 	}
 
 	@JsonProperty( "datapromessa" )
-	public void setDatapromessa( String value )
+	public void setDatapromessa( Instant value )
 	{
 		this.datapromessa = value;
 	}
 
 	@JsonProperty( "siglaseccao" )
-	public String getSiglaseccao()
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public SIIESeccao getSiglaseccao()
 	{
 		return siglaseccao;
 	}
 
 	@JsonProperty( "siglaseccao" )
-	public void setSiglaseccao( String value )
+	@JsonFormat( shape = JsonFormat.Shape.STRING )
+	public void setSiglaseccao( SIIESeccao value )
 	{
 		this.siglaseccao = value;
 	}
@@ -834,26 +853,27 @@ public class Datum
 		this.registocriminal = value;
 	}
 
-	@JsonProperty( "expr2" )
-	public Boolean getExpr2()
+	@JsonProperty( "imagensnao" )
+	public Boolean getImagensNao()
 	{
-		return expr2;
+		return imagensnao;
 	}
 
-	@JsonProperty( "expr2" )
-	public void setExpr2( Boolean value )
+	@JsonProperty( "imagensnao" )
+	public void setImagensNao( Boolean value )
 	{
-		this.expr2 = value;
+		this.imagensnao = value;
 	}
 
 	@JsonProperty( "registocriminaldata" )
-	public Object getRegistocriminaldata()
+	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
+	public Instant getRegistocriminaldata()
 	{
 		return registocriminaldata;
 	}
 
 	@JsonProperty( "registocriminaldata" )
-	public void setRegistocriminaldata( Object value )
+	public void setRegistocriminaldata( Instant value )
 	{
 		this.registocriminaldata = value;
 	}

@@ -2,6 +2,7 @@ package scouts.cne.pt.ui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -10,6 +11,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
@@ -20,18 +22,19 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
+import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviItem;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviMenu;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
-import scouts.cne.pt.ui.views.EscolherElementosView;
 import scouts.cne.pt.ui.views.Home;
-import scouts.cne.pt.ui.views.LoadingDataView;
+import scouts.cne.pt.ui.views.admin.SIIELoginView;
+import scouts.cne.pt.ui.views.elementos.MailingListView;
+import scouts.cne.pt.utils.UIUtils;
 
 @CssImport( value = "./styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme" )
 @CssImport( value = "./styles/components/floating-action-button.css", themeFor = "vaadin-button" )
@@ -48,7 +51,7 @@ import scouts.cne.pt.ui.views.LoadingDataView;
 @JsModule( "@vaadin/vaadin-lumo-styles/badge" )
 @PWA(	name = "CNhEfe",
 		shortName = "CNhEfe",
-		startPath = LoadingDataView.VIEW_NAME,
+		startPath = Home.VIEW_NAME,
 		backgroundColor = "#227aef",
 		themeColor = "#227aef",
 		offlinePath = "offline-page.html",
@@ -58,8 +61,14 @@ import scouts.cne.pt.ui.views.LoadingDataView;
 		display = "standalone",
 		description = "Esta app permite simplificar a vida dos dirigentes" )
 @Viewport( "width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" )
-public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfigurator, AfterNavigationObserver
+@PreserveOnRefresh
+@Push
+public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfigurator, AfterNavigationObserver, HasLogger
 {
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 308418390376170981L;
 	private static final Logger	log				= LoggerFactory.getLogger( MainLayout.class );
 	private static final String	CLASS_NAME		= "root";
 	private Div					appHeaderOuter;
@@ -78,8 +87,8 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	{
 		VaadinSession.getCurrent().setErrorHandler( ( ErrorHandler ) errorEvent ->
 		{
-			log.error( "Uncaught UI exception", errorEvent.getThrowable() );
-			Notification.show( "We are sorry, but an internal error occurred" );
+			getLogger().error( "Uncaught UI exception", errorEvent.getThrowable() );
+			Notification.show( "Pedimos desculpa mas houve um erro." );
 		} );
 		addClassName( CLASS_NAME );
 		setFlexDirection( FlexDirection.COLUMN );
@@ -120,10 +129,11 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private void initNaviItems()
 	{
 		NaviMenu menu = naviDrawer.getMenu();
-		menu.addNaviItem( VaadinIcon.HOME, "Home", Home.class );
-		menu.addNaviItem( EscolherElementosView.VIEW_ICON, EscolherElementosView.VIEW_DISPLAY_NAME, EscolherElementosView.class );
-		// NaviItem personnel = menu.addNaviItem( VaadinIcon.USERS, "Personnel", null );
-		// menu.addNaviItem( personnel, "Accountants", Accountants.class );
+		menu.addNaviItem( Home.VIEW_ICON, Home.VIEW_DISPLAY_NAME, Home.class );
+		NaviItem elementos = menu.addNaviItem( VaadinIcon.USERS, "Elementos", null );
+		menu.addNaviItem( elementos, MailingListView.VIEW_DISPLAY_NAME, MailingListView.class );
+		NaviItem admin = menu.addNaviItem( VaadinIcon.COGS, "Administração", null );
+		menu.addNaviItem( admin, SIIELoginView.VIEW_DISPLAY_NAME, SIIELoginView.class );
 		// menu.addNaviItem( personnel, "Managers", Managers.class );
 	}
 

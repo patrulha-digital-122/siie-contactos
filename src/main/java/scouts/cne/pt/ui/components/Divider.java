@@ -5,7 +5,7 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import scouts.cne.pt.ui.util.LumoStyles;
-import scouts.cne.pt.ui.util.UIUtils;
+import scouts.cne.pt.utils.UIUtils;
 
 public class Divider extends FlexBoxLayout implements HasSize, HasStyle {
 

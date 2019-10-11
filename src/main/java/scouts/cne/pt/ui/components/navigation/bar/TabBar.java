@@ -1,5 +1,6 @@
 package scouts.cne.pt.ui.components.navigation.bar;
 
+import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -14,10 +15,8 @@ import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.navigation.tab.NaviTabs;
 import scouts.cne.pt.ui.util.LumoStyles;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.views.Home;
-
-import static scouts.cne.pt.ui.util.UIUtils.IMG_PATH;
+import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/tab-bar.css")
 public class TabBar extends FlexBoxLayout {

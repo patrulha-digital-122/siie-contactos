@@ -9,7 +9,7 @@ import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Right;
 import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.LumoStyles;
-import scouts.cne.pt.ui.util.UIUtils;
+import scouts.cne.pt.utils.UIUtils;
 
 public class DetailsDrawerFooter extends FlexBoxLayout {
 

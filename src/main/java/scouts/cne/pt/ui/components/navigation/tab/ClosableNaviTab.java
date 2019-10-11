@@ -5,7 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import scouts.cne.pt.ui.util.FontSize;
-import scouts.cne.pt.ui.util.UIUtils;
+import scouts.cne.pt.utils.UIUtils;
 
 public class ClosableNaviTab extends NaviTab {
 

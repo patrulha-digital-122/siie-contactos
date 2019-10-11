@@ -10,9 +10,9 @@ import scouts.cne.pt.ui.layout.size.Right;
 import scouts.cne.pt.ui.util.FontSize;
 import scouts.cne.pt.ui.util.LumoStyles;
 import scouts.cne.pt.ui.util.TextColor;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.BorderRadius;
 import scouts.cne.pt.ui.util.css.Display;
+import scouts.cne.pt.utils.UIUtils;
 
 public class Token extends FlexBoxLayout {
 

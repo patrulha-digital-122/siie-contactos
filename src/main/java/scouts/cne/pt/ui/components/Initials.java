@@ -4,8 +4,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import scouts.cne.pt.ui.util.FontSize;
 import scouts.cne.pt.ui.util.FontWeight;
 import scouts.cne.pt.ui.util.LumoStyles;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.BorderRadius;
+import scouts.cne.pt.utils.UIUtils;
 
 public class Initials extends FlexBoxLayout {
 

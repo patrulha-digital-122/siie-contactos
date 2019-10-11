@@ -12,8 +12,8 @@ import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Right;
 import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.BoxShadowBorders;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.FlexDirection;
+import scouts.cne.pt.utils.UIUtils;
 
 public class DetailsDrawerHeader extends FlexBoxLayout {
 

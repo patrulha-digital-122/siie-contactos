@@ -5,9 +5,9 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
+import scouts.cne.pt.utils.UIUtils;
 
 /**
  * NaviTabs supports tabs that can be closed, and that can navigate to a

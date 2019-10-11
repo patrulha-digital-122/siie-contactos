@@ -1,11 +1,10 @@
 package scouts.cne.pt.ui.components;
 
 import com.vaadin.flow.component.html.Span;
-import scouts.cne.pt.ui.util.UIUtils;
 import scouts.cne.pt.ui.util.css.lumo.BadgeColor;
 import scouts.cne.pt.ui.util.css.lumo.BadgeShape;
 import scouts.cne.pt.ui.util.css.lumo.BadgeSize;
-
+import scouts.cne.pt.utils.UIUtils;
 import java.util.StringJoiner;
 
 import static scouts.cne.pt.ui.util.css.lumo.BadgeShape.PILL;

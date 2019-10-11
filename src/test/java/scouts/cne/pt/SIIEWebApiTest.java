@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import scouts.cne.pt.model.siie.CookieRestTemplate;
 import scouts.cne.pt.model.siie.SIIEElementos;
-import scouts.cne.pt.model.siie.SIIEUserLogin;
-import scouts.cne.pt.model.siie.SIIEUserTokenRequest;
+import scouts.cne.pt.model.siie.authentication.SIIEUserLogin;
+import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
 
 public class SIIEWebApiTest
 {
@@ -42,8 +42,8 @@ public class SIIEWebApiTest
 			CookieRestTemplate restTemplate = new CookieRestTemplate( requestFactory );
 
 			SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
-			tokenRequest.setUsername( "" );
-			tokenRequest.setPassword( "" );
+			tokenRequest.setUsername( "0512050496002" );
+			tokenRequest.setPassword( "agr122tvd" );
 
 			ResponseEntity< SIIEUserLogin > postForEntity =
 							restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
@@ -67,8 +67,10 @@ public class SIIEWebApiTest
 
 				Map< String, String > mapRequest = new LinkedHashMap<>();
 				mapRequest.put( "Dados completos", "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
-				mapRequest.put( "Dados saude", "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
-				mapRequest.put( "Noites de campo", "https://siie.escutismo.pt/elementos/List?xml=elementos/actividades/noites-campo" );
+				// mapRequest.put( "Dados saude",
+				// "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
+				// mapRequest.put( "Noites de campo",
+				// "https://siie.escutismo.pt/elementos/List?xml=elementos/actividades/noites-campo" );
 				
 				for ( Entry< String, String > entry : mapRequest.entrySet() )
 				{
@@ -80,12 +82,12 @@ public class SIIEWebApiTest
 					{
 						String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
 						URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-							"&%7B%22take%22%3A2%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
+							"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
 						restTemplate.setAcessToken( strAcessToken );
 						restTemplate.setCookies( lstOriginalCookies );
+						System.out.println( restTemplate.getForObject( uriElementos, String.class ) );
 						ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-						System.out.println( info + " :: " + elementosFor.getBody().getCount() );
-						System.out.println( elementosFor.getBody().getCount() );
+						elementosFor.getBody().getData().forEach( e -> System.out.println( e.getNome() + " :: " + e.getDataadmissao() ) );
 					}
 				}
 			}

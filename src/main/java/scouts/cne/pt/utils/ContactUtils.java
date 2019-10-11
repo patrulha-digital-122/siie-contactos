@@ -2,6 +2,7 @@ package scouts.cne.pt.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
+import scouts.cne.pt.model.siie.SIIEElemento;
 
 /**
  * @author anco62000465 2018-01-27
@@ -491,5 +493,41 @@ public class ContactUtils
 		{
 		}
 		return "";
+	}
+
+	public static String getMailingListFromElemento( Set< SIIEElemento > siieElementos, boolean usarMailPais, boolean usarNomes )
+	{
+		List< String > list = new ArrayList<>();
+		for ( SIIEElemento siieElemento : siieElementos )
+		{
+			list.add( getEmail( siieElemento.getEmail(), usarNomes ? siieElemento.getNome() : null ) );
+			if ( usarMailPais )
+			{
+				list.add( getEmail(	siieElemento.getMaeemail(),
+									usarNomes && StringUtils.isNotBlank( siieElemento.getMae() ) ? siieElemento.getMae() : null ) );
+				list.add( getEmail(	siieElemento.getPaiemail(),
+									usarNomes && StringUtils.isNotBlank( siieElemento.getPai() ) ? siieElemento.getPai() : null ) );
+			}
+		}
+		list.removeIf( p -> StringUtils.isBlank( p ) );
+		return StringUtils.join( list, ", " );
+	}
+
+	private static String getEmail( String email, String nome )
+	{
+		StringBuilder sb = new StringBuilder();
+		if ( StringUtils.isNotEmpty( email ) )
+		{
+			if ( nome != null )
+			{
+				sb.append( "\"" );
+				sb.append( nome );
+				sb.append( "\" " );
+			}
+			sb.append( "<" );
+			sb.append( email );
+			sb.append( ">" );
+		}
+		return sb.toString();
 	}
 }

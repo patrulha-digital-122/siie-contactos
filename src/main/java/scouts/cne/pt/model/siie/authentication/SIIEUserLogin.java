@@ -1,4 +1,4 @@
-package scouts.cne.pt.model.siie;
+package scouts.cne.pt.model.siie.authentication;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

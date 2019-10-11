@@ -1,6 +1,7 @@
 /target/
 .classpath
 .settings/org.eclipse.wst.common.component
+.sts4-cache
 
 /.settings
 /src/main/resources/client_secrets.json

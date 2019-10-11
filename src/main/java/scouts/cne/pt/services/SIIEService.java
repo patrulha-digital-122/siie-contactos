@@ -8,7 +8,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -17,8 +19,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -31,26 +35,29 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.CookieRestTemplate;
-import scouts.cne.pt.model.siie.Datum;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.SIIEElementos;
-import scouts.cne.pt.model.siie.SIIEUserLogin;
-import scouts.cne.pt.model.siie.SIIEUserTokenRequest;
+import scouts.cne.pt.model.siie.authentication.SIIESessionData;
+import scouts.cne.pt.model.siie.authentication.SIIEUserLogin;
+import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
+import scouts.cne.pt.model.siie.types.SIIEOptions;
+import scouts.cne.pt.model.siie.types.SIIESituacao;
 import scouts.cne.pt.utils.ValidationUtils;
 
-@UIScope
-@Service
+@Component
+@VaadinSessionScope
 public class SIIEService implements Serializable, HasLogger
 {
 	/**
@@ -60,28 +67,34 @@ public class SIIEService implements Serializable, HasLogger
 	private File								file;
 	private SIIEElementos						eSiieElementos		= new SIIEElementos();
 	private HashMap< String, Elemento >			map					= null;
-	private EnumMap< SECCAO, List< Elemento > >	mapSeccaoElemento	= null;
-	private EnumMap< SECCAO, List< Datum > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
-	private String								strAcessToken;
-	private String								strXSIIE;
-	private List< String >						lstOriginalCookies;
+	private EnumMap< SECCAO, List< Elemento > >		mapSeccaoElemento	= null;
+	private EnumMap< SECCAO, List< SIIEElemento > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
+	private SIIESessionData						siieSessionData;
 	private final CookieRestTemplate			restTemplate;
+
 	@Autowired
 	private GoogleServerAuthenticationBean		googleServerAuthentication;
 
 	public SIIEService()
 	{
 		super();
+		getLogger().info( "New SIIEService :: " + Instant.now() );
 		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
-		for ( final SECCAO seccao : SECCAO.getListaSeccoes() )
-		{
-			mapSeccaoElemento.put( seccao, new ArrayList<>() );
-			mapSeccaoElementos.put( seccao, new ArrayList<>() );
-		}
+
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
 		requestFactory.setProxy( proxy );
 		restTemplate = new CookieRestTemplate( requestFactory );
+	}
+
+	/**
+	 * Getter for lastLogin
+	 * @author 62000465 2019-10-04
+	 * @return the lastLogin  {@link Instant}
+	 */
+	public Instant getLastLogin()
+	{
+		return siieSessionData != null ? siieSessionData.getInstant() : null;
 	}
 
 	/**
@@ -95,40 +108,35 @@ public class SIIEService implements Serializable, HasLogger
 		return eSiieElementos;
 	}
 
-
-	/**
-	 * Getter for logged
-	 * 
-	 * @author 62000465 2019-02-28
-	 * @return the logged {@link boolean}
-	 */
-	public boolean isLogged()
+	public boolean isAuthenticated()
 	{
-		return StringUtils.isNotBlank( strAcessToken );
+		return siieSessionData != null;
 	}
 
 	public boolean authenticateSIIE( String strUsername, String strPassword )
 	{
 		try
 		{
-
 			URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
 
 			SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
 			tokenRequest.setUsername( strUsername );
 			tokenRequest.setPassword( strPassword );
+
 			ResponseEntity< SIIEUserLogin > postForEntity =
 							restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
+
 			if ( postForEntity.getStatusCode() == HttpStatus.OK && postForEntity.hasBody() )
 			{
-				strAcessToken = postForEntity.getBody().getAcessToken();
 				List< String > orDefault = postForEntity.getHeaders().getOrDefault( "xSIIE", Arrays.asList() );
 				if ( !orDefault.isEmpty() )
 				{
-					strXSIIE = orDefault.get( 0 );
-					lstOriginalCookies = postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE );
-					getLogger().info( "User {} login sucess!", strUsername );
-					getElementosSIIE();
+					getLogger().info( "Login correcto de {}", strUsername );
+					siieSessionData = new SIIESessionData( Instant.now() );
+					siieSessionData.setAcessToken( postForEntity.getBody().getAcessToken() );
+					siieSessionData.setOriginalXSIIE( orDefault.get( 0 ) );
+					siieSessionData.setOriginalCookies( postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE ) );
+
 					return true;
 				}
 			}
@@ -142,42 +150,47 @@ public class SIIEService implements Serializable, HasLogger
 		return false;
 	}
 
-	public boolean getElementosSIIE()
+	public boolean updateDadosCompletosSIIE()
 	{
 		try
 		{
-
-			URI uri = new URI( "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
-
-			HttpHeaders headers = new HttpHeaders();
-			headers.add( "Authorization", "Bearer " + strAcessToken );
-			headers.add( "xSIIE", strXSIIE );
-			for ( String string : lstOriginalCookies )
-			{
-				headers.add( HttpHeaders.COOKIE, string );
-			}
-			ResponseEntity< String > forEntity = restTemplate.exchange( uri, HttpMethod.GET, new HttpEntity( null, headers ), String.class );
-			if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
+			ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_COMPLETOS.getUrl() ),
+																		HttpMethod.GET,
+																		new HttpEntity<>( null, siieSessionData.getHeaders() ),
+																		String.class );
+			if ( forEntity.hasBody() )
 			{
 				String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-				URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-					"&%7B%22take%22%3A2%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-				restTemplate.setAcessToken( strAcessToken );
-				restTemplate.setCookies( lstOriginalCookies );
+				URI uriElementos;
+				uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
+					"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
+				restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+				restTemplate.setCookies( siieSessionData.getOriginalCookies() );
 				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
 				eSiieElementos = elementosFor.getBody();
-				for ( Datum datum : eSiieElementos.getData() )
-				{
-					mapSeccaoElementos.get( SECCAO.findSeccao( datum.getSeccao() ) ).add( datum );
-				}
-				return true;
 			}
+		return true;
 		}
-		catch ( final Exception e )
+		catch ( URISyntaxException e )
 		{
-			printError( e );
+			e.printStackTrace();
 		}
 		return false;
+	}
+
+	public List< SIIEElemento > getElementosActivos()
+	{
+		return eSiieElementos.getData().stream().filter( p -> p.getSiglasituacao().equals( SIIESituacao.A ) ).collect( Collectors.toList() );
+	}
+
+	public List< SIIEElemento > getAllElementos()
+	{
+		return new ArrayList<>( eSiieElementos.getData() );
+	}
+
+	public Optional< SIIEElemento > getElementoByNIN( String strNIN )
+	{
+		return eSiieElementos.getData().stream().filter( p -> StringUtils.equals( p.getNin(), strNIN ) ).findFirst();
 	}
 
 	/**
@@ -408,9 +421,4 @@ public class SIIEService implements Serializable, HasLogger
 		return mapSeccaoElemento;
 	}
 	
-	public EnumMap< SECCAO, List< Datum > > getMapSeccaoElementos()
-	{
-		return mapSeccaoElementos;
-	}
-
 }

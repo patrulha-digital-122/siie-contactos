@@ -9,9 +9,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
+import org.apache.commons.lang3.StringUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -20,6 +22,7 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
+import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.layout.size.Right;
 import scouts.cne.pt.ui.util.FontSize;
 import scouts.cne.pt.ui.util.FontWeight;
@@ -401,6 +404,16 @@ public class UIUtils {
 		i.addClassNames(size.getClassName());
 		setTextColor(color, i);
 		return i;
+	}
+
+	// Images
+	public static Image createAvatar( String url, String text )
+	{
+		Image avatar = new Image();
+		avatar.setClassName( AppBar.CLASS_NAME + "__avatar" );
+		avatar.setSrc( url );
+		avatar.setAlt( StringUtils.trimToEmpty( text ) );
+		return avatar;
 	}
 
 	/* === DATES === */

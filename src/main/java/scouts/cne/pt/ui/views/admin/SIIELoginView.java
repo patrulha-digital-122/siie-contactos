@@ -1,5 +1,6 @@
 package scouts.cne.pt.ui.views.admin;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -13,6 +14,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
@@ -58,6 +60,12 @@ public class SIIELoginView extends ViewFrame
 				if ( siieService.updateDadosCompletosSIIE() )
 				{
 					updateSIIEMetaData();
+					Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( e.getUsername() );
+					if ( elementoByNIN.isPresent() )
+					{
+						MainLayout.get().getAppBar().getAvatar()
+										.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), e.getUsername() ) );
+					}
 				}
 			}
 			else

@@ -1,5 +1,7 @@
 package scouts.cne.pt.ui.components.navigation.bar;
 
+import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
+import java.util.ArrayList;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HasValue;
@@ -24,13 +26,11 @@ import scouts.cne.pt.ui.components.navigation.tab.NaviTabs;
 import scouts.cne.pt.ui.util.LumoStyles;
 import scouts.cne.pt.ui.views.Home;
 import scouts.cne.pt.utils.UIUtils;
-import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
-import java.util.ArrayList;
 
 @CssImport("./styles/components/app-bar.css")
 public class AppBar extends FlexBoxLayout {
 
-	private String CLASS_NAME = "app-bar";
+	public static final String			CLASS_NAME	= "app-bar";
 
 	private FlexBoxLayout container;
 

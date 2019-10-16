@@ -9,6 +9,8 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.types.SIIESituacao;
+import scouts.cne.pt.ui.util.LumoStyles;
+import scouts.cne.pt.utils.UIUtils;
 
 /**
  * @author 62000465 2019-09-05
@@ -25,11 +27,15 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	{
 		super();
 		setSizeFull();
+		Column< SIIEElemento > avatar =
+						addComponentColumn( i -> UIUtils.createAvatar( String.format( UIUtils.SIIE_IMG_PATH, i.getUploadgroup(), i.getNin() ), "" ) )
+						.setHeader( "Foto" ).setWidth( "30px" ).setSortable( false );
 		Grid.Column< SIIEElemento > ninColumn = addColumn( SIIEElemento::getNin ).setHeader( "NIN" ).setSortable( true );
 		Grid.Column< SIIEElemento > nomeColumn = addColumn( SIIEElemento::getNome ).setHeader( "Nome" ).setSortable( true );
 		Grid.Column< SIIEElemento > seccaoColumn = addColumn( SIIEElemento::getSeccao ).setHeader( "Secção" ).setSortable( true );
 		Grid.Column< SIIEElemento > situacaoColumn = addColumn( SIIEElemento::getSiglasituacao ).setHeader( "Situação" ).setSortable( true );
 		getColumns().forEach( column -> column.setAutoWidth( true ) );
+		avatar.setAutoWidth( false ).setWidth( LumoStyles.IconSize.S );
 
 		dataProvider = new ListDataProvider<>( lstService );
 		setDataProvider( dataProvider );

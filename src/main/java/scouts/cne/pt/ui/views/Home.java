@@ -1,9 +1,5 @@
 package scouts.cne.pt.ui.views;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
@@ -14,15 +10,9 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
-import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
@@ -36,7 +26,7 @@ import scouts.cne.pt.utils.UIUtils;
 
 @PageTitle( Home.VIEW_DISPLAY_NAME )
 @Route( value = "", layout = MainLayout.class )
-public class Home extends ViewFrame implements HasUrlParameter< String >, HasLogger
+public class Home extends HasSIIELoginUrl implements HasLogger
 {
 	
 	/**
@@ -51,8 +41,7 @@ public class Home extends ViewFrame implements HasUrlParameter< String >, HasLog
 	private SIIEService	siieService;
 	private final Label		labelLastLogin	= new Label();
 	private Button					siieLoginButtom		= UIUtils.createPrimaryButton( "Fazer login no SIIE", SIIELoginView.VIEW_ICON );
-	private String					siieUser;
-	private String					siiePassword;
+
 
 	public Home()
 	{
@@ -71,37 +60,37 @@ public class Home extends ViewFrame implements HasUrlParameter< String >, HasLog
 	{
 		super.onAttach( attachEvent );
 		siieLoginButtom.setVisible( !siieService.isAuthenticated() );
-		if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
+		attachEvent.getUI().navigate( VIEW_NAME );
+		if ( siieService.isAuthenticated() )
 		{
-			labelLastLogin.setText( "A carregar dados do SIIE..." );
-			siieLoginButtom.setVisible( false );
-			new Thread( () ->
-			{
-				if ( siieService.authenticateSIIE( siieUser, siiePassword ) && siieService.updateDadosCompletosSIIE() )
-				{
-					attachEvent.getUI().access( () ->
-					{
-						showInfo( siieUser + " autenticado com sucesso" );
-						// getLogger().info( siieService.get );
-						labelLastLogin.setText( "Última vez que foram obtidas informações do SIIE :: " +
-							UIUtils.formatDateTime( siieService.getLastLogin() ) );
-						Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieUser );
-						if ( elementoByNIN.isPresent() )
-						{
-							MainLayout.get().getAppBar().getAvatar()
-											.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), siieUser ) );
-						}
-					} );
-				}
-				else
-				{
-					siieLoginButtom.setVisible( true );
-				}
-			} ).start();
+			labelLastLogin.setText( "Última vez que foram obtidas informações do SIIE :: " + UIUtils.formatDateTime( siieService.getLastLogin() ) );
 		}
 		else
 		{
-			labelLastLogin.setText( "Ainda não foi feito nenhum login para obter as informações do SIIE." );
+			if ( StringUtils.isNotBlank( getSiieUser() ) )
+			{
+				labelLastLogin.setText( "A carregar dados do SIIE..." );
+				siieLoginButtom.setVisible( false );
+				new Thread( () ->
+				{
+					if ( authenticate( siieService, attachEvent.getUI() ) )
+					{
+						attachEvent.getUI().access( () ->
+						{
+							labelLastLogin.setText( "Última vez que foram obtidas informações do SIIE :: " +
+								UIUtils.formatDateTime( siieService.getLastLogin() ) );
+						} );
+					}
+					else
+					{
+						siieLoginButtom.setVisible( true );
+					}
+				} ).start();
+			}
+			else
+			{
+				labelLastLogin.setText( "Ainda não foi feito nenhum login para obter as informações do SIIE." );
+			}
 		}
 	}
 
@@ -128,16 +117,5 @@ public class Home extends ViewFrame implements HasUrlParameter< String >, HasLog
 		content.setMargin( Horizontal.AUTO );
 		content.setPadding( Uniform.RESPONSIVE_L );
 		return content;
-	}
-
-
-	@Override
-	public void setParameter( BeforeEvent event, @OptionalParameter String parameter )
-	{
-		Location location = event.getLocation();
-		QueryParameters queryParameters = location.getQueryParameters();
-		Map< String, List< String > > parametersMap = queryParameters.getParameters();
-		siieUser = parametersMap.getOrDefault( "siieUser", Arrays.asList( "" ) ).get( 0 );
-		siiePassword = parametersMap.getOrDefault( "siiePassword", Arrays.asList( "" ) ).get( 0 );
 	}
 }

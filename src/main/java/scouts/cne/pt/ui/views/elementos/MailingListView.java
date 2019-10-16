@@ -13,22 +13,23 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.grids.ElementosGrid;
+import scouts.cne.pt.ui.views.HasSIIELoginUrl;
 import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.UIUtils;
 
 @Route( value = MailingListView.VIEW_NAME, layout = MainLayout.class )
 @PageTitle( MailingListView.VIEW_DISPLAY_NAME )
-public class MailingListView extends VerticalLayout implements HasLogger
+public class MailingListView extends HasSIIELoginUrl
 {
 	private static final long	serialVersionUID	= 3776271782151856570L;
 	public static final String			VIEW_NAME			= "mailing-list";
@@ -47,9 +48,7 @@ public class MailingListView extends VerticalLayout implements HasLogger
 
 	public MailingListView()
 	{
-		setSizeFull();
-		setAlignItems( Alignment.STRETCH );
-		setSpacing( false );
+		setId( VIEW_NAME );
 
 		grid = new ElementosGrid( true, lstServices );
 		grid.setSelectionMode( SelectionMode.MULTI );
@@ -76,8 +75,15 @@ public class MailingListView extends VerticalLayout implements HasLogger
 		totalSelecionados.setEnabled( false );
 		totalSelecionados.setValue( "0" );
 		
-		Component optionComponent = getOptionComponent();
-		add( grid, optionComponent );
+		setViewContent( createContent() );
+	}
+
+	private Component createContent()
+	{
+		VerticalLayout content = new VerticalLayout( grid, getOptionComponent() );
+		content.setSizeFull();
+		
+		return content;
 	}
 
 	/**
@@ -97,9 +103,26 @@ public class MailingListView extends VerticalLayout implements HasLogger
 	{
 		super.onAttach( attachEvent );
 		lstServices.clear();
-		lstServices.addAll( siieService.getAllElementos() );
-
-		grid.getDataProvider().refreshAll();
+		if ( !siieService.isAuthenticated() )
+		{
+			new Thread( () ->
+			{
+				if ( authenticate( siieService, attachEvent.getUI() ) )
+				{
+					attachEvent.getUI().access( () ->
+					{
+						lstServices.addAll( siieService.getAllElementos() );
+						grid.getDataProvider().refreshAll();
+						attachEvent.getUI().navigate( VIEW_NAME );
+					} );
+				}
+			} ).start();
+		}
+		else
+		{
+			lstServices.addAll( siieService.getAllElementos() );
+			grid.getDataProvider().refreshAll();
+		}
 	}
 
 	public Component getOptionComponent()

@@ -33,6 +33,7 @@ import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
 import scouts.cne.pt.ui.views.admin.SIIELoginView;
+import scouts.cne.pt.ui.views.elementos.ImportContactsListView;
 import scouts.cne.pt.ui.views.elementos.MailingListView;
 import scouts.cne.pt.utils.UIUtils;
 
@@ -132,6 +133,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		menu.addNaviItem( Home.VIEW_ICON, Home.VIEW_DISPLAY_NAME, Home.class );
 		NaviItem elementos = menu.addNaviItem( VaadinIcon.USERS, "Elementos", null );
 		menu.addNaviItem( elementos, MailingListView.VIEW_DISPLAY_NAME, MailingListView.class );
+		menu.addNaviItem( elementos, ImportContactsListView.VIEW_DISPLAY_NAME, ImportContactsListView.class );
 		NaviItem admin = menu.addNaviItem( VaadinIcon.COGS, "Administração", null );
 		menu.addNaviItem( admin, SIIELoginView.VIEW_DISPLAY_NAME, SIIELoginView.class );
 		// menu.addNaviItem( personnel, "Managers", Managers.class );

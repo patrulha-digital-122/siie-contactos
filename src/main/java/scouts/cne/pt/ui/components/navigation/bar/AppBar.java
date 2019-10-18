@@ -2,9 +2,13 @@ package scouts.cne.pt.ui.components.navigation.bar;
 
 import static scouts.cne.pt.utils.UIUtils.IMG_PATH;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -18,6 +22,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
@@ -25,6 +30,7 @@ import scouts.cne.pt.ui.components.navigation.tab.NaviTab;
 import scouts.cne.pt.ui.components.navigation.tab.NaviTabs;
 import scouts.cne.pt.ui.util.LumoStyles;
 import scouts.cne.pt.ui.views.Home;
+import scouts.cne.pt.ui.views.elementos.MailingListView;
 import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/app-bar.css")
@@ -100,9 +106,16 @@ public class AppBar extends FlexBoxLayout {
 
 	private void initSearch() {
 		search = new TextField();
-		search.setPlaceholder("Search");
+		search.setPlaceholder( "Procurar elemento" );
 		search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-		search.setVisible(false);
+		search.setVisible( true );
+		search.addKeyPressListener( Key.ENTER, e ->
+		{
+			Map< String, String > map = new HashMap<>();
+			map.put( "nome", search.getValue().trim() );
+			QueryParameters queryParameters = QueryParameters.simple( map );
+			UI.getCurrent().navigate( MailingListView.VIEW_NAME, queryParameters );
+		} );
 	}
 
 	private void initAvatar() {
@@ -128,7 +141,7 @@ public class AppBar extends FlexBoxLayout {
 	}
 
 	private void initContainer() {
-		container = new FlexBoxLayout(menuIcon, contextIcon, this.title, search,
+		container = new FlexBoxLayout( menuIcon, contextIcon, this.title, search,
 				actionItems, avatar);
 		container.addClassName(CLASS_NAME + "__container");
 		container.setAlignItems(FlexComponent.Alignment.CENTER);

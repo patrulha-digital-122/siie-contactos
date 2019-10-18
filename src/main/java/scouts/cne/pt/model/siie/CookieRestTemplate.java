@@ -41,7 +41,13 @@ public class CookieRestTemplate extends RestTemplate
 			request.getHeaders().setBearerAuth( strAcessToken );
 			request.getHeaders().add( HttpHeaders.COOKIE, "Bearer " + strAcessToken );
 		}
+		else
+		{
+			request.getHeaders().setBearerAuth( "" );
+			request.getHeaders().add( HttpHeaders.COOKIE, "" );
+		}
 
+		request.getHeaders().clear();
 		for ( String string : lstCookies )
 		{
 			request.getHeaders().add( HttpHeaders.COOKIE, string );
@@ -93,5 +99,4 @@ public class CookieRestTemplate extends RestTemplate
 	{
 		lstCookies = cookies;
 	}
-
 }

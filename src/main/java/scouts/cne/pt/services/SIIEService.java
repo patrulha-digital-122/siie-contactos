@@ -36,6 +36,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
@@ -113,69 +114,53 @@ public class SIIEService implements Serializable, HasLogger
 		return siieSessionData != null;
 	}
 
-	public boolean authenticateSIIE( String strUsername, String strPassword )
+	public void authenticateSIIE( String strUsername, String strPassword ) throws URISyntaxException, RestClientException
 	{
-		try
+		URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
+		SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
+		tokenRequest.setUsername( strUsername );
+		tokenRequest.setPassword( strPassword );
+		ResponseEntity< SIIEUserLogin > postForEntity =
+						restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
+		if ( postForEntity.getStatusCode() == HttpStatus.OK && postForEntity.hasBody() )
 		{
-			URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
-
-			SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
-			tokenRequest.setUsername( strUsername );
-			tokenRequest.setPassword( strPassword );
-
-			ResponseEntity< SIIEUserLogin > postForEntity =
-							restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
-
-			if ( postForEntity.getStatusCode() == HttpStatus.OK && postForEntity.hasBody() )
+			List< String > orDefault = postForEntity.getHeaders().getOrDefault( "xSIIE", Arrays.asList() );
+			if ( !orDefault.isEmpty() )
 			{
-				List< String > orDefault = postForEntity.getHeaders().getOrDefault( "xSIIE", Arrays.asList() );
-				if ( !orDefault.isEmpty() )
-				{
-					getLogger().info( "Login correcto de {}", strUsername );
-					siieSessionData = new SIIESessionData( Instant.now() );
-					siieSessionData.setAcessToken( postForEntity.getBody().getAcessToken() );
-					siieSessionData.setOriginalXSIIE( orDefault.get( 0 ) );
-					siieSessionData.setOriginalCookies( postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE ) );
-
-					return true;
-				}
+				getLogger().info( "Login correcto de {}", strUsername );
+				siieSessionData = new SIIESessionData( Instant.now() );
+				siieSessionData.setAcessToken( postForEntity.getBody().getAcessToken() );
+				siieSessionData.setOriginalXSIIE( orDefault.get( 0 ) );
+				siieSessionData.setOriginalCookies( postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE ) );
 			}
 		}
-		catch ( final Exception e )
+		else
 		{
-			showError( e );
+			throw new RestClientException( postForEntity.getStatusCode().getReasonPhrase() );
 		}
-		getLogger().info( "User {} error login!", strUsername );
 
-		return false;
 	}
 
-	public boolean updateDadosCompletosSIIE()
+	public void updateDadosCompletosSIIE() throws RestClientException, URISyntaxException
 	{
-		try
+		eSiieElementos.getData().clear();
+		restTemplate.setAcessToken( "" );
+		restTemplate.setCookies( new ArrayList<>() );
+		ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_COMPLETOS.getUrl() ),
+																	HttpMethod.GET,
+																	new HttpEntity<>( null, siieSessionData.getHeaders() ),
+																	String.class );
+		if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
 		{
-			ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_COMPLETOS.getUrl() ),
-																		HttpMethod.GET,
-																		new HttpEntity<>( null, siieSessionData.getHeaders() ),
-																		String.class );
-			if ( forEntity.hasBody() )
-			{
-				String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-				URI uriElementos;
-				uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-					"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-				restTemplate.setAcessToken( siieSessionData.getAcessToken() );
-				restTemplate.setCookies( siieSessionData.getOriginalCookies() );
-				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-				eSiieElementos = elementosFor.getBody();
-			}
-		return true;
+			String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+			URI uriElementos;
+			uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
+				"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
+			restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+			restTemplate.setCookies( siieSessionData.getOriginalCookies() );
+			ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+			eSiieElementos = elementosFor.getBody();
 		}
-		catch ( URISyntaxException e )
-		{
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	public List< SIIEElemento > getElementosActivos()

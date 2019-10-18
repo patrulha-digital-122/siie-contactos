@@ -18,6 +18,10 @@ public class SIIEUserLogin
 	private String	strTokenType;
 	@JsonProperty( value = "expires_in" )
 	private Integer	iExpiresIn;
+	@JsonProperty( value = "Message" )
+	private String	strMessage;
+	@JsonProperty( value = "MessageDetail" )
+	private String	strMessageDetail;
 
 	/**
 	 * Getter for username
@@ -107,16 +111,67 @@ public class SIIEUserLogin
 		iExpiresIn = expiresIn;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Getter for message
 	 * 
-	 * @see java.lang.Object#toString()
+	 * @author 62000465 2019-10-18
+	 * @return the message {@link String}
 	 */
+	public String getMessage()
+	{
+		return strMessage;
+	}
+
+	/**
+	 * Setter for message
+	 * @author 62000465 2019-10-18
+	 * @param message the message to set
+	 */
+	public void setMessage( String message )
+	{
+		strMessage = message;
+	}
+
+	/**
+	 * Getter for messageDetail
+	 * 
+	 * @author 62000465 2019-10-18
+	 * @return the messageDetail {@link String}
+	 */
+	public String getMessageDetail()
+	{
+		return strMessageDetail;
+	}
+
+	/**
+	 * Setter for messageDetail
+	 * 
+	 * @author 62000465 2019-10-18
+	 * @param messageDetail the messageDetail to set
+	 */
+	public void setMessageDetail( String messageDetail )
+	{
+		strMessageDetail = messageDetail;
+	}
+
 	@Override
 	public String toString()
 	{
-		return "SIIEUserLogin [strUsername=" + strUsername + ", strAcessToken=" + strAcessToken + ", strTokenType=" + strTokenType + ", iExpiresIn=" +
-			iExpiresIn + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append( "SIIEUserLogin [strUsername=" );
+		builder.append( strUsername );
+		builder.append( ", strAcessToken=" );
+		builder.append( strAcessToken );
+		builder.append( ", strTokenType=" );
+		builder.append( strTokenType );
+		builder.append( ", iExpiresIn=" );
+		builder.append( iExpiresIn );
+		builder.append( ", strMessage=" );
+		builder.append( strMessage );
+		builder.append( ", strMessageDetail=" );
+		builder.append( strMessageDetail );
+		builder.append( "]" );
+		return builder.toString();
 	}
 
 }

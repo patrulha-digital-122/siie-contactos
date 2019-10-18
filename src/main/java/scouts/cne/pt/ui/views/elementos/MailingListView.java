@@ -1,8 +1,13 @@
 package scouts.cne.pt.ui.views.elementos;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestClientException;
 import org.vaadin.olli.ClipboardHelper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -17,7 +22,11 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
@@ -45,6 +54,8 @@ public class MailingListView extends HasSIIELoginUrl
 	private final Checkbox				usarNomes			= new Checkbox( "Utilizar nomes", true );
 	private final TextField				totalSelecionados	= new TextField( "Total de selecionados" );
 	private final ClipboardHelper		clipboard;
+	private final Button refresh = UIUtils.createPrimaryButton( "Actualizar dados do SIIE", VaadinIcon.REFRESH );
+	private String						nomeToSearch		= "";
 
 	public MailingListView()
 	{
@@ -80,7 +91,9 @@ public class MailingListView extends HasSIIELoginUrl
 
 	private Component createContent()
 	{
-		VerticalLayout content = new VerticalLayout( grid, getOptionComponent() );
+		refresh.setWidthFull();
+		refresh.setDisableOnClick( true );
+		VerticalLayout content = new VerticalLayout( refresh, grid, getOptionComponent() );
 		content.setSizeFull();
 		
 		return content;
@@ -103,26 +116,54 @@ public class MailingListView extends HasSIIELoginUrl
 	{
 		super.onAttach( attachEvent );
 		lstServices.clear();
-		if ( !siieService.isAuthenticated() )
+		if ( StringUtils.isNotEmpty( getSiieUser() ) )
 		{
-			new Thread( () ->
+			if ( siieService.isAuthenticated() )
 			{
-				if ( authenticate( siieService, attachEvent.getUI() ) )
-				{
-					attachEvent.getUI().access( () ->
-					{
-						lstServices.addAll( siieService.getAllElementos() );
-						grid.getDataProvider().refreshAll();
-						attachEvent.getUI().navigate( VIEW_NAME );
-					} );
-				}
-			} ).start();
+				updateGrid( attachEvent );
+			}
+			else if ( authenticate( siieService, attachEvent.getUI() ) )
+			{
+				attachEvent.getUI().navigate( VIEW_NAME );
+				updateGrid( attachEvent );
+			}
 		}
 		else
 		{
 			lstServices.addAll( siieService.getAllElementos() );
 			grid.getDataProvider().refreshAll();
+			grid.getSearchNameField().setValue( nomeToSearch );
 		}
+		refresh.setEnabled( siieService.isAuthenticated() );
+		refresh.addClickListener( e -> updateGrid( attachEvent ) );
+	}
+
+	/**
+	 * The <b>updateGrid</b> method returns {@link void}
+	 * @author 62000465 2019-10-18
+	 * @param attachEvent 
+	 */
+	private void updateGrid( AttachEvent attachEvent )
+	{
+		lstServices.clear();
+		grid.getDataProvider().refreshAll();
+		new Thread( () ->
+		{
+			attachEvent.getUI().access( () ->
+			{
+				try
+				{
+					siieService.updateDadosCompletosSIIE();
+				}
+				catch ( RestClientException | URISyntaxException e )
+				{
+					showError( e );
+				}
+				lstServices.addAll( siieService.getAllElementos() );
+				grid.getDataProvider().refreshAll();
+				refresh.setEnabled( siieService.isAuthenticated() );
+			} );
+		} ).start();
 	}
 
 	public Component getOptionComponent()
@@ -140,5 +181,16 @@ public class MailingListView extends HasSIIELoginUrl
 		mailingList.setMaxHeight( "100px" );
 		verticalLayout.add( formLayout, mailingList, clipboard );
 		return verticalLayout;
+	}
+
+	@Override
+	public void setParameter( BeforeEvent event, @OptionalParameter String parameter )
+	{
+		super.setParameter( event, parameter );
+		Location location = event.getLocation();
+		QueryParameters queryParameters = location.getQueryParameters();
+		Map< String, List< String > > parametersMap = queryParameters.getParameters();
+		nomeToSearch = parametersMap.getOrDefault( "nome", Arrays.asList( "" ) ).get( 0 );
+		grid.getSearchNameField().setValue( nomeToSearch );
 	}
 }

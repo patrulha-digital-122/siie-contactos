@@ -21,6 +21,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	private static final long serialVersionUID = -1960188142116715298L;
 
 	private final ListDataProvider< SIIEElemento >	dataProvider;
+	private final TextField							searchNameField		= new TextField();;
 
 
 	public ElementosGrid( boolean bUseFilterRow, Collection< SIIEElemento > lstService )
@@ -52,13 +53,12 @@ public class ElementosGrid extends Grid< SIIEElemento >
 			firstNameField.setSizeFull();
 			firstNameField.setPlaceholder( "Filtrar" );
 			// Second filter
-			TextField secondNameField = new TextField();
-			secondNameField.addValueChangeListener( event -> dataProvider
-							.addFilter( elemento -> StringUtils.containsIgnoreCase( elemento.getNome(), secondNameField.getValue() ) ) );
-			secondNameField.setValueChangeMode( ValueChangeMode.EAGER );
-			filterRow.getCell( nomeColumn ).setComponent( secondNameField );
-			secondNameField.setSizeFull();
-			secondNameField.setPlaceholder( "Filtrar" );
+			searchNameField.addValueChangeListener( event -> dataProvider
+							.addFilter( elemento -> StringUtils.containsIgnoreCase( elemento.getNome(), searchNameField.getValue() ) ) );
+			searchNameField.setValueChangeMode( ValueChangeMode.EAGER );
+			filterRow.getCell( nomeColumn ).setComponent( searchNameField );
+			searchNameField.setSizeFull();
+			searchNameField.setPlaceholder( "Filtrar" );
 			// Third filter
 			SeccaoComboBox comboBox = new SeccaoComboBox();
 			comboBox.setSizeFull();
@@ -75,4 +75,14 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	}
 
 
+	/**
+	 * Getter for searchNameField
+	 * 
+	 * @author 62000465 2019-10-18
+	 * @return the searchNameField {@link TextField}
+	 */
+	public TextField getSearchNameField()
+	{
+		return searchNameField;
+	}
 }

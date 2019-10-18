@@ -14,6 +14,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
@@ -26,7 +27,7 @@ import scouts.cne.pt.utils.UIUtils;
 
 @PageTitle( SIIELoginView.VIEW_DISPLAY_NAME )
 @Route( value = SIIELoginView.VIEW_NAME, layout = MainLayout.class )
-public class SIIELoginView extends ViewFrame
+public class SIIELoginView extends ViewFrame implements HasLogger
 {
 	/**
 	 * 
@@ -42,7 +43,7 @@ public class SIIELoginView extends ViewFrame
 	private final TextField			labelNextUrlLogin	= new TextField( "URL pré-preenchido que poderá utilizar no futuro." );
 	private final TextField			textFieldTotalElementos		= new TextField( "Total de elementos obtidos do SIIE" );
 	private final TextField			textFieldDataUltimoUpdate	= new TextField( "Data da última actualização de dados do SIIE" );
-	private String					strUrl				= "?siieUser=%s&siiePassword=%s";
+	private String					strUrl						= "?user=%s&password=%s";
 
 	public SIIELoginView()
 	{
@@ -52,27 +53,28 @@ public class SIIELoginView extends ViewFrame
 		setViewContent( createContent() );
 		loginForm.addLoginListener( e ->
 		{
-			boolean isAuthenticated = siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
-			if ( isAuthenticated )
+			try
 			{
+				siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
 				labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
 				labelNextUrlLogin.setVisible( true );
-				if ( siieService.updateDadosCompletosSIIE() )
+				siieService.updateDadosCompletosSIIE();
+				updateSIIEMetaData();
+				Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( e.getUsername() );
+				if ( elementoByNIN.isPresent() )
 				{
-					updateSIIEMetaData();
-					Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( e.getUsername() );
-					if ( elementoByNIN.isPresent() )
-					{
-						MainLayout.get().getAppBar().getAvatar()
-										.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), e.getUsername() ) );
-					}
+					MainLayout.get().getAppBar().getAvatar()
+									.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), e.getUsername() ) );
 				}
 			}
-			else
+			catch ( Exception ex )
 			{
 				loginForm.setError( true );
+				showError( ex );
+				ex.printStackTrace();
 			}
-			loginForm.setEnabled( true );
+
+			loginForm.setEnabled( !siieService.isAuthenticated() );
 		} );
 
 		labelNextUrlLogin.setEnabled( false );
@@ -142,5 +144,6 @@ public class SIIELoginView extends ViewFrame
 			textFieldDataUltimoUpdate.setValue( "" );
 			textFieldTotalElementos.setValue( "" );
 		}
+		loginForm.setEnabled( !siieService.isAuthenticated() );
 	}
 }

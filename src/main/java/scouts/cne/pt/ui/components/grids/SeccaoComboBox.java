@@ -23,5 +23,6 @@ public class SeccaoComboBox extends ComboBox< SIIESeccao >
 	{
 		super( "", SIIESeccao.values() );
 		setItemLabelGenerator( SIIESeccao::getNome );
+		setClearButtonVisible( true );
 	}
 }

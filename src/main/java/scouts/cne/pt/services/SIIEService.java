@@ -64,34 +64,36 @@ public class SIIEService implements Serializable, HasLogger
 	/**
 	 *
 	 */
-	private static final long					serialVersionUID	= 1L;
-	private File								file;
-	private SIIEElementos						eSiieElementos		= new SIIEElementos();
-	private HashMap< String, Elemento >			map					= null;
+	private static final long						serialVersionUID	= 1L;
+	private File									file;
+	private SIIEElementos							eSiieElementos		= new SIIEElementos();
+	private HashMap< String, Elemento >				map					= null;
 	private EnumMap< SECCAO, List< Elemento > >		mapSeccaoElemento	= null;
 	private EnumMap< SECCAO, List< SIIEElemento > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
-	private SIIESessionData						siieSessionData;
-	private final CookieRestTemplate			restTemplate;
-
+	private SIIESessionData							siieSessionData;
+	private final CookieRestTemplate				restTemplate;
 	@Autowired
-	private GoogleServerAuthenticationBean		googleServerAuthentication;
+	private GoogleServerAuthenticationBean			googleServerAuthentication;
 
 	public SIIEService()
 	{
 		super();
 		getLogger().info( "New SIIEService :: " + Instant.now() );
 		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
-
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
-		requestFactory.setProxy( proxy );
+		if ( StringUtils.equals( "Y", System.getenv().get( "USE_RPOXY" ) ) )
+		{
+			Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
+			requestFactory.setProxy( proxy );
+		}
 		restTemplate = new CookieRestTemplate( requestFactory );
 	}
 
 	/**
 	 * Getter for lastLogin
+	 * 
 	 * @author 62000465 2019-10-04
-	 * @return the lastLogin  {@link Instant}
+	 * @return the lastLogin {@link Instant}
 	 */
 	public Instant getLastLogin()
 	{
@@ -138,7 +140,6 @@ public class SIIEService implements Serializable, HasLogger
 		{
 			throw new RestClientException( postForEntity.getStatusCode().getReasonPhrase() );
 		}
-
 	}
 
 	public void updateDadosCompletosSIIE() throws RestClientException, URISyntaxException
@@ -405,5 +406,4 @@ public class SIIEService implements Serializable, HasLogger
 	{
 		return mapSeccaoElemento;
 	}
-	
 }

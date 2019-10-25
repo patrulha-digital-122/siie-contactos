@@ -3,8 +3,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@polymer/polymer": "3.2.0",
+    "@vaadin/flow-deps": "./target/frontend",
     "@webcomponents/webcomponentsjs": "^2.2.10",
-    "@vaadin/flow-deps": "./target/frontend"
+    "bower": "^1.8.8",
+    "polymer-modulizer": "^0.4.3"
   },
   "devDependencies": {
     "webpack": "4.30.0",
@@ -15,5 +17,5 @@
     "webpack-merge": "4.2.1",
     "raw-loader": "3.0.0"
   },
-  "vaadinAppPackageHash": "b99af7fa21eb1a862595985c461a2a1442d6085296323ab886adbdf80512d21e"
+  "vaadinAppPackageHash": "d9b662ae89677f76e7d95e3c1ea57ab80044ba775bec93741ea04065aa616ab0"
 }

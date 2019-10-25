@@ -62,13 +62,15 @@ public class ElementosGrid extends Grid< SIIEElemento >
 			// Third filter
 			SeccaoComboBox comboBox = new SeccaoComboBox();
 			comboBox.setSizeFull();
-			comboBox.addValueChangeListener( event -> dataProvider.addFilter( elemento -> elemento.getSiglaseccao().equals( comboBox.getValue() ) ) );
+			comboBox.addValueChangeListener( event -> dataProvider
+							.addFilter( elemento -> comboBox.isEmpty() || elemento.getSiglaseccao().equals( comboBox.getValue() ) ) );
 			filterRow.getCell( seccaoColumn ).setComponent( comboBox );
 			// Third filter
 			SituacaoComboBox situacaoComboBox = new SituacaoComboBox();
 			situacaoComboBox.setSizeFull();
 			situacaoComboBox.addValueChangeListener( event -> dataProvider
-							.addFilter( elemento -> elemento.getSiglasituacao().equals( situacaoComboBox.getValue() ) ) );
+							.addFilter( elemento -> situacaoComboBox.isEmpty() ||
+								elemento.getSiglasituacao().equals( situacaoComboBox.getValue() ) ) );
 			situacaoComboBox.setValue( SIIESituacao.A );
 			filterRow.getCell( situacaoColumn ).setComponent( situacaoComboBox );
 		}

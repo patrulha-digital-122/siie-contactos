@@ -1,6 +1,6 @@
 package scouts.cne.pt.model.google;
 
-
+import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -20,7 +20,7 @@ public class GoogleAuthAccessInfo
 	private String				scope;
 	private String				id_token;
 	private String				token_type;
-	private String				expires_in;
+	private Date				expires_in;
 
 	public String getAccess_token()
 	{
@@ -72,14 +72,13 @@ public class GoogleAuthAccessInfo
 		this.token_type = token_type;
 	}
 
-	public String getExpires_in()
+	public Date getExpires_in()
 	{
 		return expires_in;
 	}
 
-	public void setExpires_in( String expires_in )
+	public void setExpires_in( Date expires_in )
 	{
 		this.expires_in = expires_in;
-    }
-
+	}
 }

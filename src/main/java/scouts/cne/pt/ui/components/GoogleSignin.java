@@ -106,13 +106,11 @@ public class GoogleSignin extends Component
 		}
 	}
 
-	public GoogleSignin( String clientId )
+	public GoogleSignin()
 	{
 		// init listeners
 		this.loginListeners = new ArrayList<>();
 		this.logoutListeners = new ArrayList<>();
-		// Set default values
-		getElement().setProperty( "clientId", clientId );
 		setWidth( Width.WIDE );
 		setHeight( Height.STANDARD );
 		setBrand( Brand.GOOGLE );
@@ -120,6 +118,12 @@ public class GoogleSignin extends Component
 		// add base-listener for sign-in events
 		addListener( InternalSignInEvent.class, this::handleLogin );
 		addListener( InternalSignOutEvent.class, this::handleLogout );
+	}
+
+	public void setClientId( String clientId )
+	{
+		// Set default values
+		getElement().setProperty( "clientId", clientId );
 	}
 
 	private void handleLogin( InternalSignInEvent event )

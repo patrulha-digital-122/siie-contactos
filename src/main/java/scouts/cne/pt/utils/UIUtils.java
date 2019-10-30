@@ -21,6 +21,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.layout.size.Right;
@@ -413,6 +414,15 @@ public class UIUtils {
 		avatar.setClassName( AppBar.CLASS_NAME + "__avatar" );
 		avatar.setSrc( url );
 		avatar.setAlt( StringUtils.trimToEmpty( text ) );
+		return avatar;
+	}
+
+	public static Image createSIIEAvatar( SIIEElemento siieElemento )
+	{
+		Image avatar = new Image();
+		avatar.setClassName( AppBar.CLASS_NAME + "__avatar" );
+		avatar.setSrc( String.format( UIUtils.SIIE_IMG_PATH, siieElemento.getUploadgroup(), siieElemento.getNin() ) );
+		avatar.setAlt( StringUtils.trimToEmpty( "" ) );
 		return avatar;
 	}
 

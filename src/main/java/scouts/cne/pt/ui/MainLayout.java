@@ -33,6 +33,7 @@ import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
 import scouts.cne.pt.ui.views.admin.SIIELoginView;
+import scouts.cne.pt.ui.views.elementos.AniversarioListView;
 import scouts.cne.pt.ui.views.elementos.ImportContactsListView;
 import scouts.cne.pt.ui.views.elementos.MailingListView;
 import scouts.cne.pt.utils.UIUtils;
@@ -133,6 +134,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		menu.addNaviItem( Home.VIEW_ICON, Home.VIEW_DISPLAY_NAME, Home.class );
 		NaviItem elementos = menu.addNaviItem( VaadinIcon.USERS, "Elementos", null );
 		menu.addNaviItem( elementos, MailingListView.VIEW_DISPLAY_NAME, MailingListView.class );
+		menu.addNaviItem( elementos, AniversarioListView.VIEW_DISPLAY_NAME, AniversarioListView.class );
 		menu.addNaviItem( elementos, ImportContactsListView.VIEW_DISPLAY_NAME, ImportContactsListView.class );
 		NaviItem admin = menu.addNaviItem( VaadinIcon.COGS, "Administração", null );
 		menu.addNaviItem( admin, SIIELoginView.VIEW_DISPLAY_NAME, SIIELoginView.class );
@@ -145,7 +147,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private void initHeadersAndFooters()
 	{
 		// setAppHeaderOuter();
-		// setAppFooterInner();
+		// setAppFooterInner( UIUtils.createH6Label( "powered by: patrulha.digital.122@escutismo.pt" ) );
 		// setAppFooterOuter();
 		// Default inner header setup:
 		// - When using tabbed navigation the view title, user avatar and main menu button will appear in the TabBar.

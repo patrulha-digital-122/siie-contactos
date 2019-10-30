@@ -12,7 +12,12 @@ public enum TextColor {
 	ERROR("var(--lumo-error-text-color)"),
 	ERROR_CONTRAST("var(--lumo-error-contrast-color)"),
 	SUCCESS("var(--lumo-success-text-color)"),
-	SUCCESS_CONTRAST("var(--lumo-success-contrast-color)");
+	SUCCESS_CONTRAST( "var(--lumo-success-contrast-color)" ),
+	LOBITOS( "hsl(60, 100%, 50%)" ),
+	EXPLORADORES( "hsl(140, 100%, 30%)" ),
+	PIONEIROS( "hsl(225, 100%, 40%)" ),
+	CAMINHERIOS( "hsl(0, 100%, 40%)" ),
+	DIRIGENTES( "hsl(300, 100%, 25%)" ),;
 
 	private String value;
 

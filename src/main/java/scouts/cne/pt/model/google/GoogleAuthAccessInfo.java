@@ -1,5 +1,6 @@
 package scouts.cne.pt.model.google;
 
+import java.math.BigInteger;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -20,7 +21,8 @@ public class GoogleAuthAccessInfo
 	private String				scope;
 	private String				id_token;
 	private String				token_type;
-	private Date				expires_in;
+	private Integer				expires_in;
+	private BigInteger			expires_at;
 
 	public String getAccess_token()
 	{
@@ -72,13 +74,52 @@ public class GoogleAuthAccessInfo
 		this.token_type = token_type;
 	}
 
-	public Date getExpires_in()
+	/**
+	 * Getter for expires_in
+	 * 
+	 * @author 62000465 2019-10-28
+	 * @return the expires_in {@link Integer}
+	 */
+	public Integer getExpires_in()
 	{
 		return expires_in;
 	}
 
-	public void setExpires_in( Date expires_in )
+	/**
+	 * Setter for expires_in
+	 * 
+	 * @author 62000465 2019-10-28
+	 * @param expires_in the expires_in to set
+	 */
+	public void setExpires_in( Integer expires_in )
 	{
 		this.expires_in = expires_in;
+	}
+
+	/**
+	 * Getter for expires_at
+	 * 
+	 * @author 62000465 2019-10-28
+	 * @return the expires_at {@link Date}
+	 */
+	public BigInteger getExpires_at()
+	{
+		return expires_at;
+	}
+
+	public Date getExpiresAt()
+	{
+		return new Date( expires_at.longValue() );
+	}
+
+	/**
+	 * Setter for expires_at
+	 * 
+	 * @author 62000465 2019-10-28
+	 * @param expires_at the expires_at to set
+	 */
+	public void setExpires_at( BigInteger expires_at )
+	{
+		this.expires_at = expires_at;
 	}
 }

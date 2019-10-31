@@ -1,8 +1,13 @@
 package scouts.cne.pt.ui;
 
+import java.net.URISyntaxException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestClientException;
 import com.vaadin.annotations.PreserveOnRefresh;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -23,7 +28,10 @@ import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.services.GoogleAuthentication;
+import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
+import scouts.cne.pt.ui.components.GoogleSignin;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
@@ -32,6 +40,7 @@ import scouts.cne.pt.ui.components.navigation.drawer.NaviMenu;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
+import scouts.cne.pt.ui.views.admin.GoogleAdminView;
 import scouts.cne.pt.ui.views.admin.SIIELoginView;
 import scouts.cne.pt.ui.views.elementos.AniversarioListView;
 import scouts.cne.pt.ui.views.elementos.ImportContactsListView;
@@ -70,20 +79,25 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	/**
 	 * 
 	 */
-	private static final long	serialVersionUID	= 308418390376170981L;
-	private static final Logger	log				= LoggerFactory.getLogger( MainLayout.class );
-	private static final String	CLASS_NAME		= "root";
-	private Div					appHeaderOuter;
-	private FlexBoxLayout		row;
-	private NaviDrawer			naviDrawer;
-	private FlexBoxLayout		column;
-	private Div					appHeaderInner;
-	private FlexBoxLayout		viewContainer;
-	private Div					appFooterInner;
-	private Div					appFooterOuter;
-	private TabBar				tabBar;
-	private boolean				navigationTabs	= false;
-	private AppBar				appBar;
+	private static final long		serialVersionUID	= 308418390376170981L;
+	private static final Logger		log					= LoggerFactory.getLogger( MainLayout.class );
+	private static final String		CLASS_NAME			= "root";
+	@Autowired
+	private SIIEService				siieService;
+	@Autowired
+	private GoogleAuthentication	googleAuthentication;
+	private Div						appHeaderOuter;
+	private FlexBoxLayout			row;
+	private NaviDrawer				naviDrawer;
+	private FlexBoxLayout			column;
+	private Div						appHeaderInner;
+	private FlexBoxLayout			viewContainer;
+	private Div						appFooterInner;
+	private Div						appFooterOuter;
+	private TabBar					tabBar;
+	private boolean					navigationTabs		= false;
+	private AppBar					appBar;
+	private GoogleSignin			signin				= new GoogleSignin();
 
 	public MainLayout()
 	{
@@ -101,6 +115,13 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		initNaviItems();
 		// Configure the headers and footers (optional)
 		initHeadersAndFooters();
+	}
+
+	@Override
+	protected void onAttach( AttachEvent attachEvent )
+	{
+		super.onAttach( attachEvent );
+		initTestData( attachEvent );
 	}
 
 	/**
@@ -138,6 +159,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		menu.addNaviItem( elementos, ImportContactsListView.VIEW_DISPLAY_NAME, ImportContactsListView.class );
 		NaviItem admin = menu.addNaviItem( VaadinIcon.COGS, "Administração", null );
 		menu.addNaviItem( admin, SIIELoginView.VIEW_DISPLAY_NAME, SIIELoginView.class );
+		menu.addNaviItem( admin, GoogleAdminView.VIEW_DISPLAY_NAME, GoogleAdminView.class );
 		// menu.addNaviItem( personnel, "Managers", Managers.class );
 	}
 
@@ -178,6 +200,8 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 			UIUtils.setTheme( Lumo.DARK, appBar );
 			setAppHeaderInner( appBar );
 		}
+		signin.setVisible( false );
+		add( signin );
 	}
 
 	private void setAppHeaderOuter( Component... components )
@@ -226,6 +250,51 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		}
 		appFooterOuter.removeAll();
 		appFooterOuter.add( components );
+	}
+
+	/**
+	 * The <b>initTestData</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-10-31
+	 * @param attachEvent
+	 */
+	private void initTestData( AttachEvent attachEvent )
+	{
+		new Thread( () ->
+		{
+			String siieUser = System.getenv().get( "SIIE_USER" );
+			String siiePassword = System.getenv().get( "SIIE_PASSWORD" );
+			if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
+			{
+				try
+				{
+					getLogger().info( "Test dev START" );
+					if ( !siieService.isAuthenticated() )
+					{
+						siieService.authenticateSIIE( siieUser, siiePassword );
+					}
+					siieService.updateDadosCompletosSIIE();
+					if ( googleAuthentication.getGoogleAuthInfo() == null )
+					{
+						attachEvent.getUI().access( () ->
+						{
+							signin.setClientId( googleAuthentication.getClientId() );
+							signin.setOpenidPrompt( "none" );
+							signin.addLoginListener( e ->
+							{
+								getLogger().info( "Google login Ok!" );
+								googleAuthentication.setGoogleAuthInfo( e );
+							} );
+							signin.login();
+						} );
+					}
+				}
+				catch ( RestClientException | URISyntaxException e )
+				{
+					showError( e );
+				}
+			}
+		} ).start();
 	}
 
 	@Override

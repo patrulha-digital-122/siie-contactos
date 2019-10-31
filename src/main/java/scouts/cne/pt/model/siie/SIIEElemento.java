@@ -1,9 +1,12 @@
 package scouts.cne.pt.model.siie;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.api.services.people.v1.model.Person;
 import scouts.cne.pt.model.siie.types.SIIECategoria;
 import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.model.siie.types.SIIESexo;
@@ -19,7 +22,7 @@ public class SIIEElemento
 	private String	nin;
 	private String	agrupamento;
 	private String	nome;
-	private Instant			datanascimento;
+	private ZonedDateTime	datanascimento;
 	private String	cartaotxt;
 	private Long	anoadmissao;
 	private Long	rid;
@@ -85,6 +88,8 @@ public class SIIEElemento
 	private String	cc;
 	private String	totem;
 	private String	seccao;
+	@JsonIgnore
+	private Person			googlePerson;
 
 	@JsonProperty( "nin" )
 	public String getNin()
@@ -124,13 +129,13 @@ public class SIIEElemento
 
 	@JsonProperty( "datanascimento" )
 	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
-	public Instant getDatanascimento()
+	public ZonedDateTime getDatanascimento()
 	{
 		return datanascimento;
 	}
 
 	@JsonProperty( "datanascimento" )
-	public void setDatanascimento( Instant value )
+	public void setDatanascimento( ZonedDateTime value )
 	{
 		this.datanascimento = value;
 	}
@@ -924,5 +929,27 @@ public class SIIEElemento
 	public void setSeccao( String value )
 	{
 		this.seccao = value;
+	}
+
+	/**
+	 * Getter for googlePerson
+	 * 
+	 * @author 62000465 2019-10-30
+	 * @return the googlePerson {@link Person}
+	 */
+	public Person getGooglePerson()
+	{
+		return googlePerson;
+	}
+
+	/**
+	 * Setter for googlePerson
+	 * 
+	 * @author 62000465 2019-10-30
+	 * @param googlePerson the googlePerson to set
+	 */
+	public void setGooglePerson( Person googlePerson )
+	{
+		this.googlePerson = googlePerson;
 	}
 }

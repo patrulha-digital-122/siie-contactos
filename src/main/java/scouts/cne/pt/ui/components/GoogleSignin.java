@@ -19,10 +19,8 @@ import scouts.cne.pt.ui.events.internal.InternalSignOutEvent;
  *
  */
 @Tag( "google-signin" )
-// @HtmlImport( value = "bower_components/google-signin/google-signin.html", loadMode = LoadMode.LAZY )
 @NpmPackage( value = "@google-web-components/google-signin", version = "3.0.1" )
 @JsModule( "@google-web-components/google-signin/google-signin.js" )
-// @JsModule( "@google-web-components/google-signin/google-signin-aware.js" )
 public class GoogleSignin extends Component
 {
 	/**
@@ -193,6 +191,18 @@ public class GoogleSignin extends Component
 	public void logout()
 	{
 		getElement().callJsFunction( "signOut" );
+	}
+
+	/**
+	 * 
+	 * The <b>login</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-10-31
+	 */
+	public void login()
+	{
+		getElement().callJsFunction( "signIn" );
+		getElement().executeJs( "signIn" );
 	}
 
 	/**
@@ -388,6 +398,11 @@ public class GoogleSignin extends Component
 	public void setScopes( String value )
 	{
 		getElement().setProperty( "scopes", value );
+	}
+
+	public void setOpenidPrompt( String value )
+	{
+		getElement().setProperty( "openidPrompt", value );
 	}
 
 	public Boolean isAuthorized()

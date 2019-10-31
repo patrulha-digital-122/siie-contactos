@@ -1,8 +1,6 @@
 package scouts.cne.pt.ui.views.elementos;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.model.siie.SIIEElemento;
@@ -62,7 +61,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 		{
 			if ( p.getDatanascimento() != null )
 			{
-				return LocalDateTime.ofInstant( p.getDatanascimento(), ZoneId.systemDefault() ).toLocalDate().getDayOfYear() == LocalDate.now()
+				return p.getDatanascimento().getDayOfYear() == LocalDate.now()
 								.getDayOfYear();
 			}
 			return false;
@@ -75,8 +74,11 @@ public class AniversarioListView extends HasSIIELoginUrl
 		{
 			for ( SIIEElemento siieElemento : lstElementos )
 			{
+				HorizontalLayout suffix = new HorizontalLayout( siieElemento.getSiglasituacao().getLable(), siieElemento.getSiglaseccao().getLable() );
+				suffix.setSpacing( true );
 				ListItem item = new ListItem( UIUtils.createSIIEAvatar( siieElemento ), siieElemento.getNome(),
-								siieElemento.getIdade().intValue() + " anos", siieElemento.getSiglaseccao().getLable() );
+								siieElemento.getIdade().intValue() + " anos",
+								suffix );
 				// Dividers for all but the last item
 				item.setDividerVisible( true );
 				content.add( item );

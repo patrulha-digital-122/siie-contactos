@@ -22,7 +22,7 @@ public class SituacaoComboBox extends ComboBox< SIIESituacao >
 	public SituacaoComboBox()
 	{
 		super( "", SIIESituacao.values() );
-		setItemLabelGenerator( SIIESituacao::getName );
+		setItemLabelGenerator( SIIESituacao::getNome );
 		setClearButtonVisible( true );
 	}
 }

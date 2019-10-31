@@ -87,7 +87,8 @@ public class SIIEWebApiTest
 						restTemplate.setCookies( lstOriginalCookies );
 						System.out.println( restTemplate.getForObject( uriElementos, String.class ) );
 						ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-						elementosFor.getBody().getData().forEach( e -> System.out.println( e.getNome() + " :: " + e.getDataadmissao() ) );
+						elementosFor.getBody().getData()
+										.forEach( e -> System.out.println( e.getNome() + " :: " + e.getDatanascimento().getDayOfYear() ) );
 					}
 				}
 			}

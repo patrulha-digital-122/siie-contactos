@@ -1,25 +1,33 @@
 package scouts.cne.pt.model.siie.types;
 
-import com.vaadin.flow.component.html.Label;
-import scouts.cne.pt.ui.util.FontSize;
+import scouts.cne.pt.ui.components.Badge;
 import scouts.cne.pt.ui.util.TextColor;
-import scouts.cne.pt.utils.UIUtils;
 
 public enum SIIESeccao
 {
-	D( "Dirigentes", TextColor.DIRIGENTES ),
-	L( "Lobitos", TextColor.LOBITOS ),
-	E( "Exploradores / Moços", TextColor.EXPLORADORES ),
-	P( "Pioneiros / Marinheiros", TextColor.PIONEIROS ),
-	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS ),
-	A( "Sem secção atribuida", TextColor.DIRIGENTES );
-	private String nome;
-	private TextColor color;
+	D( "Dirigentes", TextColor.DIRIGENTES, TextColor.WHITE ),
+	L( "Lobitos", TextColor.LOBITOS, TextColor.WHITE ),
+	E( "Exploradores / Moços", TextColor.EXPLORADORES, TextColor.WHITE ),
+	P( "Pioneiros / Marinheiros", TextColor.PIONEIROS, TextColor.WHITE ),
+	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS, TextColor.WHITE ),
+	A( "Sem secção atribuida", TextColor.DIRIGENTES, TextColor.WHITE );
+	private final String	nome;
+	private final TextColor	textColor;
+	private final TextColor	backgroundColor;
 
-	private SIIESeccao( String nome, TextColor color )
+	/**
+	 * constructor
+	 * 
+	 * @author 62000465 2019-10-31
+	 * @param nome
+	 * @param color
+	 * @param backgroundColor
+	 */
+	private SIIESeccao( String nome, TextColor backgroundColor, TextColor color )
 	{
 		this.nome = nome;
-		this.color = color;
+		this.textColor = color;
+		this.backgroundColor = backgroundColor;
 	}
 
 	/**
@@ -29,30 +37,33 @@ public enum SIIESeccao
 	{
 		return nome;
 	}
+
 	
+
 	/**
-	 * Getter for color
+	 * Getter for textColor
 	 * 
-	 * @author 62000465 2019-10-30
-	 * @return the color {@link TextColor}
+	 * @author 62000465 2019-10-31
+	 * @return the textColor {@link TextColor}
 	 */
-	public TextColor getColor()
+	public TextColor getTextColor()
 	{
-		return color;
+		return textColor;
 	}
 
 	/**
-	 * Setter for color
+	 * Getter for backgroundColor
 	 * 
-	 * @author 62000465 2019-10-30
-	 * @param color the color to set
+	 * @author 62000465 2019-10-31
+	 * @return the backgroundColor {@link TextColor}
 	 */
-	public void setColor( TextColor color )
+	public TextColor getBackgroundColor()
 	{
-		this.color = color;
+		return backgroundColor;
 	}
 
-	public Label getLable() {
-		return UIUtils.createLabel( FontSize.M, getColor(), getNome() );
+	public Badge getLable()
+	{
+		return new Badge( getNome(), getBackgroundColor(), getTextColor() );
 	}
 }

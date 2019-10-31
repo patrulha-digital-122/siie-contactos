@@ -38,6 +38,8 @@ public class GoogleAuthentication implements Serializable, HasLogger
 					Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_PROFILE );
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private GoogleAuthInfo				googleAuthInfo		= null;
+	public static String				PERSON_FIELDS		=
+					"addresses,birthdays,emailAddresses,events,genders,imClients,memberships,names,phoneNumbers,relations,userDefined";
 
 	public GoogleAuthentication()
 	{

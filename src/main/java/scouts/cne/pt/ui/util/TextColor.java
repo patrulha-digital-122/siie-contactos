@@ -17,7 +17,9 @@ public enum TextColor {
 	EXPLORADORES( "hsl(140, 100%, 30%)" ),
 	PIONEIROS( "hsl(225, 100%, 40%)" ),
 	CAMINHERIOS( "hsl(0, 100%, 40%)" ),
-	DIRIGENTES( "hsl(300, 100%, 25%)" ),;
+	DIRIGENTES( "hsl(300, 100%, 25%)" ),
+	WHITE( "hsl(0, 0%, 100%)" ),
+	CINZENTO( "hsl(0, 0%, 80%)" );
 
 	private String value;
 

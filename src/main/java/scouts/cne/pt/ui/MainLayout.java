@@ -31,7 +31,6 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
-import scouts.cne.pt.ui.components.GoogleSignin;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
@@ -97,7 +96,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private TabBar					tabBar;
 	private boolean					navigationTabs		= false;
 	private AppBar					appBar;
-	private GoogleSignin			signin				= new GoogleSignin();
 
 	public MainLayout()
 	{
@@ -121,6 +119,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
+
 		initTestData( attachEvent );
 	}
 
@@ -200,8 +199,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 			UIUtils.setTheme( Lumo.DARK, appBar );
 			setAppHeaderInner( appBar );
 		}
-		signin.setVisible( false );
-		add( signin );
 	}
 
 	private void setAppHeaderOuter( Component... components )
@@ -274,20 +271,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 						siieService.authenticateSIIE( siieUser, siiePassword );
 					}
 					siieService.updateDadosCompletosSIIE();
-					if ( googleAuthentication.getGoogleAuthInfo() == null )
-					{
-						attachEvent.getUI().access( () ->
-						{
-							signin.setClientId( googleAuthentication.getClientId() );
-							signin.setOpenidPrompt( "none" );
-							signin.addLoginListener( e ->
-							{
-								getLogger().info( "Google login Ok!" );
-								googleAuthentication.setGoogleAuthInfo( e );
-							} );
-							signin.login();
-						} );
-					}
 				}
 				catch ( RestClientException | URISyntaxException e )
 				{

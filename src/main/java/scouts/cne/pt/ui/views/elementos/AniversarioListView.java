@@ -74,7 +74,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 		{
 			for ( SIIEElemento siieElemento : lstElementos )
 			{
-				HorizontalLayout suffix = new HorizontalLayout( siieElemento.getSiglasituacao().getLable(), siieElemento.getSiglaseccao().getLable() );
+				HorizontalLayout suffix = new HorizontalLayout( siieElemento.getSiglasituacao().getLable(), siieElemento.getSiglaseccao().getLabel() );
 				suffix.setSpacing( true );
 				ListItem item = new ListItem( UIUtils.createSIIEAvatar( siieElemento ), siieElemento.getNome(),
 								siieElemento.getIdade().intValue() + " anos",

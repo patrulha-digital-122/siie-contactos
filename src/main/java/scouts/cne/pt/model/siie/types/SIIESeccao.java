@@ -6,11 +6,10 @@ import scouts.cne.pt.ui.util.TextColor;
 public enum SIIESeccao
 {
 	D( "Dirigentes", TextColor.DIRIGENTES, TextColor.WHITE ),
-	L( "Lobitos", TextColor.LOBITOS, TextColor.WHITE ),
+	L( "Lobitos", TextColor.LOBITOS, TextColor.BLACK ),
 	E( "Exploradores / Moços", TextColor.EXPLORADORES, TextColor.WHITE ),
 	P( "Pioneiros / Marinheiros", TextColor.PIONEIROS, TextColor.WHITE ),
-	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS, TextColor.WHITE ),
-	A( "Sem secção atribuida", TextColor.DIRIGENTES, TextColor.WHITE );
+	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS, TextColor.WHITE );
 	private final String	nome;
 	private final TextColor	textColor;
 	private final TextColor	backgroundColor;
@@ -62,7 +61,7 @@ public enum SIIESeccao
 		return backgroundColor;
 	}
 
-	public Badge getLable()
+	public Badge getLabel()
 	{
 		return new Badge( getNome(), getBackgroundColor(), getTextColor() );
 	}

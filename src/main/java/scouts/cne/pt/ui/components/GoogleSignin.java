@@ -202,7 +202,6 @@ public class GoogleSignin extends Component
 	public void login()
 	{
 		getElement().callJsFunction( "signIn" );
-		getElement().executeJs( "signIn" );
 	}
 
 	/**
@@ -413,5 +412,10 @@ public class GoogleSignin extends Component
 	public Boolean isSignedIn()
 	{
 		return getElement().getProperty( "signedIn", false );
+	}
+
+	public Boolean isInitialized()
+	{
+		return getElement().getProperty( "initialized", false );
 	}
 }

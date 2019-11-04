@@ -36,8 +36,7 @@ public class GoogleAuthenticationBean implements Serializable, HasLogger
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
 	public static final List< String >	SCOPES				=
-					Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_PROFILE );
-	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
+					Arrays.asList( GmailScopes.GMAIL_SEND, PeopleServiceScopes.CONTACTS );
 	private String						refreshToken		= null;
 	private String						userFullName		= "";
 	private String						userEmail			= "";

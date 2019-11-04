@@ -12,19 +12,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
+import com.google.api.services.people.v1.model.ModifyContactGroupMembersRequest;
+import com.google.api.services.people.v1.model.Person;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.gdata.client.contacts.ContactsService;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.google.GoogleAuthInfo;
+import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.utils.GoogleContactUtils;
 
 @Component
 @VaadinSessionScope
@@ -35,7 +41,7 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	 */
 	private static final long			serialVersionUID	= -4266591353450666223L;
 	public static final List< String >	SCOPES				=
-					Arrays.asList( "https://www.google.com/m8/feeds/", GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_PROFILE );
+					Arrays.asList( GmailScopes.GMAIL_SEND, PeopleServiceScopes.CONTACTS );
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private GoogleAuthInfo				googleAuthInfo		= null;
 	public static String				PERSON_FIELDS		=
@@ -130,5 +136,68 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	private String getApplicationName()
 	{
 		return "cnhefe-122";
+	}
+
+	public void updateElemento( SIIEElemento siieElemento ) throws SIIIEImporterException
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		try
+		{
+			Person personUpdated = getPeopleService().people().updateContact( googlePerson.getResourceName(), googlePerson )
+							.setUpdatePersonFields( GoogleAuthentication.PERSON_FIELDS ).execute();
+			siieElemento.setGooglePerson( personUpdated );
+		}
+		catch ( GoogleJsonResponseException e )
+		{
+			if ( e.getStatusCode() == 400 && e.getDetails().getErrors().get( 0 ).getReason().equals( "failedPrecondition" ) )
+			{
+				getLogger().warn( "FAILED_PRECONDITION :: " + siieElemento.getNin() );
+				try
+				{
+					googlePerson = getPeopleService().people().get( googlePerson.getResourceName() ).setPersonFields( PERSON_FIELDS ).execute();
+					siieElemento.setGooglePerson( googlePerson );
+					GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
+					Person personUpdated = getPeopleService().people().updateContact( googlePerson.getResourceName(), googlePerson )
+									.setUpdatePersonFields( GoogleAuthentication.PERSON_FIELDS ).execute();
+					siieElemento.setGooglePerson( personUpdated );
+				}
+				catch ( Exception e1 )
+				{
+					throw new SIIIEImporterException( e.getMessage() );
+				}
+			}
+		}
+		catch ( Exception e )
+		{
+			throw new SIIIEImporterException( e.getMessage() );
+		}
+	}
+
+	/**
+	 * The <b>createElemento</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-11-04
+	 * @param siieElemento
+	 * @throws SIIIEImporterException
+	 */
+	public void createElemento( SIIEElemento siieElemento ) throws SIIIEImporterException
+	{
+		try
+		{
+			Person person = new Person();
+			siieElemento.setGooglePerson( person );
+			GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
+			person = getPeopleService().people().createContact( person ).execute();
+			siieElemento.setGooglePerson( person );
+
+			ModifyContactGroupMembersRequest content = new ModifyContactGroupMembersRequest();
+			content.setResourceNamesToAdd( Arrays.asList( person.getResourceName() ) );
+			getPeopleService().contactGroups().members().modify( "contactGroups/myContacts", content ).execute();
+			getLogger().info( "Criado contacto :: " + person.getResourceName() );
+		}
+		catch ( Exception e )
+		{
+			throw new SIIIEImporterException( e.getMessage() );
+		}
 	}
 }

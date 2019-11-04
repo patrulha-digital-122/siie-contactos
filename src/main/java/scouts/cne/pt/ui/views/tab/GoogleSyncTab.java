@@ -1,19 +1,17 @@
 package scouts.cne.pt.ui.views.tab;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.google.api.services.people.v1.model.Person;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.SIIEService;
@@ -65,10 +63,30 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 		grid.setSelectionMode( SelectionMode.NONE );
 		grid.addComponentColumn( i ->
 		{
-			Button createPrimaryButton = UIUtils.createPrimaryButton( "Update" );
-			createPrimaryButton.addClickListener( e -> updateContact( i.getNin() ) );
-			return createPrimaryButton;
-		} ).setHeader( "Actualizar" ).setSortable( false );
+			Button button;
+			if ( i.getGooglePerson() != null )
+			{
+				button = UIUtils.createPrimaryButton( "Actualizar" );
+				button.addClickListener( e ->
+				{
+					updateContact( i.getNin() );
+					button.setEnabled( true );
+				} );
+			}
+			else
+			{
+				button = UIUtils.createSuccessPrimaryButton( "Criar" );
+				button.addClickListener( e ->
+				{
+					createContact( i.getNin() );
+					grid.getDataProvider().refreshItem( i );
+					button.setEnabled( true );
+				} );
+			}
+			button.setEnabled( googleAuthentication.getGoogleAuthInfo() != null );
+			button.setDisableOnClick( true );
+			return button;
+		} ).setHeader( "Acção" ).setSortable( false );
 		add( grid );
 	}
 
@@ -77,7 +95,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 	{
 		super.onAttach( attachEvent );
 		lstElementos.clear();
-		lstElementos.addAll( siieService.getElementosActivos().stream().filter( p -> p.getGooglePerson() != null ).collect( Collectors.toList() ) );
+		lstElementos.addAll( siieService.getElementosActivos().stream().collect( Collectors.toList() ) );
 		
 		grid.getDataProvider().refreshAll();
 	}
@@ -98,10 +116,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 			{
 				SIIEElemento siieElemento = siieOptional.get();
 				GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-				Person googlePerson = siieElemento.getGooglePerson();
-				Person execute = googleAuthentication.getPeopleService().people().updateContact( googlePerson.getResourceName(), googlePerson )
-								.setUpdatePersonFields( GoogleAuthentication.PERSON_FIELDS ).execute();
-				siieElemento.setGooglePerson( execute );
+				googleAuthentication.updateElemento( siieElemento );
 				showInfo( siieElemento.getNome() + " actualizado!" );
 			}
 			else
@@ -109,7 +124,29 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 				showWarning( "Elemento não encontrado :: 1110" );
 			}
 		}
-		catch ( IOException | GeneralSecurityException e )
+		catch ( SIIIEImporterException e )
+		{
+			showError( e );
+		}
+	}
+
+	private void createContact( String strNin )
+	{
+		try
+		{
+			Optional< SIIEElemento > siieOptional = siieService.getElementoByNIN( strNin );
+			if ( siieOptional.isPresent() )
+			{
+				SIIEElemento siieElemento = siieOptional.get();
+				googleAuthentication.createElemento( siieElemento );
+				showInfo( siieElemento.getNome() + " criado com sucesso!" );
+			}
+			else
+			{
+				showWarning( "Não foi possível criar o contacto :: 1110" );
+			}
+		}
+		catch ( SIIIEImporterException e )
 		{
 			showError( e );
 		}

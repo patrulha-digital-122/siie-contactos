@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.api.services.people.v1.model.Address;
 import com.google.api.services.people.v1.model.Birthday;
 import com.google.api.services.people.v1.model.Date;
+import com.google.api.services.people.v1.model.EmailAddress;
 import com.google.api.services.people.v1.model.Name;
 import com.google.api.services.people.v1.model.Person;
 import scouts.cne.pt.model.siie.SIIEElemento;
@@ -27,6 +28,7 @@ public class GoogleContactUtils
 		if ( siieElemento.getGooglePerson() != null )
 		{
 			updateNome( siieElemento );
+			updateEmail( siieElemento );
 			updateAddresses( siieElemento );
 			updateBirthdays( siieElemento );
 		}
@@ -37,7 +39,11 @@ public class GoogleContactUtils
 		Person googlePerson = siieElemento.getGooglePerson();
 		String[] lstNames = siieElemento.getNome().split( " " );
 		String firstName = lstNames[ 0 ];
-		String lastName = lstNames[ lstNames.length - 1 ];
+		String lastName = "";
+		if ( lstNames.length > 1 )
+		{
+			lastName = lstNames[ lstNames.length - 1 ];
+		}
 		StringBuilder middleName = new StringBuilder();
 		for ( int i = 1; i < lstNames.length - 1; i++ )
 		{
@@ -58,7 +64,6 @@ public class GoogleContactUtils
 			Name name = new Name();
 			name.setDisplayName( siieElemento.getNome() );
 			names.add( name );
-			return;
 		}
 
 		for ( Name name : names )
@@ -71,6 +76,50 @@ public class GoogleContactUtils
 		}
 	}
 
+	private static void updateEmail( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		if ( StringUtils.isNotBlank( siieElemento.getEmail() ) )
+		{
+			List< EmailAddress > emailAddresses = googlePerson.getEmailAddresses();
+			if ( emailAddresses == null )
+			{
+				emailAddresses = new ArrayList<>();
+				googlePerson.setEmailAddresses( emailAddresses );
+			}
+			EmailAddress primary = null;
+			for ( EmailAddress emailAddress : emailAddresses )
+			{
+				if ( emailAddress.getMetadata().getPrimary() )
+				{
+					primary = emailAddress;
+					break;
+				}
+			}
+			if ( primary == null )
+			{
+				primary = new EmailAddress();
+				primary.getMetadata().setPrimary( true );
+				primary.setValue( siieElemento.getEmail() );
+				emailAddresses.add( primary );
+			}
+			for ( EmailAddress emailAddress : emailAddresses )
+			{
+				if ( emailAddress.getType().equals( "Pessoal" ) && emailAddress.getFormattedType().equals( "Pessoal" ) )
+				{
+					// update value
+					emailAddress.setValue( siieElemento.getEmail() );
+					return;
+				}
+			}
+			// add email
+			EmailAddress emailAddress = new EmailAddress();
+			emailAddress.setType( "Pessoal" );
+			emailAddress.setFormattedType( "Pessoal" );
+			emailAddress.setValue( siieElemento.getEmail() );
+			emailAddresses.add( emailAddress );
+		}
+	}
 	private static void updateAddresses( SIIEElemento siieElemento )
 	{
 		Person googlePerson = siieElemento.getGooglePerson();

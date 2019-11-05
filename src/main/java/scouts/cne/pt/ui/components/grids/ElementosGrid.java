@@ -29,7 +29,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		super();
 		setSizeFull();
 		Column< SIIEElemento > avatar =
-						addComponentColumn( i -> UIUtils.createAvatar( String.format( UIUtils.SIIE_IMG_PATH, i.getUploadgroup(), i.getNin() ), "" ) )
+						addComponentColumn( i -> UIUtils.createSIIEAvatar( i ) )
 						.setHeader( "Foto" ).setWidth( "30px" ).setSortable( false );
 		Grid.Column< SIIEElemento > ninColumn = addColumn( SIIEElemento::getNin ).setHeader( "NIN" ).setSortable( true );
 		Grid.Column< SIIEElemento > nomeColumn = addColumn( SIIEElemento::getNome ).setHeader( "Nome" ).setSortable( true );

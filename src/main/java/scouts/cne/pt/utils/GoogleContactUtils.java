@@ -1,14 +1,22 @@
 package scouts.cne.pt.utils;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import com.google.api.services.people.v1.model.Address;
 import com.google.api.services.people.v1.model.Birthday;
 import com.google.api.services.people.v1.model.Date;
 import com.google.api.services.people.v1.model.EmailAddress;
+import com.google.api.services.people.v1.model.Event;
+import com.google.api.services.people.v1.model.Gender;
 import com.google.api.services.people.v1.model.Name;
+import com.google.api.services.people.v1.model.Nickname;
 import com.google.api.services.people.v1.model.Person;
+import com.google.api.services.people.v1.model.PhoneNumber;
+import com.google.api.services.people.v1.model.Relation;
+import com.google.api.services.people.v1.model.UserDefined;
 import scouts.cne.pt.model.siie.SIIEElemento;
 
 /**
@@ -31,6 +39,12 @@ public class GoogleContactUtils
 			updateEmail( siieElemento );
 			updateAddresses( siieElemento );
 			updateBirthdays( siieElemento );
+			updateUserDefined( siieElemento );
+			updateRelations( siieElemento );
+			updatePhoneNumbers( siieElemento );
+			updateEvents( siieElemento );
+			updateTotem( siieElemento );
+			updateGender( siieElemento );
 		}
 	}
 
@@ -87,25 +101,10 @@ public class GoogleContactUtils
 				emailAddresses = new ArrayList<>();
 				googlePerson.setEmailAddresses( emailAddresses );
 			}
-			EmailAddress primary = null;
+
 			for ( EmailAddress emailAddress : emailAddresses )
 			{
-				if ( emailAddress.getMetadata().getPrimary() )
-				{
-					primary = emailAddress;
-					break;
-				}
-			}
-			if ( primary == null )
-			{
-				primary = new EmailAddress();
-				primary.getMetadata().setPrimary( true );
-				primary.setValue( siieElemento.getEmail() );
-				emailAddresses.add( primary );
-			}
-			for ( EmailAddress emailAddress : emailAddresses )
-			{
-				if ( emailAddress.getType().equals( "Pessoal" ) && emailAddress.getFormattedType().equals( "Pessoal" ) )
+				if ( emailAddress.getType().equals( "home" ) && emailAddress.getFormattedType().equals( "Pessoal" ) )
 				{
 					// update value
 					emailAddress.setValue( siieElemento.getEmail() );
@@ -114,7 +113,7 @@ public class GoogleContactUtils
 			}
 			// add email
 			EmailAddress emailAddress = new EmailAddress();
-			emailAddress.setType( "Pessoal" );
+			emailAddress.setType( "home" );
 			emailAddress.setFormattedType( "Pessoal" );
 			emailAddress.setValue( siieElemento.getEmail() );
 			emailAddresses.add( emailAddress );
@@ -186,6 +185,363 @@ public class GoogleContactUtils
 				birthday.getDate().setMonth( siieElemento.getDatanascimento().getMonthValue() );
 				birthday.getDate().setYear( siieElemento.getDatanascimento().getYear() );
 			}
+		}
+	}
+
+	private static void updateUserDefined( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		List< UserDefined > userDefineds = googlePerson.getUserDefined();
+		if ( userDefineds == null )
+		{
+			userDefineds = new ArrayList<>();
+			googlePerson.setUserDefined( userDefineds );
+		}
+		boolean createNIN = true;
+		boolean createNIF = true;
+		boolean createCC = true;
+		for ( UserDefined userDefined : userDefineds )
+		{
+			switch ( userDefined.getKey() )
+			{
+				case "NIN":
+					userDefined.setValue( StringUtils.trimToEmpty( siieElemento.getNin() ) );
+					createNIN = false;
+					break;
+				case "NIF":
+					userDefined.setValue( StringUtils.trimToEmpty( siieElemento.getNif() ) );
+					createNIF = false;
+					break;
+				case "CC":
+					userDefined.setValue( StringUtils.trimToEmpty( siieElemento.getCc() ) );
+					createCC = false;
+					break;
+				default:
+					break;
+			}
+		}
+		if ( createNIN && StringUtils.isNotBlank( siieElemento.getNin() ) )
+		{
+			UserDefined userDefined = new UserDefined();
+			userDefined.setKey( "NIN" );
+			userDefined.setValue( siieElemento.getNin() );
+			userDefineds.add( userDefined );
+		}
+		if ( createNIF && StringUtils.isNotBlank( siieElemento.getNif() ) )
+		{
+			UserDefined userDefined = new UserDefined();
+			userDefined.setKey( "NIF" );
+			userDefined.setValue( siieElemento.getNif() );
+			userDefineds.add( userDefined );
+		}
+		if ( createCC && StringUtils.isNotBlank( siieElemento.getCc() ) )
+		{
+			UserDefined userDefined = new UserDefined();
+			userDefined.setKey( "CC" );
+			userDefined.setValue( siieElemento.getCc() );
+			userDefineds.add( userDefined );
+		}
+	}
+
+	/**
+	 * The <b>updateRelations</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-11-05
+	 * @param siieElemento
+	 */
+	private static void updateRelations( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		List< Relation > relations = googlePerson.getRelations();
+		if ( relations == null )
+		{
+			relations = new ArrayList<>();
+			googlePerson.setRelations( relations );
+		}
+
+		if ( StringUtils.isNotBlank( siieElemento.getPai() ) )
+		{
+			Optional< Relation > findFirst = relations.stream().filter( p -> p.getFormattedType().equals( "Pai" ) ).findFirst();
+			if ( findFirst.isPresent() )
+			{
+				findFirst.get().setPerson( siieElemento.getPai() );
+			}
+			else
+			{
+				Relation relation = new Relation();
+				relation.setType( "father" );
+				relation.setFormattedType( "Pai" );
+				relation.setPerson( siieElemento.getPai() );
+				relations.add( relation );
+			}
+		}
+		if ( StringUtils.isNotBlank( siieElemento.getMae() ) )
+		{
+			Optional< Relation > findFirst = relations.stream().filter( p -> p.getFormattedType().equals( "Mãe" ) ).findFirst();
+			if ( findFirst.isPresent() )
+			{
+				findFirst.get().setPerson( siieElemento.getMae() );
+			}
+			else
+			{
+				Relation relation = new Relation();
+				relation.setType( "mother" );
+				relation.setFormattedType( "Mãe" );
+				relation.setPerson( siieElemento.getMae() );
+				relations.add( relation );
+			}
+		}
+	}
+
+	/**
+	 * The <b>updatePhoneNumbers</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-11-05
+	 * @param siieElemento
+	 * @param string
+	 */
+	private static void updatePhoneNumbers( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		List< PhoneNumber > phoneNumbers = googlePerson.getPhoneNumbers();
+		if ( phoneNumbers == null )
+		{
+			phoneNumbers = new ArrayList<>();
+			googlePerson.setPhoneNumbers( phoneNumbers );
+		}
+
+		boolean createTelemovel = true;
+		boolean createTelefone = true;
+
+		for ( PhoneNumber phoneNumber : phoneNumbers )
+		{
+			if ( phoneNumber.getFormattedType().equals( "Telemóvel" ) && StringUtils.isNotBlank( siieElemento.getTelemovel() ) )
+			{
+				String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelemovel() );
+				phoneNumber.setValue( convertPhoneNumber );
+				phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
+				createTelemovel = false;
+			}
+			else if ( phoneNumber.getFormattedType().equals( "Telefone" ) && StringUtils.isNotBlank( siieElemento.getTelefone() ) )
+			{
+				String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelefone() );
+				phoneNumber.setValue( convertPhoneNumber );
+				phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
+				createTelefone = false;
+			}
+		}
+		if ( createTelemovel )
+		{
+			PhoneNumber phoneNumber = new PhoneNumber();
+			phoneNumber.setType( "mobile" );
+			phoneNumber.setFormattedType( "Telemóvel" );
+			String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelemovel() );
+			phoneNumber.setValue( convertPhoneNumber );
+			phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
+			phoneNumbers.add( phoneNumber );
+		}
+		if ( createTelefone )
+		{
+			PhoneNumber phoneNumber = new PhoneNumber();
+			phoneNumber.setType( "home" );
+			phoneNumber.setFormattedType( "Telefone" );
+			String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelefone() );
+			phoneNumber.setValue( convertPhoneNumber );
+			phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
+			phoneNumbers.add( phoneNumber );
+		}
+	}
+
+	private static void updateEvents( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		List< Event > events = googlePerson.getEvents();
+		if ( events == null )
+		{
+			events = new ArrayList<>();
+			googlePerson.setEvents( events );
+		}
+		processEvent( siieElemento.getDatapromessa(), events, "Data da Promessa" );
+		processEvent( siieElemento.getDataadmissao(), events, "Data da Admissão" );
+	}
+
+	private static void updateTotem( SIIEElemento siieElemento )
+	{
+		if ( StringUtils.isNotBlank( siieElemento.getTotem() ) )
+		{
+			Person googlePerson = siieElemento.getGooglePerson();
+			List< Nickname > nicknames = googlePerson.getNicknames();
+			if ( nicknames == null )
+			{
+				nicknames = new ArrayList<>();
+				googlePerson.setNicknames( nicknames );
+			}
+			Optional< Nickname > findFirst = nicknames.stream().filter( p -> p.getType().equals( "Totem" ) ).findFirst();
+			if ( findFirst.isPresent() )
+			{
+				findFirst.get().setValue( siieElemento.getTotem() );
+			}
+			else
+			{
+				Nickname nickname = new Nickname();
+				nickname.setType( "Totem" );
+				nickname.setValue( siieElemento.getTotem() );
+				nicknames.add( nickname );
+			}
+		}
+	}
+
+	private static void updateGender( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		List< Gender > genders = googlePerson.getGenders();
+		if ( genders == null )
+		{
+			genders = new ArrayList<>();
+			googlePerson.setGenders( genders );
+		}
+		
+		for ( Gender gender : genders )
+		{
+			if ( gender.getMetadata().getPrimary() )
+			{
+				gender.setValue( siieElemento.getSiglasexo().getGoogleValue() );
+				gender.setFormattedValue( siieElemento.getSiglasexo().getNome() );
+				return;
+			}
+		}
+		
+		Gender gender = new Gender();
+		gender.setValue( siieElemento.getSiglasexo().getGoogleValue() );
+		gender.setFormattedValue( siieElemento.getSiglasexo().getNome() );
+	}
+
+	/**
+	 * The <b>processEvent</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-11-05
+	 * @param siieElemento
+	 * @param events
+	 * @param strEventType
+	 */
+	private static void processEvent( ZonedDateTime zonedDateTime, List< Event > events, String strEventType )
+	{
+		if ( zonedDateTime != null )
+		{
+			Optional< Event > findFirst = events.stream().filter( p -> p.getFormattedType().equals( strEventType ) ).findFirst();
+			if ( findFirst.isPresent() )
+			{
+				findFirst.get().getDate().setDay( zonedDateTime.getDayOfMonth() );
+				findFirst.get().getDate().setMonth( zonedDateTime.getMonthValue() );
+				findFirst.get().getDate().setYear( zonedDateTime.getYear() );
+			}
+			else
+			{
+				Event event = new Event();
+				event.setType( strEventType );
+				event.setFormattedType( strEventType );
+				Date date = new Date();
+				date.setDay( zonedDateTime.getDayOfMonth() );
+				date.setMonth( zonedDateTime.getMonthValue() );
+				date.setYear( zonedDateTime.getYear() );
+				event.setDate( date );
+				events.add( event );
+			}
+		}
+	}
+
+	public static void updateDadosPais( SIIEElemento siieElemento )
+	{
+		Person googlePerson = siieElemento.getGooglePerson();
+		// Emails
+		List< EmailAddress > emailAddresses = googlePerson.getEmailAddresses();
+		if ( emailAddresses == null )
+		{
+			emailAddresses = new ArrayList<>();
+			googlePerson.setEmailAddresses( emailAddresses );
+		}
+		EmailAddress emailMae = null;
+		EmailAddress emailPai = null;
+
+		for ( EmailAddress emailAddress : emailAddresses )
+		{
+			if ( emailAddress.getFormattedType().equals( "Mãe" ) )
+			{
+				emailMae = emailAddress;
+			}
+			else if ( emailAddress.getFormattedType().equals( "Pai" ) )
+			{
+				emailPai = emailAddress;
+			}
+		}
+
+		if ( StringUtils.isNotBlank( siieElemento.getMaeemail() ) )
+		{
+			if ( emailMae == null )
+			{
+				emailMae = new EmailAddress();
+				emailMae.setType( "other" );
+				emailMae.setFormattedType( "Mãe" );
+				emailAddresses.add( emailMae );
+			}
+			emailMae.setValue( siieElemento.getMaeemail() );
+		}
+		if ( StringUtils.isNotBlank( siieElemento.getPaiemail() ) )
+		{
+			if ( emailPai == null )
+			{
+				emailPai = new EmailAddress();
+				emailPai.setType( "other" );
+				emailPai.setFormattedType( "Pai" );
+				emailAddresses.add( emailPai );
+			}
+			emailPai.setValue( siieElemento.getPaiemail() );
+		}
+		// Telefones
+		List< PhoneNumber > phoneNumbers = googlePerson.getPhoneNumbers();
+		if ( phoneNumbers == null )
+		{
+			phoneNumbers = new ArrayList<>();
+			googlePerson.setPhoneNumbers( phoneNumbers );
+		}
+		PhoneNumber numeroMae = null;
+		PhoneNumber numeroPai = null;
+		for ( PhoneNumber phoneNumber : phoneNumbers )
+		{
+			if ( phoneNumber.getFormattedType().equals( "Mãe" ) )
+			{
+				numeroMae = phoneNumber;
+			}
+			else if ( phoneNumber.getFormattedType().equals( "Pai" ) )
+			{
+				numeroPai = phoneNumber;
+			}
+		}
+		String strNumeroMae = ContactUtils.convertPhoneNumber( siieElemento.getMaetelefone() );
+		if ( StringUtils.isNotBlank( strNumeroMae ) )
+		{
+			if ( numeroMae == null )
+			{
+				numeroMae = new PhoneNumber();
+				numeroMae.setType( "mobile" );
+				numeroMae.setFormattedType( "Mãe" );
+				phoneNumbers.add( numeroMae );
+			}
+			numeroMae.setValue( strNumeroMae );
+			numeroMae.setCanonicalForm( strNumeroMae.replace( " ", "" ) );
+		}
+		String strNumeroPai = ContactUtils.convertPhoneNumber( siieElemento.getPaitelefone() );
+		if ( StringUtils.isNotBlank( strNumeroPai ) )
+		{
+			if ( numeroPai == null )
+			{
+				numeroPai = new PhoneNumber();
+				numeroPai.setType( "mobile" );
+				numeroPai.setFormattedType( "Pai" );
+				phoneNumbers.add( numeroPai );
+			}
+			numeroPai.setValue( strNumeroPai );
+			numeroPai.setCanonicalForm( strNumeroPai.replace( " ", "" ) );
 		}
 	}
 }

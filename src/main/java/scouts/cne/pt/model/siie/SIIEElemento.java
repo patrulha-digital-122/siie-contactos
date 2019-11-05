@@ -19,75 +19,75 @@ import scouts.cne.pt.model.siie.types.SIIESituacao;
 @JsonPropertyOrder( "Datum" )
 public class SIIEElemento
 {
-	private String	nin;
-	private String	agrupamento;
-	private String	nome;
+	private String			nin;
+	private String			agrupamento;
+	private String			nome;
 	private ZonedDateTime	datanascimento;
-	private String	cartaotxt;
-	private Long	anoadmissao;
-	private Long	rid;
-	private String	morada;
-	private String	localidade;
-	private String	cp1;
-	private String	telefone;
-	private String	telemovel;
-	private Long	ano;
-	private String	cp2;
-	private String	codigopostal;
-	private String	regiao;
-	private String	nucleo;
-	private Instant			dataadmissao;
+	private String			cartaotxt;
+	private Long			anoadmissao;
+	private Long			rid;
+	private String			morada;
+	private String			localidade;
+	private String			cp1;
+	private String			telefone;
+	private String			telemovel;
+	private Long			ano;
+	private String			cp2;
+	private String			codigopostal;
+	private String			regiao;
+	private String			nucleo;
+	private ZonedDateTime	dataadmissao;
 	private SIIESituacao	siglasituacao;
 	private SIIESexo		siglasexo;
-	private String	profissao;
-	private String	email;
-	private String	notas;
-	private String	pai;
-	private String	paiprofissao;
-	private String	paitelefone;
-	private String	mae;
-	private String	maeprofissao;
-	private String	maetelefone;
-	private String	naturalidade;
-	private String	enceducacao;
-	private String	enceducacaotelefone;
-	private String	www;
-	private Long	cid;
+	private String			profissao;
+	private String			email;
+	private String			notas;
+	private String			pai;
+	private String			paiprofissao;
+	private String			paitelefone;
+	private String			mae;
+	private String			maeprofissao;
+	private String			maetelefone;
+	private String			naturalidade;
+	private String			enceducacao;
+	private String			enceducacaotelefone;
+	private String			www;
+	private Long			cid;
 	private SIIECategoria	siglacategoria;
-	private String	categoria;
-	private String	observacoes;
-	private String	elemnucleo;
-	private String	elemregiao;
-	private Boolean	elemNacional;
-	private Boolean	ccartao;
-	private Instant			datapromessa;
+	private String			categoria;
+	private String			observacoes;
+	private String			elemnucleo;
+	private String			elemregiao;
+	private Boolean			elemNacional;
+	private Boolean			ccartao;
+	private ZonedDateTime	datapromessa;
 	private SIIESeccao		siglaseccao;
-	private Boolean	florlis;
-	private String	florlisnin;
-	private String	deficiencia;
-	private String	sigladeficiencia;
-	private String	bcartao;
-	private String	bflorlis;
-	private Long	idade;
-	private Long	ordem;
-	private Boolean	formador;
-	private Boolean	diretorformacao;
-	private String	password;
-	private String	paiemail;
-	private String	maeemail;
-	private String	enceducacaoemail;
-	private String	situacao;
-	private String	uploadgroup;
-	private String	agrupdesc;
-	private String	expr1;
-	private String	tutor;
-	private Boolean	registocriminal;
+	private Boolean			florlis;
+	private String			florlisnin;
+	private String			deficiencia;
+	private String			sigladeficiencia;
+	private String			bcartao;
+	private String			bflorlis;
+	private Long			idade;
+	private Long			ordem;
+	private Boolean			formador;
+	private Boolean			diretorformacao;
+	private String			password;
+	private String			paiemail;
+	private String			maeemail;
+	private String			enceducacaoemail;
+	private String			situacao;
+	private String			uploadgroup;
+	private String			agrupdesc;
+	private String			expr1;
+	private String			tutor;
+	private Boolean			registocriminal;
 	private Boolean			imagensnao;
 	private Instant			registocriminaldata;
-	private String	nif;
-	private String	cc;
-	private String	totem;
-	private String	seccao;
+	private String			nif;
+	private String			cc;
+	private String			totem;
+	private String			seccao;
 	@JsonIgnore
 	private Person			googlePerson;
 
@@ -298,13 +298,13 @@ public class SIIEElemento
 
 	@JsonProperty( "dataadmissao" )
 	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
-	public Instant getDataadmissao()
+	public ZonedDateTime getDataadmissao()
 	{
 		return dataadmissao;
 	}
 
 	@JsonProperty( "dataadmissao" )
-	public void setDataadmissao( Instant value )
+	public void setDataadmissao( ZonedDateTime value )
 	{
 		this.dataadmissao = value;
 	}
@@ -593,13 +593,13 @@ public class SIIEElemento
 
 	@JsonProperty( "datapromessa" )
 	@JsonFormat( pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC" )
-	public Instant getDatapromessa()
+	public ZonedDateTime getDatapromessa()
 	{
 		return datapromessa;
 	}
 
 	@JsonProperty( "datapromessa" )
-	public void setDatapromessa( Instant value )
+	public void setDatapromessa( ZonedDateTime value )
 	{
 		this.datapromessa = value;
 	}

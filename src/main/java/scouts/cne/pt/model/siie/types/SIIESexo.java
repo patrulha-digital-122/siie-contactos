@@ -4,22 +4,26 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public enum SIIESexo
 {
-	M( "Masculino", VaadinIcon.MALE ),
-	F( "Feminino", VaadinIcon.FEMALE );
+	M( "Masculino", "male", VaadinIcon.MALE ),
+	F( "Feminino", "female", VaadinIcon.FEMALE );
 
 	private final String		nome;
+	private final String		googleValue;
 	private final VaadinIcon	icon;
+
 
 	/**
 	 * constructor
 	 * 
-	 * @author 62000465 2019-10-11
+	 * @author 62000465 2019-11-05
 	 * @param nome
+	 * @param googleValue
 	 * @param icon
 	 */
-	private SIIESexo( String nome, VaadinIcon icon )
+	private SIIESexo( String nome, String googleValue, VaadinIcon icon )
 	{
 		this.nome = nome;
+		this.googleValue = googleValue;
 		this.icon = icon;
 	}
 
@@ -43,5 +47,16 @@ public enum SIIESexo
 	public VaadinIcon getIcon()
 	{
 		return icon;
+	}
+
+	/**
+	 * Getter for googleValue
+	 * 
+	 * @author 62000465 2019-11-05
+	 * @return the googleValue {@link String}
+	 */
+	public String getGoogleValue()
+	{
+		return googleValue;
 	}
 }

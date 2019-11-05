@@ -45,7 +45,7 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	private static final List< String >	SERVER_SCOPES		= Arrays.asList( GmailScopes.GMAIL_SEND );
 	private GoogleAuthInfo				googleAuthInfo		= null;
 	public static String				PERSON_FIELDS		=
-					"addresses,birthdays,emailAddresses,events,genders,imClients,memberships,names,phoneNumbers,relations,userDefined";
+					"addresses,birthdays,emailAddresses,events,genders,memberships,names,phoneNumbers,relations,userDefined,nicknames";
 
 	public GoogleAuthentication()
 	{
@@ -189,14 +189,16 @@ public class GoogleAuthentication implements Serializable, HasLogger
 			GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
 			person = getPeopleService().people().createContact( person ).execute();
 			siieElemento.setGooglePerson( person );
+			getLogger().info( "Criado contacto :: " + person.getResourceName() );
 
 			ModifyContactGroupMembersRequest content = new ModifyContactGroupMembersRequest();
 			content.setResourceNamesToAdd( Arrays.asList( person.getResourceName() ) );
 			getPeopleService().contactGroups().members().modify( "contactGroups/myContacts", content ).execute();
-			getLogger().info( "Criado contacto :: " + person.getResourceName() );
+			getLogger().info( "Contacto associado a MyContacts." );
 		}
 		catch ( Exception e )
 		{
+			e.printStackTrace();
 			throw new SIIIEImporterException( e.getMessage() );
 		}
 	}

@@ -150,6 +150,7 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 		} );
 		ListConnectionsResponse execute;
 		int iCount = 0;
+		int iPeopleProcessed = 0;
 		Integer totalItems;
 		try
 		{
@@ -161,28 +162,42 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 			{
 				progressBar.setMax( totalItems );
 			} );
-
-			for ( Person person : execute.getConnections() )
+			while ( true )
 			{
-				int value = ( int ) ( progressBar.getValue() + 1 );
-				if ( value % 10 == 0 )
+				for ( Person person : execute.getConnections() )
 				{
-					ui.access( () ->
+					iPeopleProcessed++;
+					int value = ( int ) ( progressBar.getValue() + 1 );
+					if ( value % 10 == 0 )
 					{
-						progressLabel.setText( String.format( "A processar dados do google (%d / %d)", value, totalItems ) );
-						progressBar.setValue( value );
-					} );
-				}
-				Optional< UserDefined > findFirst =
-								ListUtils.emptyIfNull( person.getUserDefined() ).stream().filter( p -> p.getKey().equals( "NIN" ) ).findFirst();
-				if ( findFirst.isPresent() )
-				{
-					Optional< SIIEElemento > siieOptional = siieService.getElementoByNIN( findFirst.get().getValue() );
-					if ( siieOptional.isPresent() )
-					{
-						siieOptional.get().setGooglePerson( person );
-						iCount++;
+						ui.access( () ->
+						{
+							progressLabel.setText( String.format( "A processar dados do google (%d / %d)", value, totalItems ) );
+							progressBar.setValue( value );
+						} );
 					}
+					Optional< UserDefined > findFirst =
+									ListUtils.emptyIfNull( person.getUserDefined() ).stream().filter( p -> p.getKey().equals( "NIN" ) ).findFirst();
+					if ( findFirst.isPresent() )
+					{
+						Optional< SIIEElemento > siieOptional = siieService.getElementoByNIN( findFirst.get().getValue() );
+						if ( siieOptional.isPresent() )
+						{
+							siieOptional.get().setGooglePerson( person );
+							iCount++;
+						}
+					}
+				}
+				if ( iPeopleProcessed >= totalItems )
+				{
+					break;
+				}
+				else
+				{
+					execute = googleAuthentication.getPeopleService().people().connections().list( "people/me" )
+									.setPersonFields( GoogleAuthentication.PERSON_FIELDS ).setPageToken( execute.getNextPageToken() )
+									.setPageSize( 2000 )
+									.execute();
 				}
 			}
 			String s = "Actualização finalizada. Utilizados " + iCount + " contactos";

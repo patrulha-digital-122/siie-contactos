@@ -54,6 +54,7 @@ import scouts.cne.pt.model.siie.authentication.SIIESessionData;
 import scouts.cne.pt.model.siie.authentication.SIIEUserLogin;
 import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
 import scouts.cne.pt.model.siie.types.SIIEOptions;
+import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.model.siie.types.SIIESituacao;
 import scouts.cne.pt.utils.ValidationUtils;
 
@@ -167,6 +168,14 @@ public class SIIEService implements Serializable, HasLogger
 	public List< SIIEElemento > getElementosActivos()
 	{
 		return eSiieElementos.getData().stream().filter( p -> p.getSiglasituacao().equals( SIIESituacao.A ) ).collect( Collectors.toList() );
+	}
+
+	public List< SIIEElemento > getElementosActivosBySeccao( SIIESeccao siieSeccao )
+	{
+		return eSiieElementos.getData().stream().filter( ( p ) ->
+		{
+			return p.getSiglasituacao().equals( SIIESituacao.A ) && p.getSiglaseccao().equals( siieSeccao );
+		} ).collect( Collectors.toList() );
 	}
 
 	public List< SIIEElemento > getAllElementos()

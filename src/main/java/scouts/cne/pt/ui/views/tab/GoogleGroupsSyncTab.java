@@ -3,13 +3,11 @@ package scouts.cne.pt.ui.views.tab;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.api.services.people.v1.model.ContactGroup;
-import com.google.api.services.people.v1.model.CreateContactGroupRequest;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -104,7 +102,7 @@ public class GoogleGroupsSyncTab extends FlexBoxLayout implements HasLogger
 			if ( contactGroup != null )
 			{
 				listItem = new ListItem( lable, "Data criação do grupo: " + contactGroup.getMetadata().getUpdateTime().replace( "T", " " ) );
-				listItem.setSecondaryText( "Número de contactos associados ao grupo: " + Objects.toString( contactGroup.getMemberCount(), "-1" ) );
+				listItem.setSecondaryText( "Número de contactos associados ao grupo: " + Objects.toString( contactGroup.getMemberCount(), "0" ) );
 			}
 			else
 			{
@@ -118,9 +116,7 @@ public class GoogleGroupsSyncTab extends FlexBoxLayout implements HasLogger
 				{
 					try
 					{
-						googleAuthentication.getPeopleService().contactGroups()
-										.delete( googleContactGroupsService.getListGroups().get( siieSeccao ).getResourceName() ).execute();
-						googleContactGroupsService.getListGroups().put( siieSeccao, null );
+						googleContactGroupsService.deleteGroup( googleAuthentication.getPeopleService(), siieSeccao );
 						showInfo( "Grupo '" + siieSeccao.getNome() + "' apagado com sucesso" );
 						updateContent();
 					}
@@ -135,15 +131,9 @@ public class GoogleGroupsSyncTab extends FlexBoxLayout implements HasLogger
 				button = UIUtils.createSuccessPrimaryButton( "Criar Grupo", VaadinIcon.PLUS );
 				button.addClickListener( e ->
 				{
-					CreateContactGroupRequest contactGroupRequest;
 					try
 					{
-						contactGroupRequest = new CreateContactGroupRequest();
-						ContactGroup newContactGroup = new ContactGroup();
-						newContactGroup.setName( siieSeccao.getNome() );
-						contactGroupRequest.setContactGroup( newContactGroup );
-						ContactGroup execute = googleAuthentication.getPeopleService().contactGroups().create( contactGroupRequest ).execute();
-						googleContactGroupsService.getListGroups().put( siieSeccao, execute );
+						googleContactGroupsService.createGroup( googleAuthentication.getPeopleService(), siieSeccao );
 						showInfo( "Grupo '" + siieSeccao.getNome() + "' criado com sucesso" );
 						updateContent();
 					}

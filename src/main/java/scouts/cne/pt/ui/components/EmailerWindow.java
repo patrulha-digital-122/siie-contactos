@@ -162,7 +162,7 @@ public class EmailerWindow extends Window implements Serializable, HasLogger
 				}
 				catch ( final Exception e )
 				{
-					showError( e );
+					printError( e );
 					return;
 				}
 				btnEnviarEmail.setEnabled( true );

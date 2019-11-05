@@ -37,7 +37,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 	 */
 	private static final long		serialVersionUID	= -7135758008679193088L;
 	public static final String		VIEW_NAME			= "google-sync-tab";
-	public static final String		VIEW_TITLE			= "Google :: Sincronização";
+	public static final String			VIEW_TITLE			= "Google :: Sincronização Manual";
 	@Autowired
 	private SIIEService				siieService;
 	@Autowired

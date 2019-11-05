@@ -104,7 +104,7 @@ public class GoogleContactUtils
 
 			for ( EmailAddress emailAddress : emailAddresses )
 			{
-				if ( emailAddress.getType().equals( "home" ) && emailAddress.getFormattedType().equals( "Pessoal" ) )
+				if ( StringUtils.equals( emailAddress.getType(), "Pessoal" ) )
 				{
 					// update value
 					emailAddress.setValue( siieElemento.getEmail() );
@@ -113,8 +113,7 @@ public class GoogleContactUtils
 			}
 			// add email
 			EmailAddress emailAddress = new EmailAddress();
-			emailAddress.setType( "home" );
-			emailAddress.setFormattedType( "Pessoal" );
+			emailAddress.setType( "Pessoal" );
 			emailAddress.setValue( siieElemento.getEmail() );
 			emailAddresses.add( emailAddress );
 		}
@@ -133,7 +132,7 @@ public class GoogleContactUtils
 			Address addressToUpdate = null;
 			for ( Address address : addresses )
 			{
-				if ( address.getFormattedType().equals( "Casa" ) )
+				if ( StringUtils.equals( address.getFormattedType(), "Casa" ) )
 				{
 					addressToUpdate = address;
 					break;
@@ -146,7 +145,7 @@ public class GoogleContactUtils
 			}
 
 			addressToUpdate.setFormattedValue( siieElemento.getMorada() );
-			addressToUpdate.setType( "home" );
+			addressToUpdate.setType( "Casa" );
 			addressToUpdate.setFormattedType( "Casa" );
 			addressToUpdate.setCity( siieElemento.getLocalidade() );
 			StringBuilder sbPostal = new StringBuilder( siieElemento.getCp1() );
@@ -177,7 +176,6 @@ public class GoogleContactUtils
 				Birthday birthday = new Birthday();
 				birthday.setDate( new Date() );
 				birthdays.add( birthday );
-				return;
 			}
 			for ( Birthday birthday : birthdays )
 			{
@@ -261,7 +259,7 @@ public class GoogleContactUtils
 
 		if ( StringUtils.isNotBlank( siieElemento.getPai() ) )
 		{
-			Optional< Relation > findFirst = relations.stream().filter( p -> p.getFormattedType().equals( "Pai" ) ).findFirst();
+			Optional< Relation > findFirst = relations.stream().filter( p -> StringUtils.equals( p.getFormattedType(), "Pai" ) ).findFirst();
 			if ( findFirst.isPresent() )
 			{
 				findFirst.get().setPerson( siieElemento.getPai() );
@@ -269,7 +267,7 @@ public class GoogleContactUtils
 			else
 			{
 				Relation relation = new Relation();
-				relation.setType( "father" );
+				relation.setType( "Pai" );
 				relation.setFormattedType( "Pai" );
 				relation.setPerson( siieElemento.getPai() );
 				relations.add( relation );
@@ -277,7 +275,7 @@ public class GoogleContactUtils
 		}
 		if ( StringUtils.isNotBlank( siieElemento.getMae() ) )
 		{
-			Optional< Relation > findFirst = relations.stream().filter( p -> p.getFormattedType().equals( "Mãe" ) ).findFirst();
+			Optional< Relation > findFirst = relations.stream().filter( p -> StringUtils.equals( p.getFormattedType(), "Mãe" ) ).findFirst();
 			if ( findFirst.isPresent() )
 			{
 				findFirst.get().setPerson( siieElemento.getMae() );
@@ -285,7 +283,7 @@ public class GoogleContactUtils
 			else
 			{
 				Relation relation = new Relation();
-				relation.setType( "mother" );
+				relation.setType( "Mãe" );
 				relation.setFormattedType( "Mãe" );
 				relation.setPerson( siieElemento.getMae() );
 				relations.add( relation );
@@ -315,14 +313,14 @@ public class GoogleContactUtils
 
 		for ( PhoneNumber phoneNumber : phoneNumbers )
 		{
-			if ( phoneNumber.getFormattedType().equals( "Telemóvel" ) && StringUtils.isNotBlank( siieElemento.getTelemovel() ) )
+			if ( StringUtils.equals( phoneNumber.getType(), "mobile" ) && StringUtils.isNotBlank( siieElemento.getTelemovel() ) )
 			{
 				String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelemovel() );
 				phoneNumber.setValue( convertPhoneNumber );
 				phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
 				createTelemovel = false;
 			}
-			else if ( phoneNumber.getFormattedType().equals( "Telefone" ) && StringUtils.isNotBlank( siieElemento.getTelefone() ) )
+			else if ( StringUtils.equals( phoneNumber.getType(), "home" ) && StringUtils.isNotBlank( siieElemento.getTelefone() ) )
 			{
 				String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelefone() );
 				phoneNumber.setValue( convertPhoneNumber );
@@ -334,7 +332,6 @@ public class GoogleContactUtils
 		{
 			PhoneNumber phoneNumber = new PhoneNumber();
 			phoneNumber.setType( "mobile" );
-			phoneNumber.setFormattedType( "Telemóvel" );
 			String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelemovel() );
 			phoneNumber.setValue( convertPhoneNumber );
 			phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
@@ -344,7 +341,6 @@ public class GoogleContactUtils
 		{
 			PhoneNumber phoneNumber = new PhoneNumber();
 			phoneNumber.setType( "home" );
-			phoneNumber.setFormattedType( "Telefone" );
 			String convertPhoneNumber = ContactUtils.convertPhoneNumber( siieElemento.getTelefone() );
 			phoneNumber.setValue( convertPhoneNumber );
 			phoneNumber.setCanonicalForm( convertPhoneNumber.replace( " ", "" ) );
@@ -376,7 +372,7 @@ public class GoogleContactUtils
 				nicknames = new ArrayList<>();
 				googlePerson.setNicknames( nicknames );
 			}
-			Optional< Nickname > findFirst = nicknames.stream().filter( p -> p.getType().equals( "Totem" ) ).findFirst();
+			Optional< Nickname > findFirst = nicknames.stream().filter( p -> StringUtils.equals( p.getType(), "Totem" ) ).findFirst();
 			if ( findFirst.isPresent() )
 			{
 				findFirst.get().setValue( siieElemento.getTotem() );
@@ -428,7 +424,7 @@ public class GoogleContactUtils
 	{
 		if ( zonedDateTime != null )
 		{
-			Optional< Event > findFirst = events.stream().filter( p -> p.getFormattedType().equals( strEventType ) ).findFirst();
+			Optional< Event > findFirst = events.stream().filter( p -> StringUtils.equals( p.getFormattedType(), strEventType ) ).findFirst();
 			if ( findFirst.isPresent() )
 			{
 				findFirst.get().getDate().setDay( zonedDateTime.getDayOfMonth() );
@@ -465,11 +461,11 @@ public class GoogleContactUtils
 
 		for ( EmailAddress emailAddress : emailAddresses )
 		{
-			if ( emailAddress.getFormattedType().equals( "Mãe" ) )
+			if ( StringUtils.equals( emailAddress.getFormattedType(), "Mãe" ) )
 			{
 				emailMae = emailAddress;
 			}
-			else if ( emailAddress.getFormattedType().equals( "Pai" ) )
+			else if ( StringUtils.equals( emailAddress.getFormattedType(), "Pai" ) )
 			{
 				emailPai = emailAddress;
 			}
@@ -480,7 +476,7 @@ public class GoogleContactUtils
 			if ( emailMae == null )
 			{
 				emailMae = new EmailAddress();
-				emailMae.setType( "other" );
+				emailMae.setType( "Mãe" );
 				emailMae.setFormattedType( "Mãe" );
 				emailAddresses.add( emailMae );
 			}
@@ -491,7 +487,7 @@ public class GoogleContactUtils
 			if ( emailPai == null )
 			{
 				emailPai = new EmailAddress();
-				emailPai.setType( "other" );
+				emailPai.setType( "Pai" );
 				emailPai.setFormattedType( "Pai" );
 				emailAddresses.add( emailPai );
 			}
@@ -508,11 +504,11 @@ public class GoogleContactUtils
 		PhoneNumber numeroPai = null;
 		for ( PhoneNumber phoneNumber : phoneNumbers )
 		{
-			if ( phoneNumber.getFormattedType().equals( "Mãe" ) )
+			if ( StringUtils.equals( phoneNumber.getFormattedType(), "Mãe" ) )
 			{
 				numeroMae = phoneNumber;
 			}
-			else if ( phoneNumber.getFormattedType().equals( "Pai" ) )
+			else if ( StringUtils.equals( phoneNumber.getFormattedType(), "Pai" ) )
 			{
 				numeroPai = phoneNumber;
 			}
@@ -523,7 +519,7 @@ public class GoogleContactUtils
 			if ( numeroMae == null )
 			{
 				numeroMae = new PhoneNumber();
-				numeroMae.setType( "mobile" );
+				numeroMae.setType( "Mãe" );
 				numeroMae.setFormattedType( "Mãe" );
 				phoneNumbers.add( numeroMae );
 			}
@@ -536,7 +532,7 @@ public class GoogleContactUtils
 			if ( numeroPai == null )
 			{
 				numeroPai = new PhoneNumber();
-				numeroPai.setType( "mobile" );
+				numeroPai.setType( "Pai" );
 				numeroPai.setFormattedType( "Pai" );
 				phoneNumbers.add( numeroPai );
 			}

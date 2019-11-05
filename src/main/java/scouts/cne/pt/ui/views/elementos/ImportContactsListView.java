@@ -11,6 +11,7 @@ import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.views.ViewFrame;
+import scouts.cne.pt.ui.views.tab.GoogleAutomaticSyncTab;
 import scouts.cne.pt.ui.views.tab.GoogleGroupsSyncTab;
 import scouts.cne.pt.ui.views.tab.GoogleSyncTab;
 
@@ -26,6 +27,7 @@ public class ImportContactsListView extends ViewFrame implements HasLogger
 	private GoogleAuthentication	googleAuthentication;
 	private Tab						groupTab;
 	private Tab						syncManual;
+	private Tab						syncAuto;
 
 
 	@Override
@@ -37,6 +39,7 @@ public class ImportContactsListView extends ViewFrame implements HasLogger
 		{
 			groupTab.setEnabled( false );
 			syncManual.setEnabled( false );
+			syncAuto.setEnabled( false );
 		}
 	}
 
@@ -46,6 +49,7 @@ public class ImportContactsListView extends ViewFrame implements HasLogger
 		appBar.removeAllActionItems();
 		appBar.removeAllTabs();
 		syncManual = appBar.addTab( "Sincronização individual", GoogleSyncTab.class );
+		syncAuto = appBar.addTab( "Sincronização automática", GoogleAutomaticSyncTab.class );
 		groupTab = appBar.addTab( "Grupos", GoogleGroupsSyncTab.class );
 		appBar.centerTabs();
 	}

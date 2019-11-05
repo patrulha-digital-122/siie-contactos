@@ -1,14 +1,10 @@
 package scouts.cne.pt.ui.views.admin;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Optional;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.google.api.services.people.v1.model.ContactGroup;
 import com.google.api.services.people.v1.model.ListConnectionsResponse;
-import com.google.api.services.people.v1.model.ListContactGroupsResponse;
 import com.google.api.services.people.v1.model.Person;
 import com.google.api.services.people.v1.model.UserDefined;
 import com.vaadin.flow.component.AttachEvent;
@@ -26,7 +22,6 @@ import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleAuthenticationBean;
 import scouts.cne.pt.model.siie.SIIEElemento;
-import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.GoogleContactGroupsService;
 import scouts.cne.pt.services.SIIEService;
@@ -186,6 +181,10 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 							siieOptional.get().setGooglePerson( person );
 							iCount++;
 						}
+						else
+						{
+							siieOptional.get().setGooglePerson( null );
+						}
 					}
 				}
 				if ( iPeopleProcessed >= totalItems )
@@ -206,20 +205,10 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 				progressLabel.setText( s );
 				progressBar.setValue( totalItems );
 			} );
-			ListContactGroupsResponse executeContactGroups = googleAuthentication.getPeopleService().contactGroups().list().execute();
-			googleContactGroupsService.getListGroups().clear();
-			for ( ContactGroup contactGroup : executeContactGroups.getContactGroups() )
-			{
-				for ( SIIESeccao siieSeccao : SIIESeccao.values() )
-				{
-					if ( siieSeccao.getNome().equals( contactGroup.getName() ) )
-					{
-						googleContactGroupsService.getListGroups().put( siieSeccao, contactGroup );
-					}
-				}
-			}
+
+			googleContactGroupsService.updateAll( googleAuthentication.getPeopleService() );
 		}
-		catch ( IOException | GeneralSecurityException e )
+		catch ( Exception e )
 		{
 			showError( e );
 			progressBar.addThemeVariants( ProgressBarVariant.LUMO_ERROR );

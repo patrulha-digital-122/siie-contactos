@@ -390,7 +390,7 @@ public class GoogleContactUtils
 				nicknames = new ArrayList<>();
 				googlePerson.setNicknames( nicknames );
 			}
-			Optional< Nickname > findFirst = nicknames.stream().filter( p -> StringUtils.equals( p.getType(), "Totem" ) ).findFirst();
+			Optional< Nickname > findFirst = nicknames.stream().filter( p -> StringUtils.equals( p.getType(), "DEFAULT" ) ).findFirst();
 			if ( findFirst.isPresent() )
 			{
 				findFirst.get().setValue( siieElemento.getTotem() );

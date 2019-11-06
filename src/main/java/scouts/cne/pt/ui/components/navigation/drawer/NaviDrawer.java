@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
@@ -54,7 +55,7 @@ public class NaviDrawer extends Div
 		initMainContent();
 
 		initHeader();
-		initSearch();
+		// initSearch();
 
 		initScrollableArea();
 		initMenu();
@@ -101,7 +102,11 @@ public class NaviDrawer extends Div
 	}
 
 	private void initFooter() {
-		railButton = UIUtils.createSmallButton("Collapse", VaadinIcon.CHEVRON_LEFT_SMALL);
+		Label version = new Label( "Versão: 0.0.1" );
+		version.setWidthFull();
+		version.addClassName( CLASS_NAME + "__footer" );
+		mainContent.add( version );
+		railButton = UIUtils.createSmallButton( "Esconder", VaadinIcon.CHEVRON_LEFT_SMALL );
 		railButton.addClassName(CLASS_NAME + "__footer");
 		railButton.addClickListener(event -> toggleRailMode());
 		railButton.getElement().setAttribute("aria-label", "Collapse menu");
@@ -118,7 +123,7 @@ public class NaviDrawer extends Div
 		} else {
 			getElement().setAttribute(RAIL, true);
 			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
-			railButton.setText("Expand");
+			railButton.setText( "Expandir" );
 			UIUtils.setAriaLabel("Expand menu", railButton);
 			getUI().get().getPage().executeJavaScript(
 					"var originalStyle = getComputedStyle($0).pointerEvents;" //

@@ -15,7 +15,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -54,6 +53,7 @@ public class MailingListView extends HasSIIELoginUrl
 	private final Checkbox				usarMailsPais		= new Checkbox( "Utilizar emails dos pais", true );
 	private final Checkbox				usarNomes			= new Checkbox( "Utilizar nomes", true );
 	private final TextField				totalSelecionados	= new TextField( "Total de selecionados" );
+	private final TextField				totalEmails			= new TextField( "Total de endereços de email" );
 	private final ClipboardHelper		clipboard;
 	private final Button refresh = UIUtils.createPrimaryButton( "Actualizar dados do SIIE", VaadinIcon.REFRESH );
 	private String						nomeToSearch		= "";
@@ -87,6 +87,8 @@ public class MailingListView extends HasSIIELoginUrl
 		totalSelecionados.setEnabled( false );
 		totalSelecionados.setValue( "0" );
 		
+		totalEmails.setEnabled( false );
+		totalEmails.setValue( "0" );
 		setViewContent( createContent() );
 	}
 
@@ -95,7 +97,7 @@ public class MailingListView extends HasSIIELoginUrl
 		refresh.setWidthFull();
 		refresh.setDisableOnClick( true );
 		Label helpLabel = UIUtils
-						.createH5Label( "Aqui podes criar uma mailing list com so dados obtidos do SIIE. Seleciona os elementos para quem pretendes enviar o e-mail (podes utilizar os filtros para simplificar a pesquisa) e depois clica no botão lá de baixo." );
+						.createH5Label( "Aqui podes criar uma mailing list com os dados obtidos do SIIE. Seleciona os elementos para quem pretendes enviar o e-mail (podes utilizar os filtros para simplificar a pesquisa) e depois clica no botão lá de baixo para obteres a mailing list completa." );
 		helpLabel.setWidthFull();
 		VerticalLayout content = new VerticalLayout( helpLabel, refresh, grid, getOptionComponent() );
 		content.setSizeFull();
@@ -112,7 +114,9 @@ public class MailingListView extends HasSIIELoginUrl
 	private void updateMailingListTextArea()
 	{
 		totalSelecionados.setValue( String.valueOf( grid.getSelectedItems().size() ) );
-		mailingList.setValue( ContactUtils.getMailingListFromElemento( grid.getSelectedItems(), usarMailsPais.getValue(), usarNomes.getValue() ) );
+		List< String > list = ContactUtils.getMailingListFromElemento( grid.getSelectedItems(), usarMailsPais.getValue(), usarNomes.getValue() );
+		totalEmails.setValue( String.valueOf( list.size() ) );
+		mailingList.setValue( StringUtils.join( list, ", " ) );
 	}
 
 	@Override
@@ -179,8 +183,11 @@ public class MailingListView extends HasSIIELoginUrl
 		verticalLayout.setSpacing( false );
 		
 		FormLayout formLayout = new FormLayout();
-		formLayout.add( usarMailsPais, usarNomes, totalSelecionados );
-		formLayout.setResponsiveSteps( new ResponsiveStep( "25em", 1 ), new ResponsiveStep( "32em", 2 ), new ResponsiveStep( "40em", 3 ) );
+		formLayout.add( usarMailsPais, usarNomes, totalSelecionados, totalEmails );
+		// formLayout.setResponsiveSteps( new ResponsiveStep( "25em", 1 ),
+		// new ResponsiveStep( "32em", 2 ),
+		// new ResponsiveStep( "40em", 3 ),
+		// new ResponsiveStep( "42em", 4 ) );
 		
 		mailingList.setMaxHeight( "100px" );
 		verticalLayout.add( formLayout, mailingList, clipboard );

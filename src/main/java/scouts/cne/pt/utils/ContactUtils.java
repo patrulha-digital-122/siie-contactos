@@ -495,7 +495,7 @@ public class ContactUtils
 		return "";
 	}
 
-	public static String getMailingListFromElemento( Set< SIIEElemento > siieElementos, boolean usarMailPais, boolean usarNomes )
+	public static List< String > getMailingListFromElemento( Set< SIIEElemento > siieElementos, boolean usarMailPais, boolean usarNomes )
 	{
 		List< String > list = new ArrayList<>();
 		for ( SIIEElemento siieElemento : siieElementos )
@@ -510,7 +510,7 @@ public class ContactUtils
 			}
 		}
 		list.removeIf( p -> StringUtils.isBlank( p ) );
-		return StringUtils.join( list, ", " );
+		return list;
 	}
 
 	private static String getEmail( String email, String nome )

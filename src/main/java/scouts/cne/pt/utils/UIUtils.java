@@ -234,6 +234,7 @@ public class UIUtils {
 		i.getElement().setAttribute("slot", "prefix");
 		Button button = new Button(text, i);
 		button.addThemeVariants(variants);
+		button.setWidthFull();
 		return button;
 	}
 

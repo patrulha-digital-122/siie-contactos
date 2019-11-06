@@ -21,6 +21,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import scouts.cne.pt.model.CodigoTTF;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
@@ -44,6 +45,7 @@ import scouts.cne.pt.ui.util.css.WhiteSpace;
 public class UIUtils {
 
 	public static final String IMG_PATH = "images/";
+	public static final String								FONTS_PATH		= "fonts/";
 	public static final String								SIIE_IMG_PATH	=
 					"https://siie.escutismo.pt/Controls/Thumbnail.ashx?img=/Files/Fotos/%s/%s.jpg";
 
@@ -504,6 +506,15 @@ public class UIUtils {
 		for (Component component : components) {
 			component.getElement().getStyle().set("font-weight",
 					fontWeight.getValue());
+		}
+	}
+
+	public static void setFontFamily( CodigoTTF fontWeight, Component... components )
+	{
+		for ( Component component : components )
+		{
+			component.getElement().getStyle().set( "font-family", fontWeight.getCSSUrl() );
+			component.getElement().getStyle().set( "src", "url(" + fontWeight.getLink() + ")" );
 		}
 	}
 

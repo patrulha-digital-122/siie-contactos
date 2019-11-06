@@ -12,15 +12,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
-import com.google.auth.http.HttpCredentialsAdapter;
-import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.OAuth2Credentials;
 import com.google.gdata.client.contacts.ContactsService;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
@@ -97,12 +95,9 @@ public class GoogleAuthentication implements Serializable, HasLogger
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() ).build();
 	}
 
-	private HttpCredentialsAdapter getGoogleCredentials() throws IOException
+	private GoogleCredential getGoogleCredentials() throws IOException
 	{
-		OAuth2Credentials auth2Credentials = OAuth2Credentials.create( new AccessToken( googleAuthInfo.getGoogleAcessInfo().getAccess_token(),
-						googleAuthInfo.getGoogleAcessInfo().getExpiresAt() ) );
-		auth2Credentials.refreshIfExpired();
-		return new HttpCredentialsAdapter( auth2Credentials );
+		return new GoogleCredential().setAccessToken( googleAuthInfo.getGoogleAcessInfo().getAccess_token() );
 	}
 
 	/**

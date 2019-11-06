@@ -214,16 +214,18 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 			}
 			catch ( Exception e )
 			{
-				showError( e );
 				sbFinalMessage.append( "(3/3) - Erro na actualização :: " + e.getMessage() );
 				progressBar.addThemeVariants( ProgressBarVariant.LUMO_ERROR );
 			}
+			finally
+			{
 			ui.access( () ->
 			{
 				progressLabel.setText( sbFinalMessage.toString() );
 				progressBar.setValue( 3 );
 				updateButton.setEnabled( true );
 			} );
+			}
 		} ).start();
 	}
 }

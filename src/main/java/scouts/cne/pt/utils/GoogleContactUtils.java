@@ -4,18 +4,22 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import com.google.api.services.people.v1.model.Address;
 import com.google.api.services.people.v1.model.Birthday;
 import com.google.api.services.people.v1.model.Date;
 import com.google.api.services.people.v1.model.EmailAddress;
 import com.google.api.services.people.v1.model.Event;
+import com.google.api.services.people.v1.model.FieldMetadata;
 import com.google.api.services.people.v1.model.Gender;
 import com.google.api.services.people.v1.model.Name;
 import com.google.api.services.people.v1.model.Nickname;
 import com.google.api.services.people.v1.model.Person;
 import com.google.api.services.people.v1.model.PhoneNumber;
 import com.google.api.services.people.v1.model.Relation;
+import com.google.api.services.people.v1.model.Source;
 import com.google.api.services.people.v1.model.UserDefined;
 import scouts.cne.pt.model.siie.SIIEElemento;
 
@@ -102,6 +106,7 @@ public class GoogleContactUtils
 				googlePerson.setEmailAddresses( emailAddresses );
 			}
 
+			boolean bPrimaryExists = false;
 			for ( EmailAddress emailAddress : emailAddresses )
 			{
 				if ( StringUtils.equals( emailAddress.getType(), "Pessoal" ) )
@@ -110,11 +115,24 @@ public class GoogleContactUtils
 					emailAddress.setValue( siieElemento.getEmail() );
 					return;
 				}
+				if ( emailAddress.getMetadata() != null && BooleanUtils.isTrue( emailAddress.getMetadata().getPrimary() ) )
+				{
+					bPrimaryExists = true;
+				}
 			}
 			// add email
 			EmailAddress emailAddress = new EmailAddress();
 			emailAddress.setType( "Pessoal" );
 			emailAddress.setValue( siieElemento.getEmail() );
+			if ( !bPrimaryExists )
+			{
+				FieldMetadata fieldMetadata = new FieldMetadata();
+				fieldMetadata.setPrimary( true );
+				Source source = new Source();
+				source.setType( "SOURCE_TYPE_UNSPECIFIED" );
+				// fieldMetadata.setSource( source );
+				emailAddress.setMetadata( fieldMetadata );
+			}
 			emailAddresses.add( emailAddress );
 		}
 	}
@@ -380,7 +398,7 @@ public class GoogleContactUtils
 			else
 			{
 				Nickname nickname = new Nickname();
-				nickname.setType( "Totem" );
+				nickname.setType( "DEFAULT" );
 				nickname.setValue( siieElemento.getTotem() );
 				nicknames.add( nickname );
 			}
@@ -446,7 +464,7 @@ public class GoogleContactUtils
 		}
 	}
 
-	public static void updateDadosPais( SIIEElemento siieElemento )
+	public static void updateDadosPais( SIIEElemento siieElemento, Set< String > totalEmails, Set< String > totalPhones )
 	{
 		Person googlePerson = siieElemento.getGooglePerson();
 		// Emails
@@ -471,7 +489,7 @@ public class GoogleContactUtils
 			}
 		}
 
-		if ( StringUtils.isNotBlank( siieElemento.getMaeemail() ) )
+		if ( StringUtils.isNotBlank( siieElemento.getMaeemail() ) && !totalEmails.contains( siieElemento.getMaeemail() ) )
 		{
 			if ( emailMae == null )
 			{
@@ -482,7 +500,7 @@ public class GoogleContactUtils
 			}
 			emailMae.setValue( siieElemento.getMaeemail() );
 		}
-		if ( StringUtils.isNotBlank( siieElemento.getPaiemail() ) )
+		if ( StringUtils.isNotBlank( siieElemento.getPaiemail() ) && !totalEmails.contains( siieElemento.getPaiemail() ) )
 		{
 			if ( emailPai == null )
 			{
@@ -514,7 +532,7 @@ public class GoogleContactUtils
 			}
 		}
 		String strNumeroMae = ContactUtils.convertPhoneNumber( siieElemento.getMaetelefone() );
-		if ( StringUtils.isNotBlank( strNumeroMae ) )
+		if ( StringUtils.isNotBlank( strNumeroMae ) && !totalPhones.contains( strNumeroMae ) )
 		{
 			if ( numeroMae == null )
 			{
@@ -527,7 +545,7 @@ public class GoogleContactUtils
 			numeroMae.setCanonicalForm( strNumeroMae.replace( " ", "" ) );
 		}
 		String strNumeroPai = ContactUtils.convertPhoneNumber( siieElemento.getPaitelefone() );
-		if ( StringUtils.isNotBlank( strNumeroPai ) )
+		if ( StringUtils.isNotBlank( strNumeroPai ) && !totalPhones.contains( strNumeroPai ) )
 		{
 			if ( numeroPai == null )
 			{

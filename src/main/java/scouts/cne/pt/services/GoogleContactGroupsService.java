@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import com.google.api.services.people.v1.PeopleService;
@@ -116,7 +118,8 @@ public class GoogleContactGroupsService implements Serializable, HasLogger
 				{
 					if ( siieSeccao.getNome().equals( contactGroup.getName() ) )
 					{
-						ContactGroup contactGroupComplete = peopleService.contactGroups().get( contactGroup.getResourceName() ).execute();
+						ContactGroup contactGroupComplete = peopleService.contactGroups().get( contactGroup.getResourceName() )
+										.setMaxMembers( Optional.ofNullable( contactGroup.getMemberCount() ).orElse( 0 ) ).execute();
 						listGroups.put( siieSeccao, contactGroupComplete );
 					}
 				}
@@ -143,10 +146,11 @@ public class GoogleContactGroupsService implements Serializable, HasLogger
 	{
 		try
 		{
+			List< String > lstElementoNoGrupo = new ArrayList<>();
+			updateCreateElementos.forEach( p -> lstElementoNoGrupo.add( p.getGooglePerson().getResourceName() ) );
 			ModifyContactGroupMembersRequest contactGroupMembersRequest = new ModifyContactGroupMembersRequest();
-			contactGroupMembersRequest.setResourceNamesToRemove( contactGroup.getMemberResourceNames() );
-			contactGroupMembersRequest.setResourceNamesToAdd( new ArrayList<>() );
-			updateCreateElementos.forEach( p -> contactGroupMembersRequest.getResourceNamesToAdd().add( p.getGooglePerson().getResourceName() ) );
+			contactGroupMembersRequest.setResourceNamesToRemove( ListUtils.subtract( contactGroup.getMemberResourceNames(), lstElementoNoGrupo ) );
+			contactGroupMembersRequest.setResourceNamesToAdd( ListUtils.subtract( lstElementoNoGrupo, contactGroup.getMemberResourceNames() ) );
 			ModifyContactGroupMembersResponse execute =
 							peopleService.contactGroups().members().modify( contactGroup.getResourceName(), contactGroupMembersRequest ).execute();
 			if ( execute.getNotFoundResourceNames() != null && !execute.getNotFoundResourceNames().isEmpty() )

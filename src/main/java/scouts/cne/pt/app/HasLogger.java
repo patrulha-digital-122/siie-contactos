@@ -27,6 +27,7 @@ public interface HasLogger
 	default void showError( Exception e )
 	{
 		getLogger().error( e.getMessage(), e );
+
 		Notification notification = new Notification();
 		notification.addThemeVariants( NotificationVariant.LUMO_ERROR );
 		notification.setText( e.getMessage() );

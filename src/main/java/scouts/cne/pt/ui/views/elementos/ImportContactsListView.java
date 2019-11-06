@@ -5,6 +5,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.services.GoogleAuthentication;
@@ -17,6 +18,7 @@ import scouts.cne.pt.ui.views.tab.GoogleSyncTab;
 
 @Route( value = ImportContactsListView.VIEW_NAME, layout = MainLayout.class )
 @PageTitle( ImportContactsListView.VIEW_DISPLAY_NAME )
+@PreserveOnRefresh
 public class ImportContactsListView extends ViewFrame implements HasLogger
 {
 	private static final long			serialVersionUID	= 3776271782151856570L;

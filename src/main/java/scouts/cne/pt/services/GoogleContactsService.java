@@ -2,6 +2,9 @@ package scouts.cne.pt.services;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.services.people.v1.PeopleService;
@@ -11,6 +14,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.GoogleContactUtils;
 
 @Component
@@ -21,15 +25,35 @@ public class GoogleContactsService implements Serializable, HasLogger
 	 *
 	 */
 	private static final long serialVersionUID = -4266591353450666223L;
+	private final Set< String >	lstTotalEmails		= new HashSet<>();
+	private final Set< String >	lstTotalPhones		= new HashSet<>();
 
-	public void updateElemento( PeopleService peopleService, SIIEElemento siieElemento, boolean usarDadosPais ) throws SIIIEImporterException
+	/**
+	 * 
+	 * The <b>updateEmailAndPhoneList</b> method returns {@link void}
+	 * 
+	 * @author 62000465 2019-11-06
+	 * @param person
+	 */
+	public void updateEmailAndPhoneList( Person person )
+	{
+		if ( person.getEmailAddresses() != null )
+		{
+			person.getEmailAddresses().forEach( p -> lstTotalEmails.add( StringUtils.trimToEmpty( p.getValue() ) ) );
+		}
+		if ( person.getPhoneNumbers() != null )
+		{
+			person.getPhoneNumbers().forEach( p -> lstTotalPhones.add( ContactUtils.convertPhoneNumber( p.getValue() ) ) );
+		}
+	}
+
+	public void updateElemento( PeopleService peopleService, SIIEElemento siieElemento ) throws SIIIEImporterException
 	{
 		Person googlePerson = siieElemento.getGooglePerson();
+		
 		GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-		if ( usarDadosPais )
-		{
-			GoogleContactUtils.updateDadosPais( siieElemento );
-		}
+		GoogleContactUtils.updateDadosPais( siieElemento, lstTotalEmails, lstTotalPhones );
+		
 		try
 		{
 			Person personUpdated = peopleService.people().updateContact( googlePerson.getResourceName(), googlePerson )
@@ -70,17 +94,15 @@ public class GoogleContactsService implements Serializable, HasLogger
 	 * @param siieElemento
 	 * @throws SIIIEImporterException
 	 */
-	public void createElemento( PeopleService peopleService, SIIEElemento siieElemento, boolean usarDadosPais ) throws SIIIEImporterException
+	public void createElemento( PeopleService peopleService, SIIEElemento siieElemento ) throws SIIIEImporterException
 	{
 		try
 		{
 			Person person = new Person();
 			siieElemento.setGooglePerson( person );
+
 			GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-			if ( usarDadosPais )
-			{
-				GoogleContactUtils.updateDadosPais( siieElemento );
-			}
+			GoogleContactUtils.updateDadosPais( siieElemento, lstTotalEmails, lstTotalPhones );
 
 			person = peopleService.people().createContact( person ).execute();
 			siieElemento.setGooglePerson( person );

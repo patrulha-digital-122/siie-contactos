@@ -43,7 +43,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	private final TextField			labelNextUrlLogin	= new TextField( "URL pré-preenchido que poderá utilizar no futuro." );
 	private final TextField			textFieldTotalElementos		= new TextField( "Total de elementos obtidos do SIIE" );
 	private final TextField			textFieldDataUltimoUpdate	= new TextField( "Data da última actualização de dados do SIIE" );
-	private String					strUrl						= "?user=%s&password=%s";
+	private String					strUrl						= "mailing-list?user=%s&password=%s";
 
 	public SIIELoginView()
 	{

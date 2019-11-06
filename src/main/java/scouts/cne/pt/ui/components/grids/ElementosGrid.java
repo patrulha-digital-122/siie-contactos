@@ -21,7 +21,8 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	private static final long serialVersionUID = -1960188142116715298L;
 
 	private final ListDataProvider< SIIEElemento >	dataProvider;
-	private final TextField							searchNameField		= new TextField();;
+	private final TextField							searchNameField		= new TextField();
+	private final Grid.Column< SIIEElemento >		situacaoColumn;
 
 
 	public ElementosGrid( boolean bUseFilterRow, Collection< SIIEElemento > lstService )
@@ -34,7 +35,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		Grid.Column< SIIEElemento > ninColumn = addColumn( SIIEElemento::getNin ).setHeader( "NIN" ).setSortable( true );
 		Grid.Column< SIIEElemento > nomeColumn = addColumn( SIIEElemento::getNome ).setHeader( "Nome" ).setSortable( true );
 		Grid.Column< SIIEElemento > seccaoColumn = addColumn( SIIEElemento::getSeccao ).setHeader( "Secção" ).setSortable( true );
-		Grid.Column< SIIEElemento > situacaoColumn = addColumn( SIIEElemento::getSiglasituacao ).setHeader( "Situação" ).setSortable( true );
+		situacaoColumn = addColumn( SIIEElemento::getSiglasituacao ).setHeader( "Situação" ).setSortable( true );
 		getColumns().forEach( column -> column.setAutoWidth( true ) );
 		avatar.setAutoWidth( false ).setWidth( LumoStyles.IconSize.S );
 
@@ -86,5 +87,16 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	public TextField getSearchNameField()
 	{
 		return searchNameField;
+	}
+
+	/**
+	 * Getter for situacaoColumn
+	 * 
+	 * @author 62000465 2019-11-06
+	 * @return the situacaoColumn {@link Grid.Column<SIIEElemento>}
+	 */
+	public Grid.Column< SIIEElemento > getSituacaoColumn()
+	{
+		return situacaoColumn;
 	}
 }

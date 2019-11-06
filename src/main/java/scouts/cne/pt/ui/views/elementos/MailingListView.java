@@ -17,6 +17,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -42,7 +43,7 @@ public class MailingListView extends HasSIIELoginUrl
 {
 	private static final long	serialVersionUID	= 3776271782151856570L;
 	public static final String			VIEW_NAME			= "mailing-list";
-	public static final String			VIEW_DISPLAY_NAME	= "Mailing List";
+	public static final String			VIEW_DISPLAY_NAME	= "Listas de e-mails";
 	public static final VaadinIcon		VIEW_ICON			= VaadinIcon.USERS;
 	@Autowired
 	private SIIEService					siieService;
@@ -67,7 +68,7 @@ public class MailingListView extends HasSIIELoginUrl
 		grid.setMinHeight( "50%" );
 		
 		Button createButton = UIUtils.createButton( "Copiar texto", ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY );
-		createButton.setWidthFull();
+		createButton.setSizeFull();
 		clipboard = new ClipboardHelper( "Copiado",
 						createButton );
 		
@@ -93,7 +94,10 @@ public class MailingListView extends HasSIIELoginUrl
 	{
 		refresh.setWidthFull();
 		refresh.setDisableOnClick( true );
-		VerticalLayout content = new VerticalLayout( refresh, grid, getOptionComponent() );
+		Label helpLabel = UIUtils
+						.createH5Label( "Aqui podes criar uma mailing list com so dados obtidos do SIIE. Seleciona os elementos para quem pretendes enviar o e-mail (podes utilizar os filtros para simplificar a pesquisa) e depois clica no botão lá de baixo." );
+		helpLabel.setWidthFull();
+		VerticalLayout content = new VerticalLayout( helpLabel, refresh, grid, getOptionComponent() );
 		content.setSizeFull();
 		
 		return content;

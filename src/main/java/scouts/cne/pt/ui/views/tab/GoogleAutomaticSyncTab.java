@@ -6,15 +6,18 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.api.services.people.v1.model.ContactGroup;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.progressbar.ProgressBarVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.SIIIEImporterException;
@@ -29,7 +32,7 @@ import scouts.cne.pt.ui.components.Badge;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.grids.SeccaoComboBox;
 import scouts.cne.pt.ui.layout.size.Horizontal;
-import scouts.cne.pt.ui.layout.size.Vertical;
+import scouts.cne.pt.ui.layout.size.Uniform;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.utils.UIUtils;
 
@@ -39,7 +42,8 @@ import scouts.cne.pt.utils.UIUtils;
  */
 @Route( value = GoogleAutomaticSyncTab.VIEW_NAME, layout = MainLayout.class )
 @PageTitle( GoogleAutomaticSyncTab.VIEW_TITLE )
-public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
+@PreserveOnRefresh
+public class GoogleAutomaticSyncTab extends VerticalLayout implements HasLogger
 {
 	/**
 	 * 
@@ -61,6 +65,7 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 	private final Div					content				= new Div();
 	private final VerticalLayout		createSuperAutoContent;
 	private Button						buttonSuperAuto;
+	private UI							ui;
 
 	/**
 	 * constructor
@@ -71,40 +76,39 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 	public GoogleAutomaticSyncTab()
 	{
 		super();
-		setFlexDirection( FlexDirection.COLUMN );
-		setMargin( Horizontal.AUTO );
-		setPadding( Horizontal.RESPONSIVE_L, Vertical.L );
 		setSizeFull();
+		
 		progressBar.setWidthFull();
+
 		progressText.setWidthFull();
 		progressText.setEnabled( false );
+
 		seccaoComboBox.setWidthFull();
 		seccaoComboBox.setLabel( "Por favor escolha uma secção:" );
+		seccaoComboBox.addValueChangeListener( e ->
+		{
+			content.removeAll();
+			if ( !seccaoComboBox.isEmpty() )
+			{
+				content.add( createSeccaoContent( e.getValue() ) );
+			}
+		} );
 		content.setSizeFull();
-		add( seccaoComboBox );
-		add( progressBar );
-		add( progressText );
-		add( UIUtils.createH4Label( "A sincronização pode demorar alguns minutos (depende do número de elementos na seccao). Por favor utilize esta funcionalidade com moderação - por exemplo não sincronizar a mesma secção de novo :-) - pois existe algumas quotas de utilização do serviço do Google que não podemos ultrapassar." ) );
-		add( content );
+
 		createSuperAutoContent = createSuperAutoContent();
 		// add( createSuperAutoContent );
-		setAlignSelf( Alignment.BASELINE, createSuperAutoContent );
+		// setAlignSelf( Alignment.BASELINE, createSuperAutoContent );
+		add( createContent() );
 	}
 
 	@Override
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
+		ui = attachEvent.getUI();
+
 		if ( googleAuthentication.getGoogleAuthInfo() != null )
 		{
-			seccaoComboBox.addValueChangeListener( e ->
-			{
-				content.removeAll();
-				if ( !seccaoComboBox.isEmpty() )
-				{
-					content.add( createSeccaoContent( e.getValue() ) );
-				}
-			} );
 			createSuperAutoContent.setVisible( true );
 		}
 		else
@@ -112,6 +116,18 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 			seccaoComboBox.setEnabled( false );
 			createSuperAutoContent.setVisible( false );
 		}
+	}
+
+	private Component createContent()
+	{
+		Label labelHelp = UIUtils
+						.createH4Label( "A sincronização pode demorar alguns minutos (depende do número de elementos na seccao). Por favor utilize esta funcionalidade com moderação - por exemplo não sincronizar a mesma secção de novo :-) - pois existe algumas quotas de utilização do serviço do Google que não podemos ultrapassar." );
+		FlexBoxLayout flexBoxLayout = new FlexBoxLayout( seccaoComboBox, progressBar, progressText, labelHelp, content );
+		flexBoxLayout.setAlignItems( Alignment.CENTER );
+		flexBoxLayout.setFlexDirection( FlexDirection.COLUMN );
+		flexBoxLayout.setMargin( Horizontal.AUTO );
+		flexBoxLayout.setPadding( Uniform.RESPONSIVE_L );
+		return flexBoxLayout;
 	}
 
 	/**
@@ -136,8 +152,9 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 			{
 				try
 				{
-					e.getSource().getUI().get().access( () ->
+					ui.access( () ->
 					{
+						seccaoComboBox.setEnabled( false );
 						buttonSuperAuto.setEnabled( false );
 						progressBar.addThemeVariants( ProgressBarVariant.LUMO_CONTRAST );
 						progressBar.setMax( 3 );
@@ -145,37 +162,37 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 						progressText.setValue( "A confirmar se o grupo existe" );
 					} );
 					updateGroup( siieSeccao );
-					e.getSource().getUI().get().access( () ->
+					ui.access( () ->
 					{
 						progressBar.setValue( 1 );
 					} );
-					List< SIIEElemento > updateCreateElementos = updateCreateElementos( siieSeccao, e.getSource().getUI().get() );
-					e.getSource().getUI().get().access( () ->
+					List< SIIEElemento > updateCreateElementos = updateCreateElementos( siieSeccao );
+					ui.access( () ->
 					{
 						progressBar.setValue( 2 );
 					} );
 					syncGroupElemento( siieSeccao, updateCreateElementos );
 				}
-				catch ( SIIIEImporterException | GeneralSecurityException | IOException e1 )
+				catch ( Exception e1 )
 				{
-					e.getSource().getUI().get().access( () ->
+					ui.access( () ->
 					{
 						progressBar.addThemeVariants( ProgressBarVariant.LUMO_ERROR );
 					} );
 					showError( e1 );
 				}
-				e.getSource().getUI().get().access( () ->
+				ui.access( () ->
 				{
 					progressText.setValue( "Sincronização completa!" );
 					progressBar.setValue( 3 );
 					progressBar.addThemeVariants( ProgressBarVariant.LUMO_SUCCESS );
 					button.setEnabled( true );
 					buttonSuperAuto.setEnabled( true );
+					seccaoComboBox.setEnabled( true );
 				} );
 			} ).start();
 		} );
 		verticalLayout.add( button );
-		add( verticalLayout );
 
 		return verticalLayout;
 	}
@@ -197,11 +214,11 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 				progressBar.setValue( 0 );
 				updateGroups();
 				progressBar.setValue( 1 );
-				List< SIIEElemento > updateCreateElementos = updateCreateElementos( SIIESeccao.D, e.getSource().getUI().get() );
+				List< SIIEElemento > updateCreateElementos = updateCreateElementos( SIIESeccao.D );
 				syncGroupElemento( SIIESeccao.D, updateCreateElementos );
 				progressBar.setValue( 2 );
 			}
-			catch ( SIIIEImporterException | GeneralSecurityException | IOException e1 )
+			catch ( Exception e1 )
 			{
 				progressBar.addThemeVariants( ProgressBarVariant.LUMO_ERROR );
 				showError( e1 );
@@ -226,7 +243,7 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 	 * @throws SIIIEImporterException
 	 */
 	private void syncGroupElemento( SIIESeccao siieSeccao, List< SIIEElemento > updateCreateElementos )
-		throws SIIIEImporterException, GeneralSecurityException, IOException
+		throws SIIIEImporterException
 	{
 		ContactGroup contactGroup = googleContactGroupsService.getListGroups().get( siieSeccao );
 		if ( contactGroup != null )
@@ -246,8 +263,8 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 	 * @throws GeneralSecurityException
 	 * @throws SIIIEImporterException
 	 */
-	private List< SIIEElemento > updateCreateElementos( SIIESeccao siieSeccao, UI ui )
-		throws SIIIEImporterException, GeneralSecurityException, IOException
+	private List< SIIEElemento > updateCreateElementos( SIIESeccao siieSeccao )
+		throws SIIIEImporterException
 	{
 		List< SIIEElemento > elementosActivosBySeccao = siieService.getElementosActivosBySeccao( siieSeccao );
 		int iCount = 0;
@@ -261,7 +278,7 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 				{
 					progressText.setValue( strIndex + "A criar o elemento :: " + siieElemento.getNome() );
 				} );
-				googleContactsService.createElemento( googleAuthentication.getPeopleService(), siieElemento, true );
+				googleContactsService.createElemento( googleAuthentication.getPeopleService(), siieElemento );
 			}
 			else
 			{
@@ -269,7 +286,7 @@ public class GoogleAutomaticSyncTab extends FlexBoxLayout implements HasLogger
 				{
 					progressText.setValue( strIndex + "A actualizar o elemento :: " + siieElemento.getNome() );
 				} );
-				googleContactsService.updateElemento( googleAuthentication.getPeopleService(), siieElemento, true );
+				googleContactsService.updateElemento( googleAuthentication.getPeopleService(), siieElemento );
 			}
 		}
 		return elementosActivosBySeccao;

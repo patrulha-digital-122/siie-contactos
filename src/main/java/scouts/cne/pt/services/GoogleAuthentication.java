@@ -12,15 +12,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
-import com.google.api.services.people.v1.model.ModifyContactGroupMembersRequest;
-import com.google.api.services.people.v1.model.Person;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -29,8 +26,6 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.google.GoogleAuthInfo;
-import scouts.cne.pt.model.siie.SIIEElemento;
-import scouts.cne.pt.utils.GoogleContactUtils;
 
 @Component
 @VaadinSessionScope
@@ -46,6 +41,7 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	private GoogleAuthInfo				googleAuthInfo		= null;
 	public static String				PERSON_FIELDS		=
 					"addresses,birthdays,emailAddresses,events,genders,memberships,names,phoneNumbers,relations,userDefined,nicknames";
+	private PeopleService				peopleService;
 
 	public GoogleAuthentication()
 	{
@@ -101,10 +97,11 @@ public class GoogleAuthentication implements Serializable, HasLogger
 		return new Gmail.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() ).build();
 	}
 
-	private HttpCredentialsAdapter getGoogleCredentials()
+	private HttpCredentialsAdapter getGoogleCredentials() throws IOException
 	{
 		OAuth2Credentials auth2Credentials = OAuth2Credentials.create( new AccessToken( googleAuthInfo.getGoogleAcessInfo().getAccess_token(),
 						googleAuthInfo.getGoogleAcessInfo().getExpiresAt() ) );
+		auth2Credentials.refreshIfExpired();
 		return new HttpCredentialsAdapter( auth2Credentials );
 	}
 
@@ -114,13 +111,22 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	 * 
 	 * @author anco62000465 2018-09-26
 	 * @return
+	 * @throws SIIIEImporterException
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	public PeopleService getPeopleService() throws GeneralSecurityException, IOException
+	public PeopleService getPeopleService() throws SIIIEImporterException
 	{
-		return new PeopleService.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() )
-						.build();
+		try
+		{
+			return new PeopleService.Builder( getHttpTransport(), getJsonfactry(), getGoogleCredentials() ).setApplicationName( getApplicationName() )
+							.build();
+		}
+		catch ( Exception e )
+		{
+			getLogger().error( e.getMessage(), e );
+			throw new SIIIEImporterException( "Problema a obter PeopleService" );
+		}
 	}
 	
 	public ContactsService getContactService() throws GeneralSecurityException, IOException
@@ -136,70 +142,5 @@ public class GoogleAuthentication implements Serializable, HasLogger
 	private String getApplicationName()
 	{
 		return "cnhefe-122";
-	}
-
-	public void updateElemento( SIIEElemento siieElemento ) throws SIIIEImporterException
-	{
-		Person googlePerson = siieElemento.getGooglePerson();
-		try
-		{
-			Person personUpdated = getPeopleService().people().updateContact( googlePerson.getResourceName(), googlePerson )
-							.setUpdatePersonFields( GoogleAuthentication.PERSON_FIELDS ).execute();
-			siieElemento.setGooglePerson( personUpdated );
-		}
-		catch ( GoogleJsonResponseException e )
-		{
-			if ( e.getStatusCode() == 400 && e.getDetails().getErrors().get( 0 ).getReason().equals( "failedPrecondition" ) )
-			{
-				getLogger().warn( "FAILED_PRECONDITION :: " + siieElemento.getNin() );
-				try
-				{
-					googlePerson = getPeopleService().people().get( googlePerson.getResourceName() ).setPersonFields( PERSON_FIELDS ).execute();
-					siieElemento.setGooglePerson( googlePerson );
-					GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-					Person personUpdated = getPeopleService().people().updateContact( googlePerson.getResourceName(), googlePerson )
-									.setUpdatePersonFields( GoogleAuthentication.PERSON_FIELDS ).execute();
-					siieElemento.setGooglePerson( personUpdated );
-				}
-				catch ( Exception e1 )
-				{
-					throw new SIIIEImporterException( e.getMessage() );
-				}
-			}
-		}
-		catch ( Exception e )
-		{
-			throw new SIIIEImporterException( e.getMessage() );
-		}
-	}
-
-	/**
-	 * The <b>createElemento</b> method returns {@link void}
-	 * 
-	 * @author 62000465 2019-11-04
-	 * @param siieElemento
-	 * @throws SIIIEImporterException
-	 */
-	public void createElemento( SIIEElemento siieElemento ) throws SIIIEImporterException
-	{
-		try
-		{
-			Person person = new Person();
-			siieElemento.setGooglePerson( person );
-			GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-			person = getPeopleService().people().createContact( person ).execute();
-			siieElemento.setGooglePerson( person );
-			getLogger().info( "Criado contacto :: " + person.getResourceName() );
-
-			ModifyContactGroupMembersRequest content = new ModifyContactGroupMembersRequest();
-			content.setResourceNamesToAdd( Arrays.asList( person.getResourceName() ) );
-			getPeopleService().contactGroups().members().modify( "contactGroups/myContacts", content ).execute();
-			getLogger().info( "Contacto associado a MyContacts." );
-		}
-		catch ( Exception e )
-		{
-			e.printStackTrace();
-			throw new SIIIEImporterException( e.getMessage() );
-		}
 	}
 }

@@ -7,20 +7,16 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
+import scouts.cne.pt.services.GoogleContactsService;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
-import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.grids.ElementosGrid;
-import scouts.cne.pt.ui.layout.size.Horizontal;
-import scouts.cne.pt.ui.layout.size.Vertical;
-import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.utils.GoogleContactUtils;
 import scouts.cne.pt.utils.UIUtils;
 
@@ -30,7 +26,7 @@ import scouts.cne.pt.utils.UIUtils;
  */
 @Route( value = GoogleSyncTab.VIEW_NAME, layout = MainLayout.class )
 @PageTitle( GoogleSyncTab.VIEW_TITLE )
-public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
+public class GoogleSyncTab extends ElementosGrid implements HasLogger
 {
 	/**
 	 * 
@@ -42,8 +38,9 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 	private SIIEService				siieService;
 	@Autowired
 	private GoogleAuthentication	googleAuthentication;
-	private final ElementosGrid				grid;
-	private final List< SIIEElemento >	lstElementos			= new ArrayList<>();
+	@Autowired
+	private GoogleContactsService		googleContactsService;
+	private final static List< SIIEElemento >	lstElementos		= new ArrayList<>();
 
 	/**
 	 * constructor
@@ -53,15 +50,11 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 	 */
 	public GoogleSyncTab()
 	{
-		super();
-		setFlexDirection( FlexDirection.COLUMN );
-		setMargin( Horizontal.AUTO );
-		setPadding( Horizontal.RESPONSIVE_L, Vertical.L );
-		setSizeFull();
+		super( true, lstElementos );
 		
-		grid = new ElementosGrid( true, lstElementos );
-		grid.setSelectionMode( SelectionMode.NONE );
-		grid.addComponentColumn( i ->
+		setSelectionMode( SelectionMode.NONE );
+		removeColumn( getSituacaoColumn() );
+		addComponentColumn( i ->
 		{
 			Button button;
 			if ( i.getGooglePerson() != null )
@@ -79,7 +72,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 				button.addClickListener( e ->
 				{
 					createContact( i.getNin() );
-					grid.getDataProvider().refreshItem( i );
+					getDataProvider().refreshItem( i );
 					button.setEnabled( true );
 				} );
 			}
@@ -87,7 +80,6 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 			button.setDisableOnClick( true );
 			return button;
 		} ).setHeader( "Acção" ).setSortable( false );
-		add( grid );
 	}
 
 	@Override
@@ -97,7 +89,8 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 		lstElementos.clear();
 		lstElementos.addAll( siieService.getElementosActivos().stream().collect( Collectors.toList() ) );
 		
-		grid.getDataProvider().refreshAll();
+		getDataProvider().refreshAll();
+		recalculateColumnWidths();
 	}
 
 	/**
@@ -116,7 +109,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 			{
 				SIIEElemento siieElemento = siieOptional.get();
 				GoogleContactUtils.updateGoogleFromSIIE( siieElemento );
-				googleAuthentication.updateElemento( siieElemento );
+				googleContactsService.updateElemento( googleAuthentication.getPeopleService(), siieElemento );
 				showInfo( siieElemento.getNome() + " actualizado!" );
 			}
 			else
@@ -138,7 +131,7 @@ public class GoogleSyncTab extends FlexBoxLayout implements HasLogger
 			if ( siieOptional.isPresent() )
 			{
 				SIIEElemento siieElemento = siieOptional.get();
-				googleAuthentication.createElemento( siieElemento );
+				googleContactsService.createElemento( googleAuthentication.getPeopleService(), siieElemento );
 				showInfo( siieElemento.getNome() + " criado com sucesso!" );
 			}
 			else

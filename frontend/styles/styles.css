@@ -40,6 +40,31 @@
   }
 }
 
+@font-face {
+	font-family: morse;
+	src: url(fonts/morse.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: chines;
+	src: url(fonts/chines.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: angular;
+	src: url(fonts/angular.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: homografo;
+	src: url(fonts/homografo.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: LGP;
+	src: url(fonts/LGP.ttf) format("truetype");
+}
+
 html,
 body {
   height: 100%;

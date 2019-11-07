@@ -514,7 +514,6 @@ public class UIUtils {
 		for ( Component component : components )
 		{
 			component.getElement().getStyle().set( "font-family", fontWeight.getCSSUrl() );
-			component.getElement().getStyle().set( "src", "url(" + fontWeight.getLink() + ")" );
 		}
 	}
 

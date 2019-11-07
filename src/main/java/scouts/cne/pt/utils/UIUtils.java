@@ -574,6 +574,14 @@ public class UIUtils {
 		}
 	}
 
+	public static void setTextColor( String strHexColor, Component... components )
+	{
+		for ( Component component : components )
+		{
+			component.getElement().getStyle().set( "color", strHexColor );
+		}
+	}
+
 	public static void setTextOverflow(TextOverflow textOverflow, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("text-overflow", textOverflow.getValue());

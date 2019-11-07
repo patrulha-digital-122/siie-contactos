@@ -125,7 +125,7 @@ public class AppBar extends FlexBoxLayout {
 		avatar.setAlt("User menu");
 
 		ContextMenu contextMenu = new ContextMenu(avatar);
-		contextMenu.setOpenOnClick(true);
+		// contextMenu.setOpenOnClick(true);
 		contextMenu.addItem("Settings",
 				e -> Notification.show("Not implemented yet.", 3000,
 						Notification.Position.BOTTOM_CENTER));

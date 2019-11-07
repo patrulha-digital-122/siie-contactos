@@ -14,6 +14,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import elemental.json.JsonObject;
+import scouts.cne.pt.ui.util.css.TextAlign;
 import scouts.cne.pt.utils.UIUtils;
 
 @CssImport("./styles/components/navi-drawer.css")
@@ -30,6 +31,7 @@ public class NaviDrawer extends Div
 	private Div mainContent;
 	private TextField search;
 	private Div scrollableArea;
+	private Label		version		= new Label( "Versão: 0.0.1" );
 
 	private Button railButton;
 	private NaviMenu menu;
@@ -38,7 +40,7 @@ public class NaviDrawer extends Div
 	protected void onAttach(AttachEvent attachEvent) {
 		super.onAttach(attachEvent);
 		UI ui = attachEvent.getUI();
-		ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
+		ui.getPage().executeJs( "window.addSwipeAway($0,$1,$2,$3)",
 				mainContent.getElement(), this, "onSwipeAway",
 				scrim.getElement());
 	}
@@ -102,9 +104,10 @@ public class NaviDrawer extends Div
 	}
 
 	private void initFooter() {
-		Label version = new Label( "Versão: 0.0.1" );
+
 		version.setWidthFull();
 		version.addClassName( CLASS_NAME + "__footer" );
+		UIUtils.setTextAlign( TextAlign.CENTER, version );
 		mainContent.add( version );
 		railButton = UIUtils.createSmallButton( "Esconder", VaadinIcon.CHEVRON_LEFT_SMALL );
 		railButton.addClassName(CLASS_NAME + "__footer");
@@ -119,17 +122,18 @@ public class NaviDrawer extends Div
 			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_LEFT_SMALL));
 			railButton.setText("Collapse");
 			UIUtils.setAriaLabel("Collapse menu", railButton);
-
+			version.setVisible( true );
 		} else {
 			getElement().setAttribute(RAIL, true);
 			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
 			railButton.setText( "Expandir" );
 			UIUtils.setAriaLabel("Expand menu", railButton);
-			getUI().get().getPage().executeJavaScript(
+			getUI().get().getPage().executeJs(
 					"var originalStyle = getComputedStyle($0).pointerEvents;" //
 							+ "$0.style.pointerEvents='none';" //
 							+ "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);",
 					getElement());
+			version.setVisible( false );
 		}
 	}
 

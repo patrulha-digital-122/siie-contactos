@@ -16,6 +16,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -60,6 +61,7 @@ import scouts.cne.pt.utils.UIUtils;
 @CssImport( "./styles/lumo/typography.css" )
 @CssImport( "./styles/misc/box-shadow-borders.css" )
 @CssImport( value = "./styles/styles.css", include = "lumo-badge" )
+@Meta( name = "google-site-verification", content = "FOqGrvVOczGenSzPckQdRiNI8Qv_RJWd8PteDcezCKk" )
 @JsModule( "@vaadin/vaadin-lumo-styles/badge" )
 @PWA(	name = "CNhEfe",
 		shortName = "CNhEfe",

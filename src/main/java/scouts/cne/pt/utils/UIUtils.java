@@ -417,7 +417,7 @@ public class UIUtils {
 		avatar.setClassName( AppBar.CLASS_NAME + "__avatar" );
 		avatar.setSrc( url );
 		avatar.setAlt( StringUtils.trimToEmpty( text ) );
-		avatar.getElement().setAttribute( "onerror", "this.onerror=null;this.src='" + IMG_PATH + "avatar.png" + "';" );
+		avatar.getElement().setAttribute( "onerror", "this.onerror=null;this.src='" + IMG_PATH + "avatar.jpg" + "';" );
 		return avatar;
 	}
 
@@ -427,7 +427,7 @@ public class UIUtils {
 		avatar.setClassName( AppBar.CLASS_NAME + "__avatar" );
 		avatar.setSrc( String.format( UIUtils.SIIE_IMG_PATH, siieElemento.getUploadgroup(), siieElemento.getNin() ) );
 		avatar.setAlt( StringUtils.trimToEmpty( "" ) );
-		avatar.getElement().setAttribute( "onerror", "this.onerror=null;this.src='" + IMG_PATH + "avatar.png" + "';" );
+		avatar.getElement().setAttribute( "onerror", "this.onerror=null;this.src='" + IMG_PATH + "avatar.jpg" + "';" );
 		return avatar;
 	}
 

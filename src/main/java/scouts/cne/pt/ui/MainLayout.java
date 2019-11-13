@@ -70,9 +70,10 @@ import scouts.cne.pt.utils.UIUtils;
 		themeColor = "#227aef",
 		offlinePath = "offline-page.html",
 		offlineResources =
-		{ "images/offline-login-banner.png" },
+		{ "images/offline-login-banner.webp", "images/logo.webp" },
 		enableInstallPrompt = true,
 		display = "standalone",
+		iconPath = "images/avatar.jpg",
 		description = "Esta app permite simplificar a vida dos dirigentes" )
 @Viewport( "width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" )
 @PreserveOnRefresh

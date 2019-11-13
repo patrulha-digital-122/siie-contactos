@@ -17,7 +17,7 @@ public class BrandExpression extends Div {
 	public BrandExpression(String text) {
 		setClassName(CLASS_NAME);
 
-		logo = new Image( UIUtils.IMG_PATH + "logos/siiev3_notext.png", "" );
+		logo = new Image( UIUtils.IMG_PATH + "logo.webp", "" );
 		logo.setAlt(text + " logo");
 		logo.setClassName(CLASS_NAME + "__logo");
 

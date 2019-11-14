@@ -1,7 +1,6 @@
 package scouts.cne.pt.ui.views.elementos;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +41,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 	private final List< SIIEElemento >	lstElementos		= new ArrayList<>();
 	private final Accordion				accordion			= new Accordion();
 	private UI							ui;
-	private ProgressBar					progressBar			= new ProgressBar( 0, 4, 0 );
+	private ProgressBar					progressBar			= new ProgressBar( 0, 6, 0 );
 
 	public DiagnosticoListView()
 	{
@@ -86,6 +85,13 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 				checkCC();
 				accordion.close();
 				progressBar.setValue( 4 );
+			} );
+			ui.access( () ->
+			{
+				progressBar.setValue( 5 );
+				checkSNS();
+				accordion.close();
+				progressBar.setValue( 6 );
 			} );
 		} ).start();
 	}
@@ -148,13 +154,6 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		List< SIIEElemento > collect = lstElementos.stream().filter( ( p ) ->
 		{
 			return StringUtils.isAllBlank( p.getCc() );
-		} ).sorted( new Comparator< SIIEElemento >()
-		{
-			@Override
-			public int compare( SIIEElemento o1, SIIEElemento o2 )
-			{
-				return StringUtils.compare( o1.getNome(), o2.getNome() );
-			}
 		} ).collect( Collectors.toList() );
 		if ( !collect.isEmpty() )
 		{
@@ -170,6 +169,30 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 				verticalLayout.add( item );
 			}
 			accordion.add( "Elementos sem o número do Cartão do Cidadão definido no SIIE", verticalLayout );
+			content.add( accordion );
+		}
+	}
+
+	private void checkSNS()
+	{
+		List< SIIEElemento > collect = lstElementos.stream().filter( ( p ) ->
+		{
+			return StringUtils.isAllBlank( p.getSns() );
+		} ).collect( Collectors.toList() );
+		if ( !collect.isEmpty() )
+		{
+			Div verticalLayout = new Div();
+			for ( SIIEElemento siieElemento : collect )
+			{
+				HorizontalLayout suffix =
+								new HorizontalLayout( siieElemento.getSiglasituacao().getLable(), siieElemento.getSiglaseccao().getLabel() );
+				suffix.setSpacing( true );
+				ListItem item = new ListItem( UIUtils.createSIIEAvatar( siieElemento ), siieElemento.getNome(), suffix );
+				// Dividers for all but the last item
+				item.setDividerVisible( true );
+				verticalLayout.add( item );
+			}
+			accordion.add( "Elementos sem o número de Saúde definido no SIIE", verticalLayout );
 			content.add( accordion );
 		}
 	}

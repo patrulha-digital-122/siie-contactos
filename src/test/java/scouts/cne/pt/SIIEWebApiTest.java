@@ -20,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import scouts.cne.pt.model.siie.CookieRestTemplate;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.SIIEElementos;
 import scouts.cne.pt.model.siie.authentication.SIIEUserLogin;
 import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
@@ -67,11 +68,10 @@ public class SIIEWebApiTest
 
 				Map< String, String > mapRequest = new LinkedHashMap<>();
 				mapRequest.put( "Dados completos", "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
-				// mapRequest.put( "Dados saude",
-				// "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
+				mapRequest.put( "Dados saude", "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
 				// mapRequest.put( "Noites de campo",
 				// "https://siie.escutismo.pt/elementos/List?xml=elementos/actividades/noites-campo" );
-				
+				SIIEElementos siieElementos = null;
 				for ( Entry< String, String > entry : mapRequest.entrySet() )
 				{
 					String info = entry.getKey();
@@ -87,10 +87,24 @@ public class SIIEWebApiTest
 						restTemplate.setCookies( lstOriginalCookies );
 						System.out.println( restTemplate.getForObject( uriElementos, String.class ) );
 						ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-						elementosFor.getBody().getData()
-										.forEach( e -> System.out.println( e.getNome() + " :: " + e.getDatanascimento().getDayOfYear() ) );
+						if ( siieElementos == null )
+						{
+							siieElementos = elementosFor.getBody();
+						}
+						else
+						{
+							for ( SIIEElemento e : elementosFor.getBody().getData() )
+							{
+								int indexOf = siieElementos.getData().indexOf( e );
+								if ( indexOf > -1 )
+								{
+									siieElementos.getData().get( indexOf ).merge( e );
+								}
+							}
+						}
 					}
 				}
+				siieElementos.getData().forEach( e -> System.out.println( e ) );
 			}
 			
 			

@@ -58,7 +58,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 				siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
 				labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
 				labelNextUrlLogin.setVisible( true );
-				siieService.updateDadosCompletosSIIE();
+				siieService.updateFullSIIE();
 				updateSIIEMetaData();
 				Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( e.getUsername() );
 				if ( elementoByNIN.isPresent() )

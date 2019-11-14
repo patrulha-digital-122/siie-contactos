@@ -20,6 +20,7 @@ public class Badge extends Span
 	{
 		super( text );
 		UIUtils.setTheme( color.getThemeName(), this );
+		setWidthFull();
 	}
 
 	public Badge( String text, TextColor backgroundColor, TextColor textColor )
@@ -28,6 +29,7 @@ public class Badge extends Span
 		UIUtils.setTheme( BadgeColor.NORMAL.getThemeName(), this );
 		UIUtils.setBackgroundColor( backgroundColor.getValue(), this );
 		UIUtils.setTextColor( textColor, this );
+		setWidthFull();
 	}
 
 	public Badge( String text, BadgeColor color, BadgeSize size, BadgeShape shape )

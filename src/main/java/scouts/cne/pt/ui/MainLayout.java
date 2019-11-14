@@ -1,11 +1,9 @@
 package scouts.cne.pt.ui;
 
-import java.net.URISyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestClientException;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -278,9 +276,9 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 					{
 						siieService.authenticateSIIE( siieUser, siiePassword );
 					}
-					siieService.updateDadosCompletosSIIE();
+					siieService.updateFullSIIE();
 				}
-				catch ( RestClientException | URISyntaxException e )
+				catch ( Exception e )
 				{
 					showError( e );
 				}

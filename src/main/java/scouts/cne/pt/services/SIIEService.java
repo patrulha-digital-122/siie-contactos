@@ -13,6 +13,7 @@ import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -143,9 +144,24 @@ public class SIIEService implements Serializable, HasLogger
 		}
 	}
 
-	public void updateDadosCompletosSIIE() throws RestClientException, URISyntaxException
+	public void updateFullSIIE() throws SIIIEImporterException
 	{
 		eSiieElementos.getData().clear();
+		eSiieElementos.setCount( 0L );
+		try
+		{
+			updateDadosCompletosSIIE();
+			updateDadosSaudeSIIE();
+		}
+		catch ( Exception e )
+		{
+			printError( e );
+			throw new SIIIEImporterException( "Erro a importar todos os dados do SIIE" );
+		}
+	}
+
+	public void updateDadosCompletosSIIE() throws RestClientException, URISyntaxException
+	{
 		restTemplate.setAcessToken( "" );
 		restTemplate.setCookies( new ArrayList<>() );
 		ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_COMPLETOS.getUrl() ),
@@ -161,8 +177,49 @@ public class SIIEService implements Serializable, HasLogger
 			restTemplate.setAcessToken( siieSessionData.getAcessToken() );
 			restTemplate.setCookies( siieSessionData.getOriginalCookies() );
 			ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-			eSiieElementos = elementosFor.getBody();
+			mergeSIIElementos( elementosFor.getBody() );
 		}
+	}
+
+	public void updateDadosSaudeSIIE() throws RestClientException, URISyntaxException
+	{
+		restTemplate.setAcessToken( "" );
+		restTemplate.setCookies( new ArrayList<>() );
+		ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_SAUDE.getUrl() ),
+																	HttpMethod.GET,
+																	new HttpEntity<>( null, siieSessionData.getHeaders() ),
+																	String.class );
+		if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
+		{
+			String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+			URI uriElementos;
+			uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
+				"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
+			restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+			restTemplate.setCookies( siieSessionData.getOriginalCookies() );
+			ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+			mergeSIIElementos( elementosFor.getBody() );
+		}
+	}
+
+	private void mergeSIIElementos( SIIEElementos siieElementos )
+	{
+		if ( eSiieElementos.getCount() == null || eSiieElementos.getCount() < 1 )
+		{
+			eSiieElementos = siieElementos;
+		}
+		else
+		{
+			for ( SIIEElemento e : siieElementos.getData() )
+			{
+				int indexOf = eSiieElementos.getData().indexOf( e );
+				if ( indexOf > -1 )
+				{
+					eSiieElementos.getData().get( indexOf ).merge( e );
+				}
+			}
+		}
+		Collections.sort( eSiieElementos.getData() );
 	}
 
 	public List< SIIEElemento > getElementosActivos()

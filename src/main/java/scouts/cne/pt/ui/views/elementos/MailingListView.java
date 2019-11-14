@@ -1,13 +1,11 @@
 package scouts.cne.pt.ui.views.elementos;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestClientException;
 import org.vaadin.olli.ClipboardHelper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -26,6 +24,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import scouts.cne.pt.model.siie.SIIEElemento;
@@ -38,6 +37,7 @@ import scouts.cne.pt.utils.UIUtils;
 
 @Route( value = MailingListView.VIEW_NAME, layout = MainLayout.class )
 @PageTitle( MailingListView.VIEW_DISPLAY_NAME )
+@PreserveOnRefresh
 public class MailingListView extends HasSIIELoginUrl
 {
 	private static final long	serialVersionUID	= 3776271782151856570L;
@@ -55,18 +55,19 @@ public class MailingListView extends HasSIIELoginUrl
 	private final TextField				totalSelecionados	= new TextField( "Total de selecionados" );
 	private final TextField				totalEmails			= new TextField( "Total de endereços de email" );
 	private final ClipboardHelper		clipboard;
-	private final Button refresh = UIUtils.createPrimaryButton( "Actualizar dados do SIIE", VaadinIcon.REFRESH );
+	private final Button				refresh				= UIUtils.createPrimaryButton( "Actualizar dados do SIIE", VaadinIcon.REFRESH );
 	private String						nomeToSearch		= "";
 
 	public MailingListView()
 	{
 		setId( VIEW_NAME );
-
 		grid = new ElementosGrid( true, lstServices );
 		grid.setSelectionMode( SelectionMode.MULTI );
 		grid.addSelectionListener( e -> updateMailingListTextArea() );
 		grid.setMinHeight( "50%" );
 		
+		refresh.setWidthFull();
+		refresh.setDisableOnClick( true );
 		Button createButton = UIUtils.createButton( "Copiar texto", ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY );
 		createButton.setSizeFull();
 		clipboard = new ClipboardHelper( "Copiado",
@@ -94,15 +95,29 @@ public class MailingListView extends HasSIIELoginUrl
 
 	private Component createContent()
 	{
-		refresh.setWidthFull();
-		refresh.setDisableOnClick( true );
+		VerticalLayout content = new VerticalLayout( getContentBeforeGrid(), grid, getOptionComponent() );
+		content.setSizeFull();
+		return content;
+	}
+
+	/**
+	 * The <b>getContentBeforeGrid</b> method returns {@link Component}
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return
+	 */
+	private Component getContentBeforeGrid()
+	{
 		Label helpLabel = UIUtils
 						.createH5Label( "Aqui podes criar uma mailing list com os dados obtidos do SIIE. Seleciona os elementos para quem pretendes enviar o e-mail (podes utilizar os filtros para simplificar a pesquisa) e depois clica no botão lá de baixo para obteres a mailing list completa." );
 		helpLabel.setWidthFull();
-		VerticalLayout content = new VerticalLayout( helpLabel, refresh, grid, getOptionComponent() );
-		content.setSizeFull();
+		VerticalLayout contentBeforeGrid = new VerticalLayout( helpLabel, refresh );
+		contentBeforeGrid.setMargin( false );
+		contentBeforeGrid.setPadding( false );
+		contentBeforeGrid.setSpacing( false );
+		contentBeforeGrid.setWidthFull();
 		
-		return content;
+		return contentBeforeGrid;
 	}
 
 	/**
@@ -161,9 +176,9 @@ public class MailingListView extends HasSIIELoginUrl
 			{
 				try
 				{
-					siieService.updateDadosCompletosSIIE();
+					siieService.updateFullSIIE();
 				}
-				catch ( RestClientException | URISyntaxException e )
+				catch ( Exception e )
 				{
 					showError( e );
 				}

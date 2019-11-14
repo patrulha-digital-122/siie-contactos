@@ -48,6 +48,7 @@ public class UIUtils {
 	public static final String								FONTS_PATH		= "fonts/";
 	public static final String								SIIE_IMG_PATH	=
 					"https://siie.escutismo.pt/Controls/Thumbnail.ashx?img=/Files/Fotos/%s/%s.jpg";
+	public static final int									MOBILE_BREAKPOINT	= 480;
 
 	/**
 	 * Thread-unsafe formatters.

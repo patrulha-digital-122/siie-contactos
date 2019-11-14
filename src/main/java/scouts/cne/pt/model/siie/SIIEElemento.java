@@ -1,7 +1,9 @@
 package scouts.cne.pt.model.siie;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +19,7 @@ import scouts.cne.pt.model.siie.types.SIIESituacao;
  *
  */
 @JsonPropertyOrder( "Datum" )
-public class SIIEElemento
+public class SIIEElemento implements Comparable< SIIEElemento >
 {
 	private String			nin;
 	private String			agrupamento;
@@ -88,6 +90,19 @@ public class SIIEElemento
 	private String			cc;
 	private String			totem;
 	private String			seccao;
+	// Dados de saude
+	private String			sns;
+	private Boolean			restricoes;
+	private String			descrestricoes;
+	private Boolean			alergias;
+	private String			descalergias;
+	private Boolean			medicacao;
+	private String			descmedicacao;
+	private Boolean			diabetes;
+	private Boolean			asma;
+	private Boolean			epilepsia;
+	private Boolean			outroprob;
+	private String			descoutroprob;
 	@JsonIgnore
 	private Person			googlePerson;
 
@@ -932,6 +947,272 @@ public class SIIEElemento
 	}
 
 	/**
+	 * Getter for sns
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the sns {@link String}
+	 */
+	@JsonProperty( "sns" )
+	public String getSns()
+	{
+		return sns;
+	}
+
+	/**
+	 * Setter for sns
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param sns the sns to set
+	 */
+	@JsonProperty( "sns" )
+	public void setSns( String sns )
+	{
+		this.sns = sns;
+	}
+
+	/**
+	 * Getter for restricoes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the restricoes {@link Boolean}
+	 */
+	public Boolean getRestricoes()
+	{
+		return restricoes;
+	}
+
+	/**
+	 * Setter for restricoes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param restricoes the restricoes to set
+	 */
+	public void setRestricoes( Boolean restricoes )
+	{
+		this.restricoes = restricoes;
+	}
+
+	/**
+	 * Getter for descrestricoes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the descrestricoes {@link String}
+	 */
+	public String getDescrestricoes()
+	{
+		return descrestricoes;
+	}
+
+	/**
+	 * Setter for descrestricoes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param descrestricoes the descrestricoes to set
+	 */
+	public void setDescrestricoes( String descrestricoes )
+	{
+		this.descrestricoes = descrestricoes;
+	}
+
+	/**
+	 * Getter for alergias
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the alergias {@link Boolean}
+	 */
+	public Boolean getAlergias()
+	{
+		return alergias;
+	}
+
+	/**
+	 * Setter for alergias
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param alergias the alergias to set
+	 */
+	public void setAlergias( Boolean alergias )
+	{
+		this.alergias = alergias;
+	}
+
+	/**
+	 * Getter for descalergias
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the descalergias {@link String}
+	 */
+	public String getDescalergias()
+	{
+		return descalergias;
+	}
+
+	/**
+	 * Setter for descalergias
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param descalergias the descalergias to set
+	 */
+	public void setDescalergias( String descalergias )
+	{
+		this.descalergias = descalergias;
+	}
+
+	/**
+	 * Getter for medicacao
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the medicacao {@link Boolean}
+	 */
+	public Boolean getMedicacao()
+	{
+		return medicacao;
+	}
+
+	/**
+	 * Setter for medicacao
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param medicacao the medicacao to set
+	 */
+	public void setMedicacao( Boolean medicacao )
+	{
+		this.medicacao = medicacao;
+	}
+
+	/**
+	 * Getter for descmedicacao
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the descmedicacao {@link String}
+	 */
+	public String getDescmedicacao()
+	{
+		return descmedicacao;
+	}
+
+	/**
+	 * Setter for descmedicacao
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param descmedicacao the descmedicacao to set
+	 */
+	public void setDescmedicacao( String descmedicacao )
+	{
+		this.descmedicacao = descmedicacao;
+	}
+
+	/**
+	 * Getter for diabetes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the diabetes {@link Boolean}
+	 */
+	public Boolean getDiabetes()
+	{
+		return diabetes;
+	}
+
+	/**
+	 * Setter for diabetes
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param diabetes the diabetes to set
+	 */
+	public void setDiabetes( Boolean diabetes )
+	{
+		this.diabetes = diabetes;
+	}
+
+	/**
+	 * Getter for asma
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the asma {@link Boolean}
+	 */
+	public Boolean getAsma()
+	{
+		return asma;
+	}
+
+	/**
+	 * Setter for asma
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param asma the asma to set
+	 */
+	public void setAsma( Boolean asma )
+	{
+		this.asma = asma;
+	}
+
+	/**
+	 * Getter for epilepsia
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the epilepsia {@link Boolean}
+	 */
+	public Boolean getEpilepsia()
+	{
+		return epilepsia;
+	}
+
+	/**
+	 * Setter for epilepsia
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param epilepsia the epilepsia to set
+	 */
+	public void setEpilepsia( Boolean epilepsia )
+	{
+		this.epilepsia = epilepsia;
+	}
+
+	/**
+	 * Getter for outroprob
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the outroprob {@link Boolean}
+	 */
+	public Boolean getOutroprob()
+	{
+		return outroprob;
+	}
+
+	/**
+	 * Setter for outroprob
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param outroprob the outroprob to set
+	 */
+	public void setOutroprob( Boolean outroprob )
+	{
+		this.outroprob = outroprob;
+	}
+
+	/**
+	 * Getter for descoutroprob
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @return the descoutroprob {@link String}
+	 */
+	public String getDescoutroprob()
+	{
+		return descoutroprob;
+	}
+
+	/**
+	 * Setter for descoutroprob
+	 * 
+	 * @author 62000465 2019-11-14
+	 * @param descoutroprob the descoutroprob to set
+	 */
+	public void setDescoutroprob( String descoutroprob )
+	{
+		this.descoutroprob = descoutroprob;
+	}
+
+	/**
 	 * Getter for googlePerson
 	 * 
 	 * @author 62000465 2019-10-30
@@ -951,5 +1232,94 @@ public class SIIEElemento
 	public void setGooglePerson( Person googlePerson )
 	{
 		this.googlePerson = googlePerson;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( nin == null ) ? 0 : nin.hashCode() );
+		return result;
+	}
+
+	@Override
+	public boolean equals( Object obj )
+	{
+		if ( this == obj )
+		{
+			return true;
+		}
+		if ( !( obj instanceof SIIEElemento ) )
+		{
+			return false;
+		}
+		SIIEElemento other = ( SIIEElemento ) obj;
+		if ( nin == null )
+		{
+			if ( other.nin != null )
+			{
+				return false;
+			}
+		}
+		else if ( !nin.equals( other.nin ) )
+		{
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append( "SIIEElemento [nin=" );
+		builder.append( nin );
+		builder.append( ", nome=" );
+		builder.append( nome );
+		builder.append( ", seccao=" );
+		builder.append( seccao );
+		builder.append( ", sns=" );
+		builder.append( sns );
+		builder.append( ", nif=" );
+		builder.append( nif );
+		builder.append( "]" );
+		return builder.toString();
+	}
+
+	public void merge( Object update )
+	{
+		if ( !getClass().isAssignableFrom( update.getClass() ) )
+		{
+			return;
+		}
+		Method[] methods = getClass().getMethods();
+		for ( Method fromMethod : methods )
+		{
+			if ( fromMethod.getDeclaringClass().equals( getClass() ) && fromMethod.getName().startsWith( "get" ) )
+			{
+				String fromName = fromMethod.getName();
+				String toName = fromName.replace( "get", "set" );
+				try
+				{
+					Method toMetod = getClass().getMethod( toName, fromMethod.getReturnType() );
+					Object value = fromMethod.invoke( update, ( Object[] ) null );
+					if ( value != null )
+					{
+						toMetod.invoke( this, value );
+					}
+				}
+				catch ( Exception e )
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public int compareTo( SIIEElemento o )
+	{
+		return StringUtils.compare( nome, o.getNome() );
 	}
 }

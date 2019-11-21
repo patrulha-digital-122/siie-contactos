@@ -93,18 +93,15 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 			ui.access( () ->
 			{
 				progressBar.setValue( 1 );
-				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				checkEmails();
 			} );
 			ui.access( () ->
 			{
 				progressBar.setValue( 2 );
-				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				checkTelefone();
 			} );
 			ui.access( () ->
 			{
-				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				progressBar.setValue( 5 );
 				checkDadosPessoais();
 				accordion.close();

@@ -220,7 +220,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 			Label owner = UIUtils.createLabel( FontSize.M, TextColor.BODY, siieElemento.getNome() );
 			UIUtils.setOverflow( Overflow.HIDDEN, owner );
 			UIUtils.setTextOverflow( TextOverflow.ELLIPSIS, owner );
-			UIUtils.setAlignSelf( AlignSelf.CENTER, owner );
+			UIUtils.setAlignSelf( AlignSelf.START, owner );
 			FlexBoxLayout wrapper = new FlexBoxLayout( owner );
 			wrapper.setAlignItems( Alignment.CENTER );
 			wrapper.setFlexGrow( 1, owner );

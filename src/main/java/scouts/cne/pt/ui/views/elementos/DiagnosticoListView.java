@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.accordion.Accordion;
+import com.vaadin.flow.component.details.DetailsVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -19,6 +21,7 @@ import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.ListItem;
+import scouts.cne.pt.ui.components.grids.ElementosGrid;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.BoxShadowBorders;
@@ -46,7 +49,6 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 	public DiagnosticoListView()
 	{
 		setId( VIEW_NAME );
-		content.setSizeFull();
 		content.addClassNames( BoxShadowBorders.BOTTOM, LumoStyles.Padding.Bottom.L );
 		content.add( accordion );
 		progressBar.setWidthFull();
@@ -55,6 +57,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		flexBoxLayout.setFlexDirection( FlexDirection.COLUMN );
 		flexBoxLayout.setMargin( Horizontal.AUTO );
 		flexBoxLayout.setPadding( Horizontal.RESPONSIVE_L, Vertical.L );
+		flexBoxLayout.setSizeFull();
 		setViewContent( flexBoxLayout );
 	}
 
@@ -120,7 +123,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 				item.setDividerVisible( true );
 				verticalLayout.add( item );
 			}
-			accordion.add( "Elementos sem qualquer email definido no SIIE", verticalLayout );
+			accordion.add( "Elementos sem qualquer email definido no SIIE", verticalLayout ).addThemeVariants( DetailsVariant.FILLED );
 			content.add( accordion );
 		}
 	}
@@ -144,7 +147,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 				item.setDividerVisible( true );
 				verticalLayout.add( item );
 			}
-			accordion.add( "Elementos sem qualquer telefone/telemóvel definido no SIIE", verticalLayout );
+			accordion.add( "Elementos sem qualquer telefone/telemóvel definido no SIIE", verticalLayout ).addThemeVariants( DetailsVariant.FILLED );
 			content.add( accordion );
 		}
 	}
@@ -168,7 +171,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 				item.setDividerVisible( true );
 				verticalLayout.add( item );
 			}
-			accordion.add( "Elementos sem o número do Cartão do Cidadão definido no SIIE", verticalLayout );
+			accordion.add( "Elementos sem o número do Cartão do Cidadão definido no SIIE", verticalLayout ).addThemeVariants( DetailsVariant.FILLED );
 			content.add( accordion );
 		}
 	}
@@ -179,20 +182,19 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		{
 			return StringUtils.isAllBlank( p.getSns() );
 		} ).collect( Collectors.toList() );
+
 		if ( !collect.isEmpty() )
 		{
-			Div verticalLayout = new Div();
-			for ( SIIEElemento siieElemento : collect )
-			{
-				HorizontalLayout suffix =
-								new HorizontalLayout( siieElemento.getSiglasituacao().getLable(), siieElemento.getSiglaseccao().getLabel() );
-				suffix.setSpacing( true );
-				ListItem item = new ListItem( UIUtils.createSIIEAvatar( siieElemento ), siieElemento.getNome(), suffix );
-				// Dividers for all but the last item
-				item.setDividerVisible( true );
-				verticalLayout.add( item );
-			}
-			accordion.add( "Elementos sem o número de Saúde definido no SIIE", verticalLayout );
+			VerticalLayout verticalLayout = new VerticalLayout();
+			verticalLayout.setMargin( false );
+			verticalLayout.setPadding( false );
+			verticalLayout.setWidthFull();
+
+			ElementosGrid grid = new ElementosGrid( true, collect );
+			grid.setSizeUndefined();
+			verticalLayout.add( grid );
+			accordion.add( "Elementos sem o número de Saúde definido no SIIE", verticalLayout )
+							.addThemeVariants( DetailsVariant.FILLED );
 			content.add( accordion );
 		}
 	}

@@ -89,20 +89,22 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		{
 			lstElementos.clear();
 			lstElementos.addAll( siieService.getElementosActivos() );
-			lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 			ui.access( () ->
 			{
 				progressBar.setValue( 1 );
+				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				checkEmails();
 			} );
 			ui.access( () ->
 			{
 				progressBar.setValue( 2 );
+				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				checkTelefone();
 			} );
 			ui.access( () ->
 			{
 				progressBar.setValue( 5 );
+				lstElementos.forEach( p -> p.getAdditionalInfo().clear() );
 				checkDadosPessoais();
 				accordion.close();
 				progressBar.setValue( 6 );
@@ -239,7 +241,15 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		verticalLayout.setPadding( false );
 		verticalLayout.setSizeFull();
 
-		ElementosGrid grid = new ElementosGrid( true, collect );
+		List< SIIEElemento > list = new ArrayList< SIIEElemento >();
+		for ( SIIEElemento siieElemento : collect )
+		{
+			SIIEElemento siieElemento2 = new SIIEElemento();
+			siieElemento2.merge( siieElemento );
+			siieElemento2.getAdditionalInfo().addAll( siieElemento.getAdditionalInfo() );
+			list.add( siieElemento2 );
+		}
+		ElementosGrid grid = new ElementosGrid( true, list );
 		grid.removeColumn( grid.getSituacaoColumn() );
 		grid.useAdditionalInfoColumn();
 		grid.setSizeUndefined();

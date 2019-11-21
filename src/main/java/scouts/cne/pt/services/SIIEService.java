@@ -57,7 +57,6 @@ import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
 import scouts.cne.pt.model.siie.types.SIIEOptions;
 import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.model.siie.types.SIIESituacao;
-import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.ValidationUtils;
 
 @Component
@@ -153,7 +152,6 @@ public class SIIEService implements Serializable, HasLogger
 		{
 			updateDadosCompletosSIIE();
 			updateDadosSaudeSIIE();
-			Broadcaster.broadcast( "update SIIE" );
 		}
 		catch ( Exception e )
 		{

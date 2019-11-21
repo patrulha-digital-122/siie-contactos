@@ -3,8 +3,6 @@ package scouts.cne.pt.model.siie;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -107,8 +105,6 @@ public class SIIEElemento implements Comparable< SIIEElemento >
 	private String			descoutroprob;
 	@JsonIgnore
 	private Person			googlePerson;
-	@JsonIgnore
-	private final List< String >	lstAdditionalInfo	= new ArrayList<>();
 
 	@JsonProperty( "nin" )
 	public String getNin()
@@ -1236,28 +1232,6 @@ public class SIIEElemento implements Comparable< SIIEElemento >
 	public void setGooglePerson( Person googlePerson )
 	{
 		this.googlePerson = googlePerson;
-	}
-
-
-	/**
-	 * Getter for additionalInfo
-	 * 
-	 * @author 62000465 2019-11-21
-	 * @return the additionalInfo {@link List<String>}
-	 */
-	public List< String > getAdditionalInfo()
-	{
-		return lstAdditionalInfo;
-	}
-
-	/**
-	 * Setter for additionalInfo
-	 * 
-	 * @author 62000465 2019-11-21
-	 * @param additionalInfo the additionalInfo to set
-	 */
-	public void setAdditionalInfo( List< String > additionalInfo )
-	{
 	}
 
 	@Override

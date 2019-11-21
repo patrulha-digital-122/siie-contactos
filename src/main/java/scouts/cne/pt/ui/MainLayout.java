@@ -271,13 +271,12 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 			{
 				try
 				{
+					getLogger().info( "Test dev START" );
 					if ( !siieService.isAuthenticated() )
 					{
-						getLogger().info( "Test dev START" );
 						siieService.authenticateSIIE( siieUser, siiePassword );
-						siieService.updateFullSIIE();
-						getLogger().info( "Test dev END" );
 					}
+					siieService.updateFullSIIE();
 				}
 				catch ( Exception e )
 				{

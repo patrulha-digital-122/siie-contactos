@@ -9,8 +9,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -19,9 +18,19 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.types.SIIESituacao;
-import scouts.cne.pt.ui.components.SIIEMobileTemplate;
+import scouts.cne.pt.ui.components.Badge;
+import scouts.cne.pt.ui.components.FlexBoxLayout;
+import scouts.cne.pt.ui.layout.size.Right;
+import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.FontSize;
+import scouts.cne.pt.ui.util.LineHeight;
+import scouts.cne.pt.ui.util.LumoStyles;
 import scouts.cne.pt.ui.util.TextColor;
+import scouts.cne.pt.ui.util.css.AlignSelf;
+import scouts.cne.pt.ui.util.css.FlexDirection;
+import scouts.cne.pt.ui.util.css.Overflow;
+import scouts.cne.pt.ui.util.css.PointerEvents;
+import scouts.cne.pt.ui.util.css.TextOverflow;
 import scouts.cne.pt.utils.UIUtils;
 
 /**
@@ -30,10 +39,6 @@ import scouts.cne.pt.utils.UIUtils;
  */
 public class ElementosGrid extends Grid< SIIEElemento >
 {
-	/**
-	 * 
-	 */
-	public static final String							ADDITIONAL_INFO_COLUMN	= "additional_info";
 	private static final long							serialVersionUID	= -1960188142116715298L;
 	private final ListDataProvider< SIIEElemento >		dataProvider;
 	private final TextField								searchNameField		= new TextField();
@@ -50,7 +55,6 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		// "Mobile" column
 		mobileColumn = addColumn( new ComponentRenderer<>( this::getMobileTemplate ) ).setSortable( false ).setHeader( "Nome / Secção" );
 		mobileColumn.setVisible( false );
-
 		Column< SIIEElemento > avatar =
 						addComponentColumn( i -> UIUtils.createSIIEAvatar( i ) ).setHeader( "Foto" ).setWidth( "30px" ).setSortable( false );
 		// "Desktop" columns
@@ -117,13 +121,6 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		desktopColumns.forEach( e -> e.setAutoWidth( true ) );
 	}
 
-	public void useAdditionalInfoColumn()
-	{
-		Column< SIIEElemento > column = addColumn( new ComponentRenderer<>( this::getAdditionalInfoTemplate ) ).setSortable( false )
-						.setHeader( "Informação Adicional" ).setKey( ADDITIONAL_INFO_COLUMN ).setAutoWidth( true );
-		desktopColumns.add( column );
-	}
-
 	@Override
 	protected void onAttach( AttachEvent attachEvent )
 	{
@@ -161,26 +158,13 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		}
 	}
 
-	/**
-	 * 
-	 * The <b>getMobileTemplate</b> method returns {@link Component}
-	 * 
-	 * @author 62000465 2019-11-21
-	 * @param siieElemento
-	 * @return
-	 */
+	private Component getSIIESeccao( SIIEElemento siieElemento )
+	{
+		return siieElemento.getSiglaseccao().getLabel();
+	}
 	private Component getMobileTemplate( SIIEElemento siieElemento )
 	{
 		return new SIIEMobileTemplate( siieElemento );
-	}
-
-	private Component getAdditionalInfoTemplate( SIIEElemento siieElemento )
-	{
-		VerticalLayout verticalLayout = new VerticalLayout();
-		verticalLayout.setAlignItems( Alignment.STRETCH );
-		siieElemento.getAdditionalInfo().forEach( p -> verticalLayout.add( UIUtils.createLabel( FontSize.S, TextColor.ERROR, p ) ) );
-		verticalLayout.setSizeFull();
-		return verticalLayout;
 	}
 
 	/**
@@ -203,5 +187,54 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	public Grid.Column< SIIEElemento > getSituacaoColumn()
 	{
 		return situacaoColumn;
+	}
+
+	/**
+	 * A layout for displaying SIIElemento info in a mobile friendly format.
+	 */
+	private class SIIEMobileTemplate extends FlexBoxLayout
+	{
+		/**
+		 * 
+		 */
+		private static final long	serialVersionUID	= 9029448247040068065L;
+		private SIIEElemento		siieElemento;
+
+		public SIIEMobileTemplate( SIIEElemento siieElemento )
+		{
+			this.siieElemento = siieElemento;
+			UIUtils.setLineHeight( LineHeight.M, this );
+			UIUtils.setPointerEvents( PointerEvents.NONE, this );
+			setPadding( Vertical.AUTO );
+			setSpacing( Right.L );
+			FlexBoxLayout column = new FlexBoxLayout( getNome(), getSeccao() );
+			column.setFlexDirection( FlexDirection.COLUMN );
+			column.setOverflow( Overflow.HIDDEN );
+
+			add( column );
+			setFlexGrow( 1, column );
+		}
+
+		private Label getNome()
+		{
+			Label owner = UIUtils.createLabel( FontSize.M, TextColor.BODY, siieElemento.getNome() );
+			UIUtils.setOverflow( Overflow.HIDDEN, owner );
+			UIUtils.setTextOverflow( TextOverflow.ELLIPSIS, owner );
+			UIUtils.setAlignSelf( AlignSelf.CENTER, owner );
+			FlexBoxLayout wrapper = new FlexBoxLayout( owner );
+			wrapper.setAlignItems( Alignment.CENTER );
+			wrapper.setFlexGrow( 1, owner );
+			wrapper.setSpacing( Right.M );
+			return owner;
+		}
+
+		private Badge getSeccao()
+		{
+			Badge account = siieElemento.getSiglaseccao().getLabel();
+			account.addClassNames( LumoStyles.Margin.Bottom.S );
+			UIUtils.setOverflow( Overflow.HIDDEN, account );
+			UIUtils.setTextOverflow( TextOverflow.ELLIPSIS, account );
+			return account;
+		}
 	}
 }

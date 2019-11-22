@@ -16,13 +16,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.grids.ElementosGrid;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.BoxShadowBorders;
@@ -46,7 +46,7 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 	private final Accordion				accordion			= new Accordion();
 	private UI							ui;
 	private ProgressBar					progressBar			= new ProgressBar( 0, 6, 0 );
-	private Registration				broadcasterRegistration;
+
 
 	public DiagnosticoListView()
 	{
@@ -71,6 +71,11 @@ public class DiagnosticoListView extends HasSIIELoginUrl
 		ui = attachEvent.getUI();
 		broadcasterRegistration = Broadcaster.register( newMessage ->
 		{
+			if ( newMessage instanceof FinishSIIEUpdate )
+			{
+				FinishSIIEUpdate finishSIIEUpdate = ( FinishSIIEUpdate ) newMessage;
+				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
+			}
 			ui.access( () -> updateContent() );
 		} );
 		updateContent();

@@ -13,6 +13,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.model.siie.authentication.SIIEUserLoginError;
@@ -28,6 +29,7 @@ public abstract class HasSIIELoginUrl extends ViewFrame implements HasUrlParamet
 	private static final long	serialVersionUID	= -7986739356725426908L;
 	private String				siieUser			= null;
 	private String				siiePassword		= null;
+	protected Registration		broadcasterRegistration;
 
 	public boolean authenticate( SIIEService siieService, UI ui )
 	{

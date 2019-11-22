@@ -5,6 +5,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import com.vaadin.flow.shared.Registration;
+import scouts.cne.pt.ui.events.InternalEvent;
 
 /**
  * @author 62000465 2019-11-21
@@ -13,9 +14,9 @@ import com.vaadin.flow.shared.Registration;
 public class Broadcaster
 {
 	static Executor							executor	= Executors.newSingleThreadExecutor();
-	static LinkedList< Consumer< String > >	listeners	= new LinkedList<>();
+	static LinkedList< Consumer< InternalEvent > >	listeners	= new LinkedList<>();
 
-	public static synchronized Registration register( Consumer< String > listener )
+	public static synchronized Registration register( Consumer< InternalEvent > listener )
 	{
 		listeners.add( listener );
 		return () ->
@@ -27,11 +28,12 @@ public class Broadcaster
 		};
 	}
 
-	public static synchronized void broadcast( String message )
+	public static synchronized void broadcast( InternalEvent event )
 	{
-		for ( Consumer< String > listener : listeners )
+		event.finish();
+		for ( Consumer< InternalEvent > listener : listeners )
 		{
-			executor.execute( () -> listener.accept( message ) );
+			executor.execute( () -> listener.accept( event ) );
 		}
 	}
 }

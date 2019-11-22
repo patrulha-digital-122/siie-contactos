@@ -16,12 +16,14 @@ import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.ListItem;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Vertical;
 import scouts.cne.pt.ui.util.BoxShadowBorders;
 import scouts.cne.pt.ui.util.LumoStyles;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.views.HasSIIELoginUrl;
+import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.UIUtils;
 
 @Route( value = AniversarioListView.VIEW_NAME, layout = MainLayout.class )
@@ -56,6 +58,27 @@ public class AniversarioListView extends HasSIIELoginUrl
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
+		broadcasterRegistration = Broadcaster.register( newMessage ->
+		{
+			if ( newMessage instanceof FinishSIIEUpdate )
+			{
+				FinishSIIEUpdate finishSIIEUpdate = ( FinishSIIEUpdate ) newMessage;
+				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
+			}
+			attachEvent.getUI().access( () -> updateContent() );
+		} );
+		updateContent();
+	}
+
+	/**
+	 * The <b>updateContent</b> method returns {@link Object}
+	 * 
+	 * @author 62000465 2019-11-22
+	 * @return
+	 */
+	private void updateContent()
+	{
+		content.removeAll();
 		lstElementos.clear();
 		lstElementos.addAll( siieService.getAllElementos().stream().filter( ( p ) ->
 		{
@@ -68,7 +91,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 		} ).collect( Collectors.toList() ) );
 		if ( lstElementos.isEmpty() )
 		{
-			content.add( UIUtils.createH3Label( "Hoje ninguém faz anos hoje... tens de esperar por outro dia para uma fatia de bolo :-)" ) );
+			content.add( UIUtils.createH3Label( "Hoje ninguém faz anos... tens de esperar por outro dia para uma fatia de bolo :-)" ) );
 		}
 		else
 		{

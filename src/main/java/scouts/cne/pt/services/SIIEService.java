@@ -57,6 +57,7 @@ import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
 import scouts.cne.pt.model.siie.types.SIIEOptions;
 import scouts.cne.pt.model.siie.types.SIIESeccao;
 import scouts.cne.pt.model.siie.types.SIIESituacao;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.ValidationUtils;
 
@@ -147,13 +148,14 @@ public class SIIEService implements Serializable, HasLogger
 
 	public void updateFullSIIE() throws SIIIEImporterException
 	{
+		FinishSIIEUpdate finishSIIEUpdate = new FinishSIIEUpdate();
 		eSiieElementos.getData().clear();
 		eSiieElementos.setCount( 0L );
 		try
 		{
 			updateDadosCompletosSIIE();
 			updateDadosSaudeSIIE();
-			Broadcaster.broadcast( "update SIIE" );
+			Broadcaster.broadcast( finishSIIEUpdate );
 		}
 		catch ( Exception e )
 		{

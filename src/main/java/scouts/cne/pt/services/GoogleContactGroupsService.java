@@ -149,19 +149,28 @@ public class GoogleContactGroupsService implements Serializable, HasLogger
 			List< String > lstElementoNoGrupo = new ArrayList<>();
 			updateCreateElementos.forEach( p -> lstElementoNoGrupo.add( p.getGooglePerson().getResourceName() ) );
 			ModifyContactGroupMembersRequest contactGroupMembersRequest = new ModifyContactGroupMembersRequest();
-			contactGroupMembersRequest.setResourceNamesToRemove( ListUtils.subtract( contactGroup.getMemberResourceNames(), lstElementoNoGrupo ) );
-			contactGroupMembersRequest.setResourceNamesToAdd( ListUtils.subtract( lstElementoNoGrupo, contactGroup.getMemberResourceNames() ) );
-			ModifyContactGroupMembersResponse execute =
-							peopleService.contactGroups().members().modify( contactGroup.getResourceName(), contactGroupMembersRequest ).execute();
-			if ( execute.getNotFoundResourceNames() != null && !execute.getNotFoundResourceNames().isEmpty() )
+			List< String > namestoRemove = ListUtils.subtract( contactGroup.getMemberResourceNames(), lstElementoNoGrupo );
+			List< String > namesToAdd = ListUtils.subtract( lstElementoNoGrupo, contactGroup.getMemberResourceNames() );
+			if ( !namestoRemove.isEmpty() && !namesToAdd.isEmpty() )
 			{
-				getLogger().error( "NotFoundResourceNames :: {}", StringUtils.join( execute.getNotFoundResourceNames() ) );
+				contactGroupMembersRequest.setResourceNamesToRemove( namestoRemove );
+				contactGroupMembersRequest.setResourceNamesToAdd( namesToAdd );
+				ModifyContactGroupMembersResponse execute = peopleService.contactGroups().members()
+								.modify( contactGroup.getResourceName(), contactGroupMembersRequest ).execute();
+				if ( execute.getNotFoundResourceNames() != null && !execute.getNotFoundResourceNames().isEmpty() )
+				{
+					getLogger().error( "NotFoundResourceNames :: {}", StringUtils.join( execute.getNotFoundResourceNames() ) );
+				}
+			}
+			else
+			{
+				getLogger().info( "Grupo nao precisa de ser actualizado!" );
 			}
 		}
 		catch ( Exception e )
 		{
 			printError( e );
-			throw new SIIIEImporterException( e.getMessage() );
+			throw new SIIIEImporterException( "Erro a actualizar os grupos. Por favor tente mais tarde :: 9008" );
 		}
 	}
 }

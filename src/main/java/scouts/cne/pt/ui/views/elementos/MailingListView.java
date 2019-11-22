@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.olli.ClipboardHelper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -27,11 +28,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import scouts.cne.pt.model.SIIIEImporterException;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.grids.ElementosGrid;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.ui.views.HasSIIELoginUrl;
+import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.ContactUtils;
 import scouts.cne.pt.utils.UIUtils;
 
@@ -47,7 +51,7 @@ public class MailingListView extends HasSIIELoginUrl
 	@Autowired
 	private SIIEService					siieService;
 
-	private final List< SIIEElemento >	lstServices			= new ArrayList<>();
+	private final List< SIIEElemento >	lstElementos		= new ArrayList<>();
 	private final ElementosGrid			grid;
 	private final TextArea				mailingList			= new TextArea( "Mailing list" );
 	private final Checkbox				usarMailsPais		= new Checkbox( "Utilizar emails dos pais", true );
@@ -57,11 +61,12 @@ public class MailingListView extends HasSIIELoginUrl
 	private final ClipboardHelper		clipboard;
 	private final Button				refresh				= UIUtils.createPrimaryButton( "Actualizar dados do SIIE", VaadinIcon.REFRESH );
 	private String						nomeToSearch		= "";
+	private UI							ui;
 
 	public MailingListView()
 	{
 		setId( VIEW_NAME );
-		grid = new ElementosGrid( true, lstServices );
+		grid = new ElementosGrid( true, lstElementos );
 		grid.setSelectionMode( SelectionMode.MULTI );
 		grid.addSelectionListener( e -> updateMailingListTextArea() );
 		grid.setMinHeight( "50%" );
@@ -138,56 +143,53 @@ public class MailingListView extends HasSIIELoginUrl
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
-		lstServices.clear();
-		if ( StringUtils.isNotEmpty( getSiieUser() ) )
+		ui = attachEvent.getUI();
+		broadcasterRegistration = Broadcaster.register( newMessage ->
 		{
-			if ( siieService.isAuthenticated() )
+			if ( newMessage instanceof FinishSIIEUpdate )
 			{
-				updateGrid( attachEvent );
+				FinishSIIEUpdate finishSIIEUpdate = ( FinishSIIEUpdate ) newMessage;
+				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
 			}
-			else if ( authenticate( siieService, attachEvent.getUI() ) )
-			{
-				attachEvent.getUI().navigate( VIEW_NAME );
-				updateGrid( attachEvent );
-			}
-		}
-		else
-		{
-			lstServices.addAll( siieService.getAllElementos() );
-			grid.getDataProvider().refreshAll();
-			grid.getSearchNameField().setValue( nomeToSearch );
-		}
-		refresh.setEnabled( siieService.isAuthenticated() );
-		refresh.addClickListener( e -> updateGrid( attachEvent ) );
+			updateContent();
+		} );
+
+		updateContent();
 	}
 
 	/**
-	 * The <b>updateGrid</b> method returns {@link void}
-	 * @author 62000465 2019-10-18
-	 * @param attachEvent 
+	 * The <b>updateContent</b> method returns {@link Object}
+	 * 
+	 * @author 62000465 2019-11-22
+	 * @param attachEvent
+	 * @return
 	 */
-	private void updateGrid( AttachEvent attachEvent )
+	private void updateContent()
 	{
-		lstServices.clear();
-		grid.getDataProvider().refreshAll();
 		new Thread( () ->
 		{
-			attachEvent.getUI().access( () ->
+			lstElementos.clear();
+			lstElementos.addAll( siieService.getAllElementos() );
+			ui.access( () ->
 			{
-				try
-				{
-					siieService.updateFullSIIE();
-				}
-				catch ( Exception e )
-				{
-					showError( e );
-				}
-				lstServices.addAll( siieService.getAllElementos() );
 				grid.getDataProvider().refreshAll();
+				grid.getSearchNameField().setValue( nomeToSearch );
 				refresh.setEnabled( siieService.isAuthenticated() );
+				refresh.addClickListener( e ->
+				{
+					try
+					{
+						siieService.updateFullSIIE();
+					}
+					catch ( SIIIEImporterException e1 )
+					{
+						showError( e1 );
+					}
+				} );
 			} );
 		} ).start();
 	}
+
 
 	public Component getOptionComponent()
 	{

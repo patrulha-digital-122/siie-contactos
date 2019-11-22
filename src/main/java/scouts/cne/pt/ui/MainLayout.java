@@ -281,7 +281,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 				}
 				catch ( Exception e )
 				{
-					showError( e );
+					attachEvent.getUI().access( () -> showError( e ) );
 				}
 			}
 		} ).start();

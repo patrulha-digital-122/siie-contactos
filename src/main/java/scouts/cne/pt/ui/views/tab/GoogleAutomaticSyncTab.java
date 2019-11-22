@@ -172,20 +172,24 @@ public class GoogleAutomaticSyncTab extends VerticalLayout implements HasLogger
 						progressBar.setValue( 2 );
 					} );
 					syncGroupElemento( siieSeccao, updateCreateElementos );
+					ui.access( () ->
+					{
+						progressText.setValue( "Sincronização completa!" );
+						progressBar.addThemeVariants( ProgressBarVariant.LUMO_SUCCESS );
+					} );
 				}
 				catch ( Exception e1 )
 				{
 					ui.access( () ->
 					{
+						progressText.setValue( e1.getMessage() );
 						progressBar.addThemeVariants( ProgressBarVariant.LUMO_ERROR );
+						showError( e1 );
 					} );
-					showError( e1 );
 				}
 				ui.access( () ->
 				{
-					progressText.setValue( "Sincronização completa!" );
 					progressBar.setValue( 3 );
-					progressBar.addThemeVariants( ProgressBarVariant.LUMO_SUCCESS );
 					button.setEnabled( true );
 					buttonSuperAuto.setEnabled( true );
 					seccaoComboBox.setEnabled( true );

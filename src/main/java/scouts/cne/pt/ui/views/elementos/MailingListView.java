@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.olli.ClipboardHelper;
@@ -172,6 +173,11 @@ public class MailingListView extends HasSIIELoginUrl
 			lstElementos.addAll( siieService.getAllElementos() );
 			ui.access( () ->
 			{
+				Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieService.getUserNIN() );
+				if ( elementoByNIN.isPresent() && StringUtils.endsWith( elementoByNIN.get().getElemnucleo(), "00" ) )
+				{
+					grid.useAgrupamentoColumn();
+				}
 				grid.getDataProvider().refreshAll();
 				grid.getSearchNameField().setValue( nomeToSearch );
 				refresh.setEnabled( siieService.isAuthenticated() );

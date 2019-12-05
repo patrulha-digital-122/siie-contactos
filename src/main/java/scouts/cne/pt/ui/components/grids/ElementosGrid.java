@@ -34,6 +34,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	 * 
 	 */
 	public static final String							ADDITIONAL_INFO_COLUMN	= "additional_info";
+	public static final String							AGRUPAMENTO_COLUMN		= "agrupamento";
 	private static final long							serialVersionUID	= -1960188142116715298L;
 	private final ListDataProvider< SIIEElemento >		dataProvider;
 	private final TextField								searchNameField		= new TextField();
@@ -41,10 +42,13 @@ public class ElementosGrid extends Grid< SIIEElemento >
 	private Registration								resizeListener;
 	private Column< SIIEElemento >						mobileColumn;
 	private final List< Grid.Column< SIIEElemento > >	desktopColumns		= new ArrayList<>();
+	private final boolean								bUseFilterRow;
+	private HeaderRow									filterRow				= null;
 
 	public ElementosGrid( boolean bUseFilterRow, Collection< SIIEElemento > lstService )
 	{
 		super();
+		this.bUseFilterRow = bUseFilterRow;
 		setSizeFull();
 		// addThemeName( "mobile" );
 		// "Mobile" column
@@ -65,6 +69,11 @@ public class ElementosGrid extends Grid< SIIEElemento >
 			return t.getSiglasituacao().getLable();
 		} ) ).setHeader( "Situação" ).setSortable( true );
 
+		Grid.Column< SIIEElemento > agrupamentoColumn =
+						addColumn( SIIEElemento::getAgrupdesc ).setHeader( "Agrupamento" ).setAutoWidth( true ).setKey( AGRUPAMENTO_COLUMN )
+										.setSortable( true );
+		agrupamentoColumn.setVisible( false );
+
 		desktopColumns.add( avatar );
 		desktopColumns.add( ninColumn );
 		desktopColumns.add( nomeColumn );
@@ -77,7 +86,7 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		if ( bUseFilterRow )
 		{
 			// Create a header row to hold column filters
-			HeaderRow filterRow = appendHeaderRow();
+			filterRow = appendHeaderRow();
 			// First filter
 			TextField firstNameField = new TextField();
 			firstNameField.addValueChangeListener( event -> dataProvider
@@ -112,6 +121,14 @@ public class ElementosGrid extends Grid< SIIEElemento >
 				elemento.getSiglasituacao().equals( situacaoComboBox.getValue() ) ) );
 			situacaoComboBox.setValue( SIIESituacao.A );
 			filterRow.getCell( situacaoColumn ).setComponent( situacaoComboBox );
+			// Agrupamento filter
+			TextField agrupamentoField = new TextField();
+			agrupamentoField.addValueChangeListener( event -> dataProvider
+							.addFilter( elemento -> StringUtils.containsIgnoreCase( elemento.getAgrupdesc(), agrupamentoField.getValue() ) ) );
+			agrupamentoField.setValueChangeMode( ValueChangeMode.EAGER );
+			agrupamentoField.setSizeFull();
+			agrupamentoField.setPlaceholder( "Filtrar" );
+			filterRow.getCell( agrupamentoColumn ).setComponent( agrupamentoField );
 		}
 		
 		desktopColumns.forEach( e -> e.setAutoWidth( true ) );
@@ -122,6 +139,17 @@ public class ElementosGrid extends Grid< SIIEElemento >
 		Column< SIIEElemento > column = addColumn( new ComponentRenderer<>( this::getAdditionalInfoTemplate ) ).setSortable( false )
 						.setHeader( "Informação Adicional" ).setKey( ADDITIONAL_INFO_COLUMN ).setAutoWidth( true );
 		desktopColumns.add( column );
+	}
+
+	public void useAgrupamentoColumn()
+	{
+
+		Column< SIIEElemento > columnByKey = getColumnByKey( AGRUPAMENTO_COLUMN );
+		if ( columnByKey != null )
+		{
+			columnByKey.setVisible( true );
+			desktopColumns.add( columnByKey );
+		}
 	}
 
 	@Override

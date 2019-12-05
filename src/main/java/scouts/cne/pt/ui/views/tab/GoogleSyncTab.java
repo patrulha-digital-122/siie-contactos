@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
@@ -89,6 +90,11 @@ public class GoogleSyncTab extends ElementosGrid implements HasLogger
 		lstElementos.clear();
 		lstElementos.addAll( siieService.getElementosActivos().stream().collect( Collectors.toList() ) );
 		
+		Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieService.getUserNIN() );
+		if ( elementoByNIN.isPresent() && StringUtils.endsWith( elementoByNIN.get().getElemnucleo(), "00" ) )
+		{
+			useAgrupamentoColumn();
+		}
 		getDataProvider().refreshAll();
 		recalculateColumnWidths();
 	}

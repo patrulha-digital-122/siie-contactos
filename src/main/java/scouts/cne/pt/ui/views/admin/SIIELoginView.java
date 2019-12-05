@@ -1,10 +1,12 @@
 package scouts.cne.pt.ui.views.admin;
 
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.login.LoginI18n;
@@ -14,15 +16,18 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Uniform;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.views.ViewFrame;
+import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.UIUtils;
 
 @PageTitle( SIIELoginView.VIEW_DISPLAY_NAME )
@@ -44,6 +49,8 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	private final TextField			textFieldTotalElementos		= new TextField( "Total de elementos obtidos do SIIE" );
 	private final TextField			textFieldDataUltimoUpdate	= new TextField( "Data da última actualização de dados do SIIE" );
 	private String					strUrl						= "mailing-list?user=%s&password=%s";
+	protected Registration			broadcasterRegistration;
+	private UI						ui;
 
 	public SIIELoginView()
 	{
@@ -51,32 +58,6 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 		loginForm = new LoginForm( createPortugueseI18n() );
 		loginForm.setForgotPasswordButtonVisible( false );
 		setViewContent( createContent() );
-		loginForm.addLoginListener( e ->
-		{
-			try
-			{
-				siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
-				labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
-				labelNextUrlLogin.setVisible( true );
-				siieService.updateFullSIIE();
-				updateSIIEMetaData();
-				Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( e.getUsername() );
-				if ( elementoByNIN.isPresent() )
-				{
-					MainLayout.get().getAppBar().getAvatar()
-									.setSrc( String.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), e.getUsername() ) );
-				}
-			}
-			catch ( Exception ex )
-			{
-				loginForm.setError( true );
-				showError( ex );
-				ex.printStackTrace();
-			}
-
-			loginForm.setEnabled( !siieService.isAuthenticated() );
-		} );
-
 		labelNextUrlLogin.setEnabled( false );
 		labelNextUrlLogin.setWidthFull();
 		labelNextUrlLogin.setVisible( false );
@@ -90,9 +71,52 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
-
 		strUrl = getLocation() + strUrl;
+		ui = attachEvent.getUI();
 		updateSIIEMetaData();
+		loginForm.addLoginListener( e ->
+		{
+			ui.access( () ->
+			{
+				textFieldDataUltimoUpdate.setValue( "" );
+				textFieldTotalElementos.setValue( "" );
+			} );
+			try
+			{
+				if ( !( siieService.isAuthenticated() && StringUtils.equals( e.getUsername(), siieService.getUserNIN() ) ) )
+				{
+					siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
+					labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
+					labelNextUrlLogin.setVisible( true );
+				}
+				siieService.updateFullSIIE();
+			}
+			catch ( Exception ex )
+			{
+				loginForm.setError( true );
+			}
+
+			loginForm.setEnabled( true );
+		} );
+
+		broadcasterRegistration = Broadcaster.register( newMessage ->
+		{
+			if ( newMessage instanceof FinishSIIEUpdate )
+			{
+				FinishSIIEUpdate finishSIIEUpdate = ( FinishSIIEUpdate ) newMessage;
+				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
+				ui.access( () ->
+				{
+					Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieService.getUserNIN() );
+					if ( elementoByNIN.isPresent() )
+					{
+						MainLayout.get().getAppBar().getAvatar().setSrc( String
+										.format( UIUtils.SIIE_IMG_PATH, elementoByNIN.get().getUploadgroup(), siieService.getUserNIN() ) );
+					}
+					updateSIIEMetaData();
+				} );
+			}
+		} );
 	}
 
 	private Component createContent()
@@ -118,9 +142,9 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 		i18n.getForm().setSubmit( "Entrar" );
 		i18n.getForm().setPassword( "Senha" );
 		i18n.getForm().setForgotPassword( "Esqueci minha senha" );
-		i18n.getErrorMessage().setTitle( "Usuário/senha inválidos" );
-		i18n.getErrorMessage().setMessage( "Confira seu usuário e senha e tente novamente." );
-		i18n.setAdditionalInformation( "Sempre que efectuar um novo login os dados apresentados neste site serãop actualizados com a informação do SIIE" );
+		i18n.getErrorMessage().setTitle( "NIN/senha inválida" );
+		i18n.getErrorMessage().setMessage( "Confira NIN e senha e tente novamente." );
+		i18n.setAdditionalInformation( "Sempre que efectuar um novo login os dados apresentados neste site serão actualizados com a informação do SIIE" );
 		return i18n;
 	}
 
@@ -136,14 +160,13 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	{
 		if ( siieService.isAuthenticated() )
 		{
-			textFieldDataUltimoUpdate.setValue( UIUtils.formatDateTime( siieService.getLastLogin() ) );
-			textFieldTotalElementos.setValue( String.valueOf( siieService.getSiieElementos().getCount() ) );
+			textFieldDataUltimoUpdate.setValue( UIUtils.formatDateTime( siieService.getLastUpdateInstant() ) );
+			textFieldTotalElementos.setValue( String.valueOf( siieService.getSiieElementos().getData().size() ) );
 		}
 		else
 		{
 			textFieldDataUltimoUpdate.setValue( "" );
 			textFieldTotalElementos.setValue( "" );
 		}
-		loginForm.setEnabled( !siieService.isAuthenticated() );
 	}
 }

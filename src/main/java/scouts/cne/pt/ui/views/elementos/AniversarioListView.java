@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -38,6 +39,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 	private SIIEService					siieService;
 	private final Div					content				= new Div();
 	private final List< SIIEElemento >	lstElementos		= new ArrayList<>();
+	private UI							ui;
 
 
 	public AniversarioListView()
@@ -58,6 +60,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 	protected void onAttach( AttachEvent attachEvent )
 	{
 		super.onAttach( attachEvent );
+		this.ui = attachEvent.getUI();
 		broadcasterRegistration = Broadcaster.register( newMessage ->
 		{
 			if ( newMessage instanceof FinishSIIEUpdate )
@@ -65,7 +68,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 				FinishSIIEUpdate finishSIIEUpdate = ( FinishSIIEUpdate ) newMessage;
 				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
 			}
-			attachEvent.getUI().access( () -> updateContent() );
+			ui.access( () -> updateContent() );
 		} );
 		updateContent();
 	}

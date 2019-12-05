@@ -8,9 +8,24 @@ import scouts.cne.pt.ui.events.InternalEvent;
  */
 public class FinishSIIEUpdate extends InternalEvent
 {
+	String strDescription = "Finilizado update de dados do SIIE";
+
 	@Override
 	public String getDescription()
 	{
-		return "Finilizado update de dados do SIIE";
+		return strDescription;
 	}
+
+	/**
+	 * Setter for description
+	 * 
+	 * @author 62000465 2019-12-05
+	 * @param description the description to set
+	 */
+	public void setDescription( String description )
+	{
+		strDescription = description;
+	}
+
+
 }

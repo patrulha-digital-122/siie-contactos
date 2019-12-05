@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,37 +28,27 @@ import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
 
 public class SIIEWebApiTest
 {
-
 	public static void main( String[] args )
 	{
 		try
 		{
-			
 			SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 			Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
 			requestFactory.setProxy( proxy );
 			URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
-			URI uri = new URI(
-							"https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
-			
+			URI uri = new URI( "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
 			CookieRestTemplate restTemplate = new CookieRestTemplate( requestFactory );
-
 			SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
 			tokenRequest.setUsername( "0512050496002" );
 			tokenRequest.setPassword( "agr122tvd" );
-
 			ResponseEntity< SIIEUserLogin > postForEntity =
 							restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
-
 			String strAcessToken = postForEntity.getBody().getAcessToken();
 			List< String > orDefault = postForEntity.getHeaders().getOrDefault( "xSIIE", Arrays.asList() );
 			List< String > lstOriginalCookies = postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE );
-			
-			
 			if ( !orDefault.isEmpty() )
-			 {
+			{
 				String strOrginalXSIIE = orDefault.get( 0 );
-
 				HttpHeaders headers = new HttpHeaders();
 				headers.add( "Authorization", "Bearer " + strAcessToken );
 				headers.add( "xSIIE", strOrginalXSIIE );
@@ -65,10 +56,10 @@ public class SIIEWebApiTest
 				{
 					headers.add( HttpHeaders.COOKIE, string );
 				}
-
 				Map< String, String > mapRequest = new LinkedHashMap<>();
 				mapRequest.put( "Dados completos", "https://siie.escutismo.pt/elementos/list?xml=elementos/elementos/dados-completos" );
-				mapRequest.put( "Dados saude", "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
+				// mapRequest.put( "Dados saude",
+				// "https://siie.escutismo.pt/elementos/List?xml=elementos/dadossaude/dados-saude" );
 				// mapRequest.put( "Noites de campo",
 				// "https://siie.escutismo.pt/elementos/List?xml=elementos/actividades/noites-campo" );
 				SIIEElementos siieElementos = null;
@@ -80,35 +71,49 @@ public class SIIEWebApiTest
 									restTemplate.exchange( new URI( url ), HttpMethod.GET, new HttpEntity( null, headers ), String.class );
 					if ( forEntity.hasBody() )
 					{
-						String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-						URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-							"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-						restTemplate.setAcessToken( strAcessToken );
-						restTemplate.setCookies( lstOriginalCookies );
-						System.out.println( restTemplate.getForObject( uriElementos, String.class ) );
-						ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-						if ( siieElementos == null )
+						int iPage = 0;
+						int iSkip = 0;
+						int iTake = 100;
+
+						while ( siieElementos == null || siieElementos.getData().size() < siieElementos.getCount() )
 						{
-							siieElementos = elementosFor.getBody();
-						}
-						else
-						{
-							for ( SIIEElemento e : elementosFor.getBody().getData() )
+							iSkip = iPage * iTake;
+							iPage++;
+							String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+							String encodeToString =
+											"{\"take\":" + iTake + ",\"skip\":" + iSkip + ",\"page\":" + iPage + ",\"pageSize\":" + iTake +
+												",\"sort\":[]}";
+							System.out.println( encodeToString );
+							URI uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi + "&" + URLEncoder.encode( encodeToString, "UTF-8" ) );
+							restTemplate.setAcessToken( strAcessToken );
+							restTemplate.setCookies( lstOriginalCookies );
+							System.out.println( restTemplate.getForObject( uriElementos, String.class ) );
+							ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+							if ( siieElementos == null )
 							{
-								int indexOf = siieElementos.getData().indexOf( e );
-								if ( indexOf > -1 )
+								siieElementos = elementosFor.getBody();
+							}
+							else
+							{
+								for ( SIIEElemento e : elementosFor.getBody().getData() )
 								{
-									siieElementos.getData().get( indexOf ).merge( e );
+									int indexOf = siieElementos.getData().indexOf( e );
+									if ( indexOf > -1 )
+									{
+										siieElementos.getData().get( indexOf ).merge( e );
+									}
+									else
+									{
+										siieElementos.getData().add( e );
+									}
 								}
 							}
 						}
 					}
 				}
-				siieElementos.getData().forEach( e -> System.out.println( e ) );
+				System.out.println( "Total: " + siieElementos.getData().size() );
+				// siieElementos.getData().forEach( e -> System.out.println( e ) );
 			}
-			
-			
-
 		}
 		catch ( final Exception e )
 		{
@@ -135,5 +140,4 @@ public class SIIEWebApiTest
 		}
 		return sb.toString();
 	}
-
 }

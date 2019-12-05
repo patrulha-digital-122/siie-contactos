@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -70,27 +72,22 @@ public class SIIEService implements Serializable, HasLogger
 	 */
 	private static final long						serialVersionUID	= 1L;
 	private File									file;
-	private SIIEElementos							eSiieElementos		= new SIIEElementos();
+	private final SIIEElementos						eSiieElementos		= new SIIEElementos();
 	private HashMap< String, Elemento >				map					= null;
 	private EnumMap< SECCAO, List< Elemento > >		mapSeccaoElemento	= null;
 	private EnumMap< SECCAO, List< SIIEElemento > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
 	private SIIESessionData							siieSessionData;
-	private final CookieRestTemplate				restTemplate;
+	private CookieRestTemplate						restTemplate;
 	@Autowired
 	private GoogleServerAuthenticationBean			googleServerAuthentication;
+	private String									strUserNIN;
+	private Instant									lastUpdateInstant;
 
 	public SIIEService()
 	{
 		super();
 		getLogger().info( "New SIIEService :: " + Instant.now() );
 		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
-		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		if ( StringUtils.equals( "Y", System.getenv().get( "USE_RPOXY" ) ) )
-		{
-			Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
-			requestFactory.setProxy( proxy );
-		}
-		restTemplate = new CookieRestTemplate( requestFactory );
 	}
 
 	/**
@@ -102,6 +99,17 @@ public class SIIEService implements Serializable, HasLogger
 	public Instant getLastLogin()
 	{
 		return siieSessionData != null ? siieSessionData.getInstant() : null;
+	}
+
+	/**
+	 * Getter for lastUpdateInstant
+	 * 
+	 * @author 62000465 2019-12-05
+	 * @return the lastUpdateInstant {@link Instant}
+	 */
+	public Instant getLastUpdateInstant()
+	{
+		return lastUpdateInstant;
 	}
 
 	/**
@@ -120,11 +128,32 @@ public class SIIEService implements Serializable, HasLogger
 		return siieSessionData != null;
 	}
 
+	/**
+	 * Getter for userNIN
+	 * 
+	 * @author 62000465 2019-12-05
+	 * @return the userNIN {@link String}
+	 */
+	public String getUserNIN()
+	{
+		return strUserNIN;
+	}
+
 	public void authenticateSIIE( String strUsername, String strPassword ) throws URISyntaxException, RestClientException
 	{
+		strUserNIN = strUsername;
+		eSiieElementos.getData().clear();
+		siieSessionData = null;
+		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+		if ( StringUtils.equals( "Y", System.getenv().get( "USE_RPOXY" ) ) )
+		{
+			Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
+			requestFactory.setProxy( proxy );
+		}
+		restTemplate = new CookieRestTemplate( requestFactory );
 		URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
 		SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
-		tokenRequest.setUsername( strUsername );
+		tokenRequest.setUsername( strUserNIN );
 		tokenRequest.setPassword( strPassword );
 		ResponseEntity< SIIEUserLogin > postForEntity =
 						restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
@@ -148,13 +177,21 @@ public class SIIEService implements Serializable, HasLogger
 
 	public void updateFullSIIE() throws SIIIEImporterException
 	{
+
 		FinishSIIEUpdate finishSIIEUpdate = new FinishSIIEUpdate();
 		eSiieElementos.getData().clear();
-		eSiieElementos.setCount( 0L );
+		if ( !isAuthenticated() )
+		{
+			finishSIIEUpdate.setDescription( strUserNIN + " não está autenticado" );
+			Broadcaster.broadcast( finishSIIEUpdate );
+			return;
+		}
+
 		try
 		{
-			updateDadosCompletosSIIE();
-			updateDadosSaudeSIIE();
+			updateDadosSIIE( SIIEOptions.DADOS_COMPLETOS );
+			updateDadosSIIE( SIIEOptions.DADOS_SAUDE );
+			lastUpdateInstant = Instant.now();
 			Broadcaster.broadcast( finishSIIEUpdate );
 		}
 		catch ( Exception e )
@@ -164,53 +201,51 @@ public class SIIEService implements Serializable, HasLogger
 		}
 	}
 
-	public void updateDadosCompletosSIIE() throws RestClientException, URISyntaxException
+	private void updateDadosSIIE( SIIEOptions siieOptions ) throws RestClientException, URISyntaxException, UnsupportedEncodingException
 	{
 		restTemplate.setAcessToken( "" );
 		restTemplate.setCookies( new ArrayList<>() );
-		ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_COMPLETOS.getUrl() ),
-																	HttpMethod.GET,
-																	new HttpEntity<>( null, siieSessionData.getHeaders() ),
-																	String.class );
+		ResponseEntity< String > forEntity =
+						restTemplate.exchange(	new URI( siieOptions.getUrl() ),
+												HttpMethod.GET,
+												new HttpEntity<>( null, siieSessionData.getHeaders() ),
+												String.class );
 		if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
 		{
-			String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-			URI uriElementos;
-			uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-				"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-			restTemplate.setAcessToken( siieSessionData.getAcessToken() );
-			restTemplate.setCookies( siieSessionData.getOriginalCookies() );
-			ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-			mergeSIIElementos( elementosFor.getBody() );
-		}
-	}
+			int iPage = 0;
+			int iSkip = 0;
+			int iTake = 100;
+			Long iCount = null;
+			while ( iCount == null || ( iCount > 0 && eSiieElementos.getData().size() < iCount ) )
+			{
+				iSkip = iPage * iTake;
+				iPage++;
+				String encodeToString =
+								"{\"take\":" + iTake + ",\"skip\":" + iSkip + ",\"page\":" + iPage + ",\"pageSize\":" + iTake + ",\"sort\":[]}";
+				String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+				URI uriElementos;
+				uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi + "&" + URLEncoder.encode( encodeToString, "UTF-8" ) );
+				restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+				restTemplate.setCookies( siieSessionData.getOriginalCookies() );
+				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
 
-	public void updateDadosSaudeSIIE() throws RestClientException, URISyntaxException
-	{
-		restTemplate.setAcessToken( "" );
-		restTemplate.setCookies( new ArrayList<>() );
-		ResponseEntity< String > forEntity = restTemplate.exchange(	new URI( SIIEOptions.DADOS_SAUDE.getUrl() ),
-																	HttpMethod.GET,
-																	new HttpEntity<>( null, siieSessionData.getHeaders() ),
-																	String.class );
-		if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
-		{
-			String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-			URI uriElementos;
-			uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi +
-				"&%7B%22take%22%3A-1%2C%22skip%22%3A0%2C%22page%22%3A1%2C%22pageSize%22%3A12%2C%22sort%22%3A%5B%5D%7D" );
-			restTemplate.setAcessToken( siieSessionData.getAcessToken() );
-			restTemplate.setCookies( siieSessionData.getOriginalCookies() );
-			ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-			mergeSIIElementos( elementosFor.getBody() );
+				if ( iCount == null )
+				{
+					iCount = elementosFor.getBody().getCount();
+				}
+
+				mergeSIIElementos( elementosFor.getBody() );
+
+				getLogger().info( siieOptions.getName() + " :: " + eSiieElementos.getData().size() + "/" + iCount );
+			}
 		}
 	}
 
 	private void mergeSIIElementos( SIIEElementos siieElementos )
 	{
-		if ( eSiieElementos.getCount() == null || eSiieElementos.getCount() < 1 )
+		if ( eSiieElementos.getData().isEmpty() )
 		{
-			eSiieElementos = siieElementos;
+			eSiieElementos.getData().addAll( siieElementos.getData() );
 		}
 		else
 		{
@@ -220,6 +255,10 @@ public class SIIEService implements Serializable, HasLogger
 				if ( indexOf > -1 )
 				{
 					eSiieElementos.getData().get( indexOf ).merge( e );
+				}
+				else
+				{
+					eSiieElementos.getData().add( e );
 				}
 			}
 		}

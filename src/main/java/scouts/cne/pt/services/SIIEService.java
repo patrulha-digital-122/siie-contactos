@@ -214,7 +214,7 @@ public class SIIEService implements Serializable, HasLogger
 		{
 			int iPage = 0;
 			int iSkip = 0;
-			int iTake = 100;
+			int iTake = 500;
 			Long iCount = null;
 			while ( iCount == null || ( iCount > 0 && eSiieElementos.getData().size() < iCount ) )
 			{

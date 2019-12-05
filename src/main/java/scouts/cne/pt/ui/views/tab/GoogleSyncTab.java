@@ -91,7 +91,7 @@ public class GoogleSyncTab extends ElementosGrid implements HasLogger
 		lstElementos.addAll( siieService.getElementosActivos().stream().collect( Collectors.toList() ) );
 		
 		Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieService.getUserNIN() );
-		if ( elementoByNIN.isPresent() && StringUtils.endsWith( elementoByNIN.get().getElemnucleo(), "00" ) )
+		if ( elementoByNIN.isPresent() && !StringUtils.endsWith( elementoByNIN.get().getElemnucleo(), "00" ) )
 		{
 			useAgrupamentoColumn();
 		}

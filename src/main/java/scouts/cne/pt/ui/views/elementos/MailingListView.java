@@ -174,7 +174,7 @@ public class MailingListView extends HasSIIELoginUrl
 			ui.access( () ->
 			{
 				Optional< SIIEElemento > elementoByNIN = siieService.getElementoByNIN( siieService.getUserNIN() );
-				if ( elementoByNIN.isPresent() && !StringUtils.endsWith( elementoByNIN.get().getElemnucleo(), "00" ) )
+				if ( elementoByNIN.isPresent() )
 				{
 					grid.useAgrupamentoColumn();
 				}

@@ -9,7 +9,8 @@ public enum SIIESeccao
 	L( "Lobitos", TextColor.LOBITOS, TextColor.BLACK ),
 	E( "Exploradores / Moços", TextColor.EXPLORADORES, TextColor.WHITE ),
 	P( "Pioneiros / Marinheiros", TextColor.PIONEIROS, TextColor.WHITE ),
-	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS, TextColor.WHITE );
+	C( "Caminheiros / Companheiros", TextColor.CAMINHERIOS, TextColor.WHITE ),
+	A( "Todas", TextColor.DIRIGENTES, TextColor.WHITE);
 	private final String	nome;
 	private final TextColor	textColor;
 	private final TextColor	backgroundColor;

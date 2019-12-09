@@ -23,6 +23,7 @@ public class LocalStorage extends Component
 
 	public final static String	SIIE_USERNAME		= "siieUsername";
 	public final static String	SIIE_PASSWORD		= "siieEnigma";
+	public final static String	GOOGLE_AUTH			= "google-auth";
 
 	@FunctionalInterface
 	public interface LocalStorageInitListener

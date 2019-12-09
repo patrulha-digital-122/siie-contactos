@@ -76,6 +76,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 		strUrl = getLocation() + strUrl;
 		ui = attachEvent.getUI();
 		updateSIIEMetaData();
+
 		loginForm.addLoginListener( e ->
 		{
 			ui.access( () ->

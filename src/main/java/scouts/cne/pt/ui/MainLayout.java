@@ -30,6 +30,7 @@ import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
+import scouts.cne.pt.ui.components.LocalStorage;
 import scouts.cne.pt.ui.components.navigation.bar.AppBar;
 import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
@@ -99,6 +100,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private TabBar					tabBar;
 	private boolean					navigationTabs		= false;
 	private AppBar					appBar;
+	private final LocalStorage		localStorage		= new LocalStorage();
 
 	public MainLayout()
 	{
@@ -116,6 +118,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		initNaviItems();
 		// Configure the headers and footers (optional)
 		initHeadersAndFooters();
+		add( localStorage );
 	}
 
 	@Override
@@ -263,20 +266,22 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	 */
 	private void initTestData( AttachEvent attachEvent )
 	{
-		new Thread( () ->
+		localStorage.addInitListener( ls ->
 		{
-			String siieUser = System.getenv().get( "SIIE_USER" );
-			String siiePassword = System.getenv().get( "SIIE_PASSWORD" );
+			String siieUser = localStorage.getString( LocalStorage.SIIE_USERNAME );
+			String siiePassword = localStorage.getString( LocalStorage.SIIE_PASSWORD );
 			if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
 			{
 				try
 				{
 					if ( !siieService.isAuthenticated() )
 					{
-						getLogger().info( "Test dev START" );
+						getLogger().info( "SIIE auto-login START :: localStorage" );
 						siieService.authenticateSIIE( siieUser, siiePassword );
 						siieService.updateFullSIIE();
-						getLogger().info( "Test dev END" );
+						getLogger().info( "SIIE auto-login END :: localStorage" );
+						showInfo( "Bem vindo " + siieService.getElementoByNIN( siieUser ).get().getNome() +
+							". Dados do SIIE actualizados com sucesso!" );
 					}
 				}
 				catch ( Exception e )
@@ -284,7 +289,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 					attachEvent.getUI().access( () -> showError( e ) );
 				}
 			}
-		} ).start();
+		} );
 	}
 
 	@Override

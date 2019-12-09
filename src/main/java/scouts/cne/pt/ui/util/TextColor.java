@@ -18,6 +18,7 @@ public enum TextColor {
 	PIONEIROS( "hsl(225, 100%, 40%)" ),
 	CAMINHERIOS( "hsl(0, 100%, 40%)" ),
 	DIRIGENTES( "hsl(300, 100%, 25%)" ),
+	AUXILIAR( "hsl(0, 0%, 60%)" ),
 	WHITE( "hsl(0, 0%, 100%)" ),
 	BLACK( "hsl(0, 0%, 0%)" ),
 	LARANJA( "hsl(20, 100%, 60%)" ),

@@ -1,9 +1,13 @@
 package scouts.cne.pt.ui;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -25,8 +29,10 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.lumo.Lumo;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
@@ -36,6 +42,7 @@ import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviItem;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviMenu;
+import scouts.cne.pt.ui.events.internal.AniversariosEventConfigurations;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
@@ -101,6 +108,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private boolean					navigationTabs		= false;
 	private AppBar					appBar;
 	private final LocalStorage		localStorage		= new LocalStorage();
+	protected Registration			broadcasterRegistration;
 
 	public MainLayout()
 	{
@@ -282,6 +290,72 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 						getLogger().info( "SIIE auto-login END :: localStorage" );
 						showInfo( "Bem vindo " + siieService.getElementoByNIN( siieUser ).get().getNome() +
 							". Dados do SIIE actualizados com sucesso!" );
+						String string = localStorage.getString( LocalStorage.ANIVERSARIOS_CONFIG );
+						if ( StringUtils.isNotEmpty( string ) )
+						{
+							try
+							{
+								AniversariosEventConfigurations aniversariosEventConfigurations =
+												new ObjectMapper().readValue( string, AniversariosEventConfigurations.class );
+								if ( aniversariosEventConfigurations.isReceberNotificacoes() )
+								{
+									attachEvent.getUI().accessSynchronously( () ->
+									{
+										// VaadinService.getCurrent().
+										attachEvent.getUI().getPage().executeJs( "Notification.requestPermission();" );
+									} );
+									List< SIIEElemento > allElementos =
+													aniversariosEventConfigurations.isElementosActivos() ? siieService.getElementosActivos()
+																	: siieService.getAllElementos();
+									List< SIIEElemento > lstElementos = allElementos.stream().filter( ( p ) ->
+									{
+										if ( p.getDatanascimento() != null )
+										{
+											return p.getDatanascimento().getDayOfYear() == LocalDate.now().getDayOfYear();
+										}
+										return false;
+									} ).collect( Collectors.toList() );
+
+									if ( !lstElementos.isEmpty() && getUI().isPresent() )
+									{
+										if ( lstElementos.size() > 3 )
+										{
+											String message = "Hoje " + lstElementos.size() + " fazem anos.";
+											getUI().get().accessSynchronously( () ->
+											{
+												String strScript =
+																"navigator.serviceWorker.ready.then(function(registration) { registration.showNotification('Aniversários', { body: '" +
+																	message +
+																	"', icon: '../images/logo.webp', vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500] }); });";
+												// VaadinService.getCurrent().
+												getUI().get().getPage().executeJs( strScript );
+											} );
+										}
+										else
+										{
+											lstElementos.forEach( p ->
+											{
+												String message = p.getNome() + " faz hoje " + p.getIdade().intValue() + " anos.";
+												getUI().get().accessSynchronously( () ->
+												{
+													String strScript =
+																	"navigator.serviceWorker.ready.then(function(registration) { registration.showNotification('Aniversários', { body: '" +
+																		message +
+																		"', icon: '../images/logo.webp', vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500] }); });";
+													// VaadinService.getCurrent().
+													getUI().get().getPage().executeJs( strScript );
+												} );
+											} );
+										}
+									}
+								}
+							}
+							catch ( Exception e )
+							{
+								printError( e );
+							}
+						}
+
 					}
 				}
 				catch ( Exception e )
@@ -289,6 +363,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 					attachEvent.getUI().access( () -> showError( e ) );
 				}
 			}
+
 		} );
 	}
 
@@ -314,6 +389,17 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	public static MainLayout get()
 	{
 		return ( MainLayout ) UI.getCurrent().getChildren().filter( component -> component.getClass() == MainLayout.class ).findFirst().get();
+	}
+
+	/**
+	 * Getter for localStorage
+	 * 
+	 * @author 62000465 2019-12-11
+	 * @return the localStorage {@link LocalStorage}
+	 */
+	public LocalStorage getLocalStorage()
+	{
+		return localStorage;
 	}
 
 	public AppBar getAppBar()

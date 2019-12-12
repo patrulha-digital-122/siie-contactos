@@ -4,28 +4,25 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import scouts.cne.pt.model.localStorage.AniversariosEventConfigurations;
 import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.services.LocalStorageService;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
-import scouts.cne.pt.ui.components.LocalStorage;
 import scouts.cne.pt.ui.components.grids.ElementosGrid;
 import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
-import scouts.cne.pt.ui.events.internal.AniversariosEventConfigurations;
+import scouts.cne.pt.ui.events.internal.InternalStorageEventReady;
 import scouts.cne.pt.ui.views.HasSIIELoginUrl;
 import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.UIUtils;
@@ -40,7 +37,9 @@ public class AniversarioListView extends HasSIIELoginUrl
 	public static final VaadinIcon		VIEW_ICON			= VaadinIcon.MEGAFONE;
 	@Autowired
 	private SIIEService					siieService;
-	private final Div						content									= new Div();
+	@Autowired
+	private LocalStorageService				localStorageService;
+	private final VerticalLayout			content									= new VerticalLayout();
 	private final List< SIIEElemento >	lstElementos		= new ArrayList<>();
 	private final Checkbox					chkReceberNotifications					= new Checkbox( "Receber notificações" );
 	private final Checkbox					chkReceberNotificationsElementosActivos	=
@@ -54,6 +53,7 @@ public class AniversarioListView extends HasSIIELoginUrl
 		setId( VIEW_NAME );
 
 		content.setSizeFull();
+		content.setAlignItems( Alignment.STRETCH );
 
 		elementosGrid = new ElementosGrid( true, lstElementos );
 		elementosGrid.useAdditionalInfoColumn();
@@ -61,36 +61,18 @@ public class AniversarioListView extends HasSIIELoginUrl
 		chkReceberNotifications.addValueChangeListener( e ->
 		{
 			aniversariosEventConfigurations.setReceberNotificacoes( e.getValue() );
-			updateLocalStorage();
+			localStorageService.setAniversariosEventConfigurations( aniversariosEventConfigurations );
 		} );
 		chkReceberNotificationsElementosActivos.addValueChangeListener( e ->
 		{
 			aniversariosEventConfigurations.setElementosActivos( e.getValue() );
-			updateLocalStorage();
+			localStorageService.setAniversariosEventConfigurations( aniversariosEventConfigurations );
 		} );
 
 
 		setViewContent( getOptionComponent(), content );
 	}
 
-
-	/**
-	 * The <b>updateLocalStorage</b> method returns {@link void}
-	 * 
-	 * @author 62000465 2019-12-11
-	 */
-	private void updateLocalStorage()
-	{
-		try
-		{
-			MainLayout.get().getLocalStorage().setValue(	LocalStorage.ANIVERSARIOS_CONFIG,
-															new ObjectMapper().writeValueAsString( aniversariosEventConfigurations ) );
-		}
-		catch ( JsonProcessingException e1 )
-		{
-			printError( e1 );
-		}
-	}
 
 	@Override
 	protected void onAttach( AttachEvent attachEvent )
@@ -106,19 +88,11 @@ public class AniversarioListView extends HasSIIELoginUrl
 				getLogger().info( "Dados do SIIE actualizados em :: " + finishSIIEUpdate.getDuration().toString() );
 				ui.access( () -> updateContent() );
 			}
-		} );
-		
-		updateContent();
-
-		MainLayout.get().getLocalStorage().addInitListener( ls ->
-		{
-			String string = MainLayout.get().getLocalStorage().getString( LocalStorage.ANIVERSARIOS_CONFIG );
-			if ( StringUtils.isNotEmpty( string ) )
+			else if ( newMessage instanceof InternalStorageEventReady )
 			{
 				try
 				{
-					aniversariosEventConfigurations =
-									new ObjectMapper().readValue( string, AniversariosEventConfigurations.class );
+					aniversariosEventConfigurations = localStorageService.getAniversariosEventConfigurations();
 					ui.access( () ->
 					{
 						chkReceberNotifications.setValue( aniversariosEventConfigurations.isReceberNotificacoes() );
@@ -131,6 +105,11 @@ public class AniversarioListView extends HasSIIELoginUrl
 				}
 			}
 		} );
+
+		updateContent();
+
+		chkReceberNotifications.setValue( localStorageService.getAniversariosEventConfigurations().isReceberNotificacoes() );
+		chkReceberNotificationsElementosActivos.setValue( localStorageService.getAniversariosEventConfigurations().isElementosActivos() );
 	}
 
 	public Component getOptionComponent()

@@ -18,11 +18,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.Registration;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.localStorage.SIIELocalStorageConfigurations;
 import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.services.LocalStorageService;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
-import scouts.cne.pt.ui.components.LocalStorage;
 import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Uniform;
@@ -45,6 +46,8 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	
 	@Autowired
 	private SIIEService	siieService;
+	@Autowired
+	private LocalStorageService		localStorageService;
 	private final LoginForm	loginForm;
 	private final TextField			labelNextUrlLogin	= new TextField( "URL pré-preenchido que poderá utilizar no futuro." );
 	private final TextField			textFieldTotalElementos		= new TextField( "Total de elementos obtidos do SIIE" );
@@ -52,7 +55,6 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	private String					strUrl						= "mailing-list?user=%s&password=%s";
 	protected Registration			broadcasterRegistration;
 	private UI						ui;
-	private final LocalStorage		localStorage				= new LocalStorage();
 
 	public SIIELoginView()
 	{
@@ -89,8 +91,10 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 				if ( !( siieService.isAuthenticated() && StringUtils.equals( e.getUsername(), siieService.getUserNIN() ) ) )
 				{
 					siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
-					localStorage.setValue( LocalStorage.SIIE_USERNAME, e.getUsername() );
-					localStorage.setValue( LocalStorage.SIIE_PASSWORD, e.getPassword() );
+					SIIELocalStorageConfigurations siieLocalStorageConfigurations = new SIIELocalStorageConfigurations();
+					siieLocalStorageConfigurations.setSIIEUser( e.getUsername() );
+					siieLocalStorageConfigurations.setSIIEPassword( e.getPassword() );
+					localStorageService.setSiieLocalStorageConfigurations( siieLocalStorageConfigurations );
 					labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
 					// labelNextUrlLogin.setVisible( true );
 				}

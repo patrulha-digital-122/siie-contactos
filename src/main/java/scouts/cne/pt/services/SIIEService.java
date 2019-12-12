@@ -75,7 +75,6 @@ public class SIIEService implements Serializable, HasLogger
 	private final SIIEElementos						eSiieElementos		= new SIIEElementos();
 	private HashMap< String, Elemento >				map					= null;
 	private EnumMap< SECCAO, List< Elemento > >		mapSeccaoElemento	= null;
-	private EnumMap< SECCAO, List< SIIEElemento > >	mapSeccaoElementos	= new EnumMap<>( SECCAO.class );
 	private SIIESessionData							siieSessionData;
 	private CookieRestTemplate						restTemplate;
 	@Autowired

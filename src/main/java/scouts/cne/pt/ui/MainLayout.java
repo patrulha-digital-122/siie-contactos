@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -34,6 +33,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
+import scouts.cne.pt.services.LocalStorageService;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.LocalStorage;
@@ -42,7 +42,7 @@ import scouts.cne.pt.ui.components.navigation.bar.TabBar;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviDrawer;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviItem;
 import scouts.cne.pt.ui.components.navigation.drawer.NaviMenu;
-import scouts.cne.pt.ui.events.internal.AniversariosEventConfigurations;
+import scouts.cne.pt.ui.events.internal.InternalStorageEventReady;
 import scouts.cne.pt.ui.util.css.FlexDirection;
 import scouts.cne.pt.ui.util.css.Overflow;
 import scouts.cne.pt.ui.views.Home;
@@ -53,6 +53,7 @@ import scouts.cne.pt.ui.views.elementos.DiagnosticoListView;
 import scouts.cne.pt.ui.views.elementos.ImportContactsListView;
 import scouts.cne.pt.ui.views.elementos.MailingListView;
 import scouts.cne.pt.ui.views.utils.CodificadorView;
+import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.UIUtils;
 
 @CssImport( value = "./styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme" )
@@ -96,6 +97,8 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private SIIEService				siieService;
 	@Autowired
 	private GoogleAuthentication	googleAuthentication;
+	@Autowired
+	private LocalStorageService		localStorageService;
 	private Div						appHeaderOuter;
 	private FlexBoxLayout			row;
 	private NaviDrawer				naviDrawer;
@@ -134,7 +137,8 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	{
 		super.onAttach( attachEvent );
 
-		initTestData( attachEvent );
+		localStorageService.setLocalStorage( localStorage );
+		initBroadcastListener( attachEvent );
 	}
 
 	/**
@@ -272,41 +276,41 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	 * @author 62000465 2019-10-31
 	 * @param attachEvent
 	 */
-	private void initTestData( AttachEvent attachEvent )
+	private void initBroadcastListener( AttachEvent attachEvent )
 	{
-		localStorage.addInitListener( ls ->
+		broadcasterRegistration = Broadcaster.register( newMessage ->
 		{
-			String siieUser = localStorage.getString( LocalStorage.SIIE_USERNAME );
-			String siiePassword = localStorage.getString( LocalStorage.SIIE_PASSWORD );
-			if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
+			if ( newMessage instanceof InternalStorageEventReady )
 			{
-				try
+				String siieUser = localStorageService.getSiieLocalStorageConfigurations().getSIIEUser();
+				String siiePassword = localStorageService.getSiieLocalStorageConfigurations().getSIIEPassword();
+				if ( StringUtils.isNoneEmpty( siieUser, siiePassword ) )
 				{
-					if ( !siieService.isAuthenticated() )
+					try
 					{
-						getLogger().info( "SIIE auto-login START :: localStorage" );
-						siieService.authenticateSIIE( siieUser, siiePassword );
-						siieService.updateFullSIIE();
-						getLogger().info( "SIIE auto-login END :: localStorage" );
-						showInfo( "Bem vindo " + siieService.getElementoByNIN( siieUser ).get().getNome() +
-							". Dados do SIIE actualizados com sucesso!" );
-						String string = localStorage.getString( LocalStorage.ANIVERSARIOS_CONFIG );
-						if ( StringUtils.isNotEmpty( string ) )
+						if ( !siieService.isAuthenticated() )
 						{
+							getLogger().info( "SIIE auto-login START :: localStorage" );
+							siieService.authenticateSIIE( siieUser, siiePassword );
+							siieService.updateFullSIIE();
+							getLogger().info( "SIIE auto-login END :: localStorage" );
+							getUI().get().access( () ->
+							{
+								showInfo( "Bem vindo " + siieService.getElementoByNIN( siieUser ).get().getNome() +
+									". Dados do SIIE actualizados com sucesso!" );
+							} );
 							try
 							{
-								AniversariosEventConfigurations aniversariosEventConfigurations =
-												new ObjectMapper().readValue( string, AniversariosEventConfigurations.class );
-								if ( aniversariosEventConfigurations.isReceberNotificacoes() )
+								if ( localStorageService.getAniversariosEventConfigurations().isReceberNotificacoes() )
 								{
 									attachEvent.getUI().accessSynchronously( () ->
 									{
 										// VaadinService.getCurrent().
 										attachEvent.getUI().getPage().executeJs( "Notification.requestPermission();" );
 									} );
-									List< SIIEElemento > allElementos =
-													aniversariosEventConfigurations.isElementosActivos() ? siieService.getElementosActivos()
-																	: siieService.getAllElementos();
+									List< SIIEElemento > allElementos = localStorageService.getAniversariosEventConfigurations().isElementosActivos()
+													? siieService.getElementosActivos()
+													: siieService.getAllElementos();
 									List< SIIEElemento > lstElementos = allElementos.stream().filter( ( p ) ->
 									{
 										if ( p.getDatanascimento() != null )
@@ -315,7 +319,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 										}
 										return false;
 									} ).collect( Collectors.toList() );
-
 									if ( !lstElementos.isEmpty() && getUI().isPresent() )
 									{
 										if ( lstElementos.size() > 3 )
@@ -355,15 +358,13 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 								printError( e );
 							}
 						}
-
+					}
+					catch ( Exception e )
+					{
+						attachEvent.getUI().access( () -> showError( e ) );
 					}
 				}
-				catch ( Exception e )
-				{
-					attachEvent.getUI().access( () -> showError( e ) );
-				}
 			}
-
 		} );
 	}
 

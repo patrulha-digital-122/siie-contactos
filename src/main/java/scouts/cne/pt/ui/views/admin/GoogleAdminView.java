@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.people.v1.model.ListConnectionsResponse;
 import com.google.api.services.people.v1.model.Person;
 import com.google.api.services.people.v1.model.UserDefined;
@@ -32,12 +30,13 @@ import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.GoogleContactGroupsService;
 import scouts.cne.pt.services.GoogleContactsService;
+import scouts.cne.pt.services.LocalStorageService;
 import scouts.cne.pt.services.SIIEService;
 import scouts.cne.pt.ui.MainLayout;
 import scouts.cne.pt.ui.components.FlexBoxLayout;
 import scouts.cne.pt.ui.components.GoogleSignin;
-import scouts.cne.pt.ui.components.LocalStorage;
 import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
+import scouts.cne.pt.ui.events.internal.InternalStorageEventReady;
 import scouts.cne.pt.ui.layout.size.Horizontal;
 import scouts.cne.pt.ui.layout.size.Uniform;
 import scouts.cne.pt.ui.util.css.FlexDirection;
@@ -65,6 +64,8 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 	private GoogleContactGroupsService	googleContactGroupsService;
 	@Autowired
 	private GoogleContactsService		googleContactsService;
+	@Autowired
+	private LocalStorageService			localStorageService;
 	private final GoogleSignin			googleSignin;
 	private final Image					image				= new Image();
 	private final TextField				nome				= new TextField( "Nome completo" );
@@ -75,7 +76,6 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 					UIUtils.createErrorPrimaryButton( "Retirar autorizaração para edição no Google Contacts", VaadinIcon.DEL );
 	private final Button				updateButton		= UIUtils.createPrimaryButton( "Sincronizar dados do Google", VaadinIcon.REFRESH );
 	private UI							ui;
-	private final LocalStorage			localStorage		= new LocalStorage();
 	protected Registration				broadcasterRegistration;
 
 	public GoogleAdminView()
@@ -131,34 +131,37 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 			googleSignin.setVisible( false );
 			logOutButton.setVisible( true );
 			importContacts();
-			try
-			{
-				localStorage.setValue( LocalStorage.GOOGLE_AUTH, new ObjectMapper().writeValueAsString( e ) );
-			}
-			catch ( JsonProcessingException e1 )
-			{
-				printError( e1 );
-			}
+			localStorageService.setGoogleAuthInfo( e );
 		} );
 		
-		localStorage.addInitListener( ls ->
+		broadcasterRegistration = Broadcaster.register( newMessage ->
 		{
-			String googleObject = localStorage.getString( LocalStorage.GOOGLE_AUTH );
-			if ( StringUtils.isNotBlank( googleObject ) )
+			if ( newMessage instanceof FinishSIIEUpdate )
+			{
+				if ( googleAuthentication.getGoogleAuthInfo() != null )
+				{
+					importContacts();
+				}
+			}
+			else if ( newMessage instanceof InternalStorageEventReady )
 			{
 				try
 				{
-					GoogleAuthInfo googleAuthInfo = new ObjectMapper().readValue( googleObject, GoogleAuthInfo.class );
-					if ( googleAuthInfo.getGoogleAcessInfo().getExpiresAt().after( new Date() ) )
+					GoogleAuthInfo googleAuthInfo = localStorageService.getGoogleAuthInfo();
+					if ( googleAuthInfo.getGoogleAcessInfo() != null && googleAuthInfo.getGoogleAcessInfo().getExpiresAt() != null &&
+						googleAuthInfo.getGoogleAcessInfo().getExpiresAt().after( new Date() ) )
 					{
-						googleAuthentication.setGoogleAuthInfo( googleAuthInfo );
-						updateScreenInfo();
-						googleSignin.setVisible( false );
-						logOutButton.setVisible( true );
-						if ( siieService.isAuthenticated() && !siieService.getSiieElementos().getData().isEmpty() )
+						ui.access( () ->
 						{
-							importContacts();
-						}
+							googleAuthentication.setGoogleAuthInfo( googleAuthInfo );
+							updateScreenInfo();
+							googleSignin.setVisible( false );
+							logOutButton.setVisible( true );
+							if ( siieService.isAuthenticated() && !siieService.getSiieElementos().getData().isEmpty() )
+							{
+								importContacts();
+							}
+						} );
 					}
 					else
 					{
@@ -168,16 +171,6 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 				catch ( Exception e1 )
 				{
 					printError( e1 );
-				}
-			}
-		} );
-		broadcasterRegistration = Broadcaster.register( newMessage ->
-		{
-			if ( newMessage instanceof FinishSIIEUpdate )
-			{
-				if ( googleAuthentication.getGoogleAuthInfo() != null )
-				{
-					importContacts();
 				}
 			}
 		} );
@@ -213,7 +206,7 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 	private Component createContent()
 	{
 		FlexBoxLayout content =
-						new FlexBoxLayout( image, nome, email, progressLabel, progressBar, googleSignin, logOutButton, updateButton, localStorage );
+						new FlexBoxLayout( image, nome, email, progressLabel, progressBar, googleSignin, logOutButton, updateButton );
 		content.setAlignItems( Alignment.CENTER );
 		content.setFlexDirection( FlexDirection.COLUMN );
 		content.setMargin( Horizontal.AUTO );
@@ -314,7 +307,7 @@ public class GoogleAdminView extends ViewFrame implements HasLogger
 	 */
 	private void executeLogOut()
 	{
-		localStorage.setValue( LocalStorage.GOOGLE_AUTH, "" );
+		localStorageService.setGoogleAuthInfo( new GoogleAuthInfo() );
 		googleSignin.logout();
 		googleAuthentication.setGoogleAuthInfo( null );
 		for ( SIIEElemento siieElemento : siieService.getSiieElementos().getData() )

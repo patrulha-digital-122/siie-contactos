@@ -1,4 +1,4 @@
-package scouts.cne.pt.ui.events.internal;
+package scouts.cne.pt.model.localStorage;
 
 /**
  * @author 62000465 2019-12-11

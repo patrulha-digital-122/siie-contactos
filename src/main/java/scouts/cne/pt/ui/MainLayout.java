@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.lumo.Lumo;
 import scouts.cne.pt.app.HasLogger;
+import scouts.cne.pt.model.NotificationsModel;
 import scouts.cne.pt.model.siie.SIIEElemento;
 import scouts.cne.pt.services.GoogleAuthentication;
 import scouts.cne.pt.services.LocalStorageService;
@@ -54,6 +55,7 @@ import scouts.cne.pt.ui.views.elementos.ImportContactsListView;
 import scouts.cne.pt.ui.views.elementos.MailingListView;
 import scouts.cne.pt.ui.views.utils.CodificadorView;
 import scouts.cne.pt.utils.Broadcaster;
+import scouts.cne.pt.utils.JsonUtils;
 import scouts.cne.pt.utils.UIUtils;
 
 @CssImport( value = "./styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme" )
@@ -321,32 +323,31 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 									} ).collect( Collectors.toList() );
 									if ( !lstElementos.isEmpty() && getUI().isPresent() )
 									{
+										NotificationsModel notificationsModel = new NotificationsModel();
+										notificationsModel.setIcon( "../images/logo.webp" );
 										if ( lstElementos.size() > 3 )
 										{
 											String message = "Hoje " + lstElementos.size() + " fazem anos.";
+											notificationsModel.setBody( message );
 											getUI().get().accessSynchronously( () ->
 											{
-												String strScript =
-																"navigator.serviceWorker.ready.then(function(registration) { registration.showNotification('Aniversários', { body: '" +
-																	message +
-																	"', icon: '../images/logo.webp', vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500] }); });";
 												// VaadinService.getCurrent().
-												getUI().get().getPage().executeJs( strScript );
+												getUI().get().getPage().executeJs(	NotificationsModel.JS_FUNCTION,
+																					"Aniversários",
+																					JsonUtils.convertObjectToJsonValue( notificationsModel ) );
 											} );
 										}
 										else
 										{
 											lstElementos.forEach( p ->
 											{
-												String message = p.getNome() + " faz hoje " + p.getIdade().intValue() + " anos.";
+												notificationsModel.setBody( p.getNome() + " faz hoje " + p.getIdade().intValue() + " anos." );
 												getUI().get().accessSynchronously( () ->
 												{
-													String strScript =
-																	"navigator.serviceWorker.ready.then(function(registration) { registration.showNotification('Aniversários', { body: '" +
-																		message +
-																		"', icon: '../images/logo.webp', vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500] }); });";
 													// VaadinService.getCurrent().
-													getUI().get().getPage().executeJs( strScript );
+													getUI().get().getPage().executeJs(	NotificationsModel.JS_FUNCTION,
+																						"Aniversários",
+																						JsonUtils.convertObjectToJsonValue( notificationsModel ) );
 												} );
 											} );
 										}

@@ -86,15 +86,14 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 				textFieldDataUltimoUpdate.setValue( "" );
 				textFieldTotalElementos.setValue( "" );
 			} );
+			SIIELocalStorageConfigurations siieLocalStorageConfigurations = new SIIELocalStorageConfigurations();
 			try
 			{
 				if ( !( siieService.isAuthenticated() && StringUtils.equals( e.getUsername(), siieService.getUserNIN() ) ) )
 				{
 					siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
-					SIIELocalStorageConfigurations siieLocalStorageConfigurations = new SIIELocalStorageConfigurations();
 					siieLocalStorageConfigurations.setSIIEUser( e.getUsername() );
 					siieLocalStorageConfigurations.setSIIEPassword( e.getPassword() );
-					localStorageService.setSiieLocalStorageConfigurations( siieLocalStorageConfigurations );
 					labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
 					// labelNextUrlLogin.setVisible( true );
 				}
@@ -104,6 +103,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 			{
 				loginForm.setError( true );
 			}
+			localStorageService.setSiieLocalStorageConfigurations( siieLocalStorageConfigurations );
 
 			loginForm.setEnabled( true );
 		} );

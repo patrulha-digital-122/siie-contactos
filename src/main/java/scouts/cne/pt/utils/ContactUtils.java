@@ -2,6 +2,7 @@ package scouts.cne.pt.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -28,11 +29,13 @@ import com.google.gdata.data.extensions.PostCode;
 import com.google.gdata.data.extensions.Region;
 import com.google.gdata.data.extensions.StructuredPostalAddress;
 import com.google.gdata.data.extensions.When;
-import com.vaadin.ui.CheckBox;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
+import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.model.siie.types.SIIESeccao;
 
 /**
  * @author anco62000465 2018-01-27
@@ -43,7 +46,7 @@ public class ContactUtils
 	public static ElementoImport convertElementoToContactEntry(	Elemento elemento,
 	                                                           	ContactEntry contactEntry,
 	                                                           	Set< String > listTelefonesExistentes,
-	                                                           	Map< ElementoTags, CheckBox > mapConfigs )
+																Map< ElementoTags, Checkbox > mapConfigs )
 	{
 		ImportContactReport importContactReport = new ImportContactReport( elemento.getNin() );
 		if ( contactEntry == null )
@@ -142,9 +145,9 @@ public class ContactUtils
 	 * @param totem
 	 * @return
 	 */
-	private static boolean updatePropertie( Map< ElementoTags, CheckBox > mapConfigs, ElementoTags tags )
+	private static boolean updatePropertie( Map< ElementoTags, Checkbox > mapConfigs, ElementoTags tags )
 	{
-		CheckBox checkBox = mapConfigs.get( tags );
+		Checkbox checkBox = mapConfigs.get( tags );
 		if ( checkBox != null )
 		{
 			return checkBox.getValue();
@@ -491,5 +494,41 @@ public class ContactUtils
 		{
 		}
 		return "";
+	}
+
+	public static List< String > getMailingListFromElemento( Set< SIIEElemento > siieElementos, boolean usarMailPais, boolean usarNomes )
+	{
+		List< String > list = new ArrayList<>();
+		for ( SIIEElemento siieElemento : siieElementos )
+		{
+			list.add( getEmail( siieElemento.getEmail(), usarNomes ? siieElemento.getNome() : null ) );
+			if ( !SIIESeccao.D.equals( siieElemento.getSiglaseccao() ) && usarMailPais )
+			{
+				list.add( getEmail(	siieElemento.getMaeemail(),
+									usarNomes && StringUtils.isNotBlank( siieElemento.getMae() ) ? siieElemento.getMae() : null ) );
+				list.add( getEmail(	siieElemento.getPaiemail(),
+									usarNomes && StringUtils.isNotBlank( siieElemento.getPai() ) ? siieElemento.getPai() : null ) );
+			}
+		}
+		list.removeIf( p -> StringUtils.isBlank( p ) );
+		return list;
+	}
+
+	private static String getEmail( String email, String nome )
+	{
+		StringBuilder sb = new StringBuilder();
+		if ( StringUtils.isNotEmpty( email ) )
+		{
+			if ( nome != null )
+			{
+				sb.append( "\"" );
+				sb.append( nome );
+				sb.append( "\" " );
+			}
+			sb.append( "<" );
+			sb.append( email );
+			sb.append( ">" );
+		}
+		return sb.toString();
 	}
 }

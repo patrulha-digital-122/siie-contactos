@@ -4,60 +4,287 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.Sheet;
 import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.vaadin.spring.annotation.SpringComponent;
-import com.vaadin.spring.annotation.UIScope;
-
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import scouts.cne.pt.app.HasLogger;
 import scouts.cne.pt.google.GoogleServerAuthenticationBean;
 import scouts.cne.pt.model.Elemento;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.model.SIIIEImporterException;
+import scouts.cne.pt.model.siie.CookieRestTemplate;
+import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.model.siie.SIIEElementos;
+import scouts.cne.pt.model.siie.authentication.SIIESessionData;
+import scouts.cne.pt.model.siie.authentication.SIIEUserLogin;
+import scouts.cne.pt.model.siie.authentication.SIIEUserTokenRequest;
+import scouts.cne.pt.model.siie.types.SIIEOptions;
+import scouts.cne.pt.model.siie.types.SIIESeccao;
+import scouts.cne.pt.model.siie.types.SIIESituacao;
+import scouts.cne.pt.ui.events.google.FinishSIIEUpdate;
+import scouts.cne.pt.utils.Broadcaster;
 import scouts.cne.pt.utils.ValidationUtils;
 
-@SpringComponent
-@UIScope
+@Component
+@VaadinSessionScope
 public class SIIEService implements Serializable, HasLogger
 {
 	/**
 	 *
 	 */
-	private static final long					serialVersionUID	= 1L;
-	private File								file;
-	private HashMap< String, Elemento >			map					= null;
-	private EnumMap< SECCAO, List< Elemento > >	mapSeccaoElemento	= null;
+	private static final long						serialVersionUID	= 1L;
+	private File									file;
+	private final SIIEElementos						eSiieElementos		= new SIIEElementos();
+	private HashMap< String, Elemento >				map					= null;
+	private EnumMap< SECCAO, List< Elemento > >		mapSeccaoElemento	= null;
+	private SIIESessionData							siieSessionData;
+	private CookieRestTemplate						restTemplate;
 	@Autowired
-	private GoogleServerAuthenticationBean		googleServerAuthentication;
+	private GoogleServerAuthenticationBean			googleServerAuthentication;
+	private String									strUserNIN;
+	private Instant									lastUpdateInstant;
 
 	public SIIEService()
 	{
 		super();
+		getLogger().info( "New SIIEService :: " + Instant.now() );
 		mapSeccaoElemento = new EnumMap<>( SECCAO.class );
-		for ( SECCAO seccao : SECCAO.getListaSeccoes() )
+	}
+
+	/**
+	 * Getter for lastLogin
+	 * 
+	 * @author 62000465 2019-10-04
+	 * @return the lastLogin {@link Instant}
+	 */
+	public Instant getLastLogin()
+	{
+		return siieSessionData != null ? siieSessionData.getInstant() : null;
+	}
+
+	/**
+	 * Getter for lastUpdateInstant
+	 * 
+	 * @author 62000465 2019-12-05
+	 * @return the lastUpdateInstant {@link Instant}
+	 */
+	public Instant getLastUpdateInstant()
+	{
+		return lastUpdateInstant;
+	}
+
+	/**
+	 * Getter for siieElementos
+	 * 
+	 * @author 62000465 2019-04-24
+	 * @return the siieElementos {@link SIIEElementos}
+	 */
+	public SIIEElementos getSiieElementos()
+	{
+		return eSiieElementos;
+	}
+
+	public boolean isAuthenticated()
+	{
+		return siieSessionData != null;
+	}
+
+	/**
+	 * Getter for userNIN
+	 * 
+	 * @author 62000465 2019-12-05
+	 * @return the userNIN {@link String}
+	 */
+	public String getUserNIN()
+	{
+		return strUserNIN;
+	}
+
+	public void authenticateSIIE( String strUsername, String strPassword ) throws URISyntaxException, RestClientException
+	{
+		strUserNIN = strUsername;
+		eSiieElementos.getData().clear();
+		siieSessionData = null;
+		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+		if ( StringUtils.equals( "Y", System.getenv().get( "USE_RPOXY" ) ) )
 		{
-			mapSeccaoElemento.put( seccao, new ArrayList<>() );
+			Proxy proxy = new Proxy( Type.HTTP, new InetSocketAddress( "localhost", 808 ) );
+			requestFactory.setProxy( proxy );
 		}
+		restTemplate = new CookieRestTemplate( requestFactory );
+		URI uriLogin = new URI( "https://siie.escutismo.pt/api/logintoken" );
+		SIIEUserTokenRequest tokenRequest = new SIIEUserTokenRequest();
+		tokenRequest.setUsername( strUserNIN );
+		tokenRequest.setPassword( strPassword );
+		ResponseEntity< SIIEUserLogin > postForEntity =
+						restTemplate.exchange( uriLogin, HttpMethod.POST, new HttpEntity<>( tokenRequest ), SIIEUserLogin.class );
+		if ( postForEntity.getStatusCode() == HttpStatus.OK && postForEntity.hasBody() )
+		{
+			List< String > orDefault = postForEntity.getHeaders().getOrDefault( "xSIIE", Arrays.asList() );
+			if ( !orDefault.isEmpty() )
+			{
+				getLogger().info( "Login correcto de {}", strUsername );
+				siieSessionData = new SIIESessionData( Instant.now() );
+				siieSessionData.setAcessToken( postForEntity.getBody().getAcessToken() );
+				siieSessionData.setOriginalXSIIE( orDefault.get( 0 ) );
+				siieSessionData.setOriginalCookies( postForEntity.getHeaders().get( HttpHeaders.SET_COOKIE ) );
+			}
+		}
+		else
+		{
+			throw new RestClientException( postForEntity.getStatusCode().getReasonPhrase() );
+		}
+	}
+
+	public void updateFullSIIE() throws SIIIEImporterException
+	{
+
+		FinishSIIEUpdate finishSIIEUpdate = new FinishSIIEUpdate();
+		eSiieElementos.getData().clear();
+		if ( !isAuthenticated() )
+		{
+			finishSIIEUpdate.setDescription( strUserNIN + " não está autenticado" );
+			Broadcaster.broadcast( finishSIIEUpdate );
+			return;
+		}
+
+		try
+		{
+			updateDadosSIIE( SIIEOptions.DADOS_COMPLETOS );
+			updateDadosSIIE( SIIEOptions.DADOS_SAUDE );
+			lastUpdateInstant = Instant.now();
+			Broadcaster.broadcast( finishSIIEUpdate );
+		}
+		catch ( Exception e )
+		{
+			printError( e );
+			throw new SIIIEImporterException( "Erro a importar todos os dados do SIIE" );
+		}
+	}
+
+	private void updateDadosSIIE( SIIEOptions siieOptions ) throws RestClientException, URISyntaxException, UnsupportedEncodingException
+	{
+		restTemplate.setAcessToken( "" );
+		restTemplate.setCookies( new ArrayList<>() );
+		ResponseEntity< String > forEntity =
+						restTemplate.exchange(	new URI( siieOptions.getUrl() ),
+												HttpMethod.GET,
+												new HttpEntity<>( null, siieSessionData.getHeaders() ),
+												String.class );
+		if ( forEntity.getStatusCode() == HttpStatus.OK && forEntity.hasBody() )
+		{
+			int iPage = 0;
+			int iSkip = 0;
+			int iTake = 500;
+			Long iCount = null;
+			while ( iCount == null || ( iCount > 0 && eSiieElementos.getData().size() < iCount ) )
+			{
+				iSkip = iPage * iTake;
+				iPage++;
+				String encodeToString =
+								"{\"take\":" + iTake + ",\"skip\":" + iSkip + ",\"page\":" + iPage + ",\"pageSize\":" + iTake + ",\"sort\":[]}";
+				String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
+				URI uriElementos;
+				uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi + "&" + URLEncoder.encode( encodeToString, "UTF-8" ) );
+				restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+				restTemplate.setCookies( siieSessionData.getOriginalCookies() );
+				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+
+				if ( iCount == null )
+				{
+					iCount = elementosFor.getBody().getCount();
+				}
+
+				mergeSIIElementos( elementosFor.getBody() );
+
+				getLogger().info( siieOptions.getName() + " :: " + eSiieElementos.getData().size() + "/" + iCount );
+			}
+		}
+	}
+
+	private void mergeSIIElementos( SIIEElementos siieElementos )
+	{
+		if ( eSiieElementos.getData().isEmpty() )
+		{
+			eSiieElementos.getData().addAll( siieElementos.getData() );
+		}
+		else
+		{
+			for ( SIIEElemento e : siieElementos.getData() )
+			{
+				int indexOf = eSiieElementos.getData().indexOf( e );
+				if ( indexOf > -1 )
+				{
+					eSiieElementos.getData().get( indexOf ).merge( e );
+				}
+				else
+				{
+					eSiieElementos.getData().add( e );
+				}
+			}
+		}
+		Collections.sort( eSiieElementos.getData() );
+	}
+
+	public List< SIIEElemento > getElementosActivos()
+	{
+		return eSiieElementos.getData().stream().filter( p -> p.getSiglasituacao().equals( SIIESituacao.A ) ).collect( Collectors.toList() );
+	}
+
+	public List< SIIEElemento > getElementosActivosBySeccao( SIIESeccao siieSeccao )
+	{
+		return eSiieElementos.getData().stream().filter( ( p ) ->
+		{
+			return p.getSiglasituacao().equals( SIIESituacao.A ) && p.getSiglaseccao().equals( siieSeccao );
+		} ).collect( Collectors.toList() );
+	}
+
+	public List< SIIEElemento > getAllElementos()
+	{
+		return new ArrayList<>( eSiieElementos.getData() );
+	}
+
+	public Optional< SIIEElemento > getElementoByNIN( String strNIN )
+	{
+		return eSiieElementos.getData().stream().filter( p -> StringUtils.equals( p.getNin(), strNIN ) ).findFirst();
 	}
 
 	/**
@@ -71,7 +298,7 @@ public class SIIEService implements Serializable, HasLogger
 	public void loadElementosGDrive( String id ) throws SIIIEImporterException
 	{
 		map = new HashMap<>();
-		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		for ( final Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
 		{
 			entry.getValue().clear();
 		}
@@ -97,28 +324,28 @@ public class SIIEService implements Serializable, HasLogger
 			{
 				iSheetid = Integer.parseInt( m.group( 1 ) );
 			}
-			if ( StringUtils.isBlank( spreadsheetId ) || (iSheetid < 1) )
+			if ( StringUtils.isBlank( spreadsheetId ) || iSheetid < 1 )
 			{
 				throw new SIIIEImporterException(
-						"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
+								"Por favor confirme se o link inserido é semelhante a https://docs.google.com/spreadsheets/d/spreadsheetId/edit#gid=sheetId" );
 			}
 			googleServerAuthentication.getSheetsService();
-			Sheets service = googleServerAuthentication.getSheetsService();
+			final Sheets service = googleServerAuthentication.getSheetsService();
 			Spreadsheet spreadsheet = null;
 			try
 			{
 				spreadsheet = service.spreadsheets().get( spreadsheetId ).execute();
 			}
-			catch ( Exception e )
+			catch ( final Exception e )
 			{
 				throw new SIIIEImporterException(
-						"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
+								"Por favor confirme se o email gmail-server@siie-importer-server.iam.gserviceaccount.com tem autorização para ler o ficheiro" );
 			}
 			String strSheetName = null;
-			for ( Sheet sheet : spreadsheet.getSheets() )
+			for ( final Sheet sheet : spreadsheet.getSheets() )
 			{
 				getLogger().info( "Check sheetId: {} == {}", sheet.getProperties().getSheetId(), iSheetid );
-				if ( sheet.getProperties().getSheetId().equals(iSheetid ))
+				if ( sheet.getProperties().getSheetId().equals( iSheetid ) )
 				{
 					strSheetName = sheet.getProperties().getTitle();
 					break;
@@ -127,12 +354,12 @@ public class SIIEService implements Serializable, HasLogger
 			if ( strSheetName != null )
 			{
 				getLogger().info( "Start reading sheet {} on spreadsheet {}", strSheetName, spreadsheetId );
-				ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
-				List< List< Object > > values = response.getValues();
-				HashMap< Integer, String > headerRow = new HashMap<>();
-				Iterator< List< Object > > rowIterator = values.iterator();
+				final ValueRange response = service.spreadsheets().values().get( spreadsheetId, strSheetName ).execute();
+				final List< List< Object > > values = response.getValues();
+				final HashMap< Integer, String > headerRow = new HashMap<>();
+				final Iterator< List< Object > > rowIterator = values.iterator();
 				// read header
-				List< Object > rowHeader = rowIterator.next();
+				final List< Object > rowHeader = rowIterator.next();
 				for ( int i = 0; i < rowHeader.size(); i++ )
 				{
 					String value = Objects.toString( rowHeader.get( i ), "" );
@@ -163,8 +390,8 @@ public class SIIEService implements Serializable, HasLogger
 				}
 				while ( rowIterator.hasNext() )
 				{
-					List< Object > row = rowIterator.next();
-					Elemento elemento = new Elemento();
+					final List< Object > row = rowIterator.next();
+					final Elemento elemento = new Elemento();
 					for ( int i = 0; i < row.size(); i++ )
 					{
 						elemento.getListaAtributos().put( headerRow.get( i ), Objects.toString( row.get( i ), "" ) );
@@ -191,7 +418,7 @@ public class SIIEService implements Serializable, HasLogger
 	public void loadExploradoresSIIE() throws Exception
 	{
 		map = new HashMap<>();
-		for ( Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
+		for ( final Entry< SECCAO, List< Elemento > > entry : mapSeccaoElemento.entrySet() )
 		{
 			entry.getValue().clear();
 		}
@@ -199,16 +426,16 @@ public class SIIEService implements Serializable, HasLogger
 		try ( FileInputStream fis = new FileInputStream( file ); XSSFWorkbook myWorkBook = new XSSFWorkbook( fis ) )
 		{
 			// Return first sheet from the XLSX workbook
-			XSSFSheet mySheet = myWorkBook.getSheetAt( 0 );
+			final XSSFSheet mySheet = myWorkBook.getSheetAt( 0 );
 			// Get iterator to all the rows in current sheet
-			Iterator< Row > rowIterator = mySheet.iterator();
+			final Iterator< Row > rowIterator = mySheet.iterator();
 			// Traversing over each row of XLSX file
-			HashMap< Integer, String > headerRow = new HashMap<>();
+			final HashMap< Integer, String > headerRow = new HashMap<>();
 			Row row = rowIterator.next();
 			Iterator< Cell > cellIterator = row.cellIterator();
 			while ( cellIterator.hasNext() )
 			{
-				Cell cell = cellIterator.next();
+				final Cell cell = cellIterator.next();
 				String value = cell.getStringCellValue();
 				value = value.replace( " ", "" );
 				value = value.replace( "-", "" );
@@ -238,30 +465,30 @@ public class SIIEService implements Serializable, HasLogger
 			while ( rowIterator.hasNext() )
 			{
 				row = rowIterator.next();
-				Elemento elemento = new Elemento();
+				final Elemento elemento = new Elemento();
 				cellIterator = row.cellIterator();
 				while ( cellIterator.hasNext() )
 				{
-					Cell cell = cellIterator.next();
+					final Cell cell = cellIterator.next();
 					switch ( cell.getCellType() )
 					{
-					case Cell.CELL_TYPE_BLANK:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-						break;
-					case Cell.CELL_TYPE_STRING:
-					case Cell.CELL_TYPE_FORMULA:
-						elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
-								StringUtils.trimToEmpty( cell.getStringCellValue() ) );
-						break;
-					case Cell.CELL_TYPE_BOOLEAN:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
-						break;
-					case Cell.CELL_TYPE_NUMERIC:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
-						break;
-					default:
-						elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
-						break;
+						case BLANK:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
+						case STRING:
+						case FORMULA:
+							elemento.getListaAtributos().put(	headerRow.get( cell.getColumnIndex() ),
+																StringUtils.trimToEmpty( cell.getStringCellValue() ) );
+							break;
+						case BOOLEAN:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getBooleanCellValue() );
+							break;
+						case NUMERIC:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), cell.getDateCellValue() );
+							break;
+						default:
+							elemento.getListaAtributos().put( headerRow.get( cell.getColumnIndex() ), null );
+							break;
 					}
 				}
 				if ( elemento.isActivo() )
@@ -271,7 +498,7 @@ public class SIIEService implements Serializable, HasLogger
 				}
 			}
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			throw e;
 		}

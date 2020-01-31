@@ -3,7 +3,7 @@
 .settings/org.eclipse.wst.common.component
 .sts4-cache
 
-/.settings
+.settings
 /src/main/resources/client_secrets.json
 /src/main/resources/firebase.json
 /src/main/resources/server_secrets.json

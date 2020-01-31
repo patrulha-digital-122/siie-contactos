@@ -1,9 +1,77 @@
-/target/
-.classpath
-.settings/org.eclipse.wst.common.component
-.sts4-cache
+# STS (Spring Tool Suite)
+.sts4-cache/
+.springBeans
 
-.settings
+# Code Recommenders
+.recommenders/
+
+### Eclipse ###
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+### Eclipse Patch ###
+# Eclipse Core
+.project
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# sbteclipse plugin
+.target
+
+### Java ###
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Package Files #
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.flattened-pom.xml
+
+### Custom ###
+**/.gradle/
+**/build/
+**/out/
+**/.idea/
+**/bin/
+**/bin-main/
+**/bin-test/
+**/.settings/
+**/.vscode/
+*.iml
+.classpath
+.project
+
 /src/main/resources/client_secrets.json
 /src/main/resources/firebase.json
 /src/main/resources/server_secrets.json

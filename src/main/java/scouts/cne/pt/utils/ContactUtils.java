@@ -35,6 +35,7 @@ import scouts.cne.pt.model.ElementoTags;
 import scouts.cne.pt.model.ImportContactReport;
 import scouts.cne.pt.model.SECCAO;
 import scouts.cne.pt.model.siie.SIIEElemento;
+import scouts.cne.pt.model.siie.types.SIIESeccao;
 
 /**
  * @author anco62000465 2018-01-27
@@ -501,7 +502,7 @@ public class ContactUtils
 		for ( SIIEElemento siieElemento : siieElementos )
 		{
 			list.add( getEmail( siieElemento.getEmail(), usarNomes ? siieElemento.getNome() : null ) );
-			if ( usarMailPais )
+			if ( !SIIESeccao.D.equals( siieElemento.getSiglaseccao() ) && usarMailPais )
 			{
 				list.add( getEmail(	siieElemento.getMaeemail(),
 									usarNomes && StringUtils.isNotBlank( siieElemento.getMae() ) ? siieElemento.getMae() : null ) );

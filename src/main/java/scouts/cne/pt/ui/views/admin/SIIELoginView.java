@@ -49,7 +49,6 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	@Autowired
 	private LocalStorageService		localStorageService;
 	private final LoginForm	loginForm;
-	private final TextField			labelNextUrlLogin	= new TextField( "URL pré-preenchido que poderá utilizar no futuro." );
 	private final TextField			textFieldTotalElementos		= new TextField( "Total de elementos obtidos do SIIE" );
 	private final TextField			textFieldDataUltimoUpdate	= new TextField( "Data da última actualização de dados do SIIE" );
 	private String					strUrl						= "mailing-list?user=%s&password=%s";
@@ -62,9 +61,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 		loginForm = new LoginForm( createPortugueseI18n() );
 		loginForm.setForgotPasswordButtonVisible( false );
 		setViewContent( createContent() );
-		labelNextUrlLogin.setEnabled( false );
-		labelNextUrlLogin.setWidthFull();
-		labelNextUrlLogin.setVisible( false );
+
 		textFieldDataUltimoUpdate.setEnabled( false );
 		textFieldDataUltimoUpdate.setWidthFull();
 		textFieldTotalElementos.setEnabled( false );
@@ -94,7 +91,6 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 					siieService.authenticateSIIE( e.getUsername(), e.getPassword() );
 					siieLocalStorageConfigurations.setSIIEUser( e.getUsername() );
 					siieLocalStorageConfigurations.setSIIEPassword( e.getPassword() );
-					labelNextUrlLogin.setValue( String.format( strUrl, e.getUsername(), e.getPassword() ) );
 					// labelNextUrlLogin.setVisible( true );
 				}
 				siieService.updateFullSIIE();
@@ -132,7 +128,7 @@ public class SIIELoginView extends ViewFrame implements HasLogger
 	{
 		Html features = new Html(
 						"<p><b>Este site não guarda nenhuma password.<b/> Apenas utiliza a password do SIIE para obter os dados completos.</p>" );
-		FlexBoxLayout content = new FlexBoxLayout( features, loginForm, labelNextUrlLogin, textFieldDataUltimoUpdate, textFieldTotalElementos );
+		FlexBoxLayout content = new FlexBoxLayout( features, loginForm, textFieldDataUltimoUpdate, textFieldTotalElementos );
 		content.setAlignItems( Alignment.CENTER );
 		content.setFlexDirection( FlexDirection.COLUMN );
 		content.setMargin( Horizontal.AUTO );

@@ -1,6 +1,8 @@
 package scouts.cne.pt.ui.views.elementos;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,12 +139,13 @@ public class AniversarioListView extends HasSIIELoginUrl
 	{
 		content.removeAll();
 		lstElementos.clear();
+		LocalDate today = LocalDate.now( ZoneId.ofOffset( "UTC", ZoneOffset.ofHours( 1 ) ) );
 		lstElementos.addAll( siieService.getAllElementos().stream().filter( ( p ) ->
 		{
 			if ( p.getDatanascimento() != null )
 			{
-				return p.getDatanascimento().getDayOfYear() == LocalDate.now()
-								.getDayOfYear();
+				return p.getDatanascimento().getDayOfMonth() == today.getDayOfMonth() &&
+					p.getDatanascimento().getMonthValue() == today.getMonthValue();
 			}
 			return false;
 		} ).collect( Collectors.toList() ) );

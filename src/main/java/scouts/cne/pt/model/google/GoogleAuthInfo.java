@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class GoogleAuthInfo
 {
-	@JsonProperty( "w3" )
+	@JsonProperty( "Rt" )
 	private GoogleAuthProfile	googleProfile;
-	@JsonProperty( "Zi" )
+	@JsonProperty( "wc" )
 	private GoogleAuthAccessInfo	googleAcessInfo;
 	
 	/**

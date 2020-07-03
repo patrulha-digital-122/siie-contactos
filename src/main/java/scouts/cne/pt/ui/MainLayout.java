@@ -1,7 +1,10 @@
 package scouts.cne.pt.ui;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -131,6 +134,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		initNaviItems();
 		// Configure the headers and footers (optional)
 		initHeadersAndFooters();
+		UI.getCurrent().setLocale( Locale.forLanguageTag( "pt-PT" ) );
 		add( localStorage );
 	}
 
@@ -313,11 +317,13 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 									List< SIIEElemento > allElementos = localStorageService.getAniversariosEventConfigurations().isElementosActivos()
 													? siieService.getElementosActivos()
 													: siieService.getAllElementos();
+									LocalDate today = LocalDate.now( ZoneId.ofOffset( "UTC", ZoneOffset.ofHours( 1 ) ) );
 									List< SIIEElemento > lstElementos = allElementos.stream().filter( ( p ) ->
 									{
 										if ( p.getDatanascimento() != null )
 										{
-											return p.getDatanascimento().getDayOfYear() == LocalDate.now().getDayOfYear();
+											return p.getDatanascimento().getDayOfMonth() == today.getDayOfMonth() &&
+												p.getDatanascimento().getMonthValue() == today.getMonthValue();
 										}
 										return false;
 									} ).collect( Collectors.toList() );

@@ -12,11 +12,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class GoogleAuthProfile
 {
-	@JsonProperty( "ig" )
+	@JsonProperty( "Bd" )
 	private String	nome;
-	@JsonProperty( "Paa" )
+	@JsonProperty( "dL" )
 	private String	urlImage;
-	@JsonProperty( "U3" )
+	@JsonProperty( "Bu" )
 	private String	email;
 
 	/**

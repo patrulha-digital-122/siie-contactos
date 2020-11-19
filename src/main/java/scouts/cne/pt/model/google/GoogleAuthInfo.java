@@ -1,6 +1,5 @@
 package scouts.cne.pt.model.google;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,11 +9,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class GoogleAuthInfo
 {
-	@JsonProperty( "Rt" )
-	private GoogleAuthProfile	googleProfile;
-	@JsonProperty( "wc" )
+	@JsonProperty( "xt" )
+	private GoogleAuthProfile		googleProfile;
+	@JsonProperty( "xc" )
 	private GoogleAuthAccessInfo	googleAcessInfo;
-	
+
 	/**
 	 * Getter for googleProfile
 	 * 
@@ -58,7 +57,4 @@ public class GoogleAuthInfo
 	{
 		this.googleAcessInfo = googleAcessInfo;
 	}
-
-
-
 }

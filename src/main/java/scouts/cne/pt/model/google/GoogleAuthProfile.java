@@ -1,6 +1,5 @@
 package scouts.cne.pt.model.google;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -12,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonIgnoreProperties( ignoreUnknown = true )
 public class GoogleAuthProfile
 {
-	@JsonProperty( "Bd" )
+	@JsonProperty( "Ad" )
 	private String	nome;
-	@JsonProperty( "dL" )
+	@JsonProperty( "iK" )
 	private String	urlImage;
-	@JsonProperty( "Bu" )
+	@JsonProperty( "du" )
 	private String	email;
 
 	/**

@@ -2,6 +2,7 @@ package scouts.cne.pt.services;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -149,7 +150,9 @@ public class GoogleContactGroupsService implements Serializable, HasLogger
 			List< String > lstElementoNoGrupo = new ArrayList<>();
 			updateCreateElementos.forEach( p -> lstElementoNoGrupo.add( p.getGooglePerson().getResourceName() ) );
 			ModifyContactGroupMembersRequest contactGroupMembersRequest = new ModifyContactGroupMembersRequest();
-			List< String > namestoRemove = ListUtils.subtract( contactGroup.getMemberResourceNames(), lstElementoNoGrupo );
+			List< String > namestoRemove = ListUtils
+							.subtract(	contactGroup.getMemberResourceNames() == null ? Arrays.asList() : contactGroup.getMemberResourceNames(),
+										lstElementoNoGrupo );
 			List< String > namesToAdd = ListUtils.subtract( lstElementoNoGrupo, contactGroup.getMemberResourceNames() );
 			if ( !namestoRemove.isEmpty() && !namesToAdd.isEmpty() )
 			{

@@ -150,10 +150,10 @@ public class GoogleContactGroupsService implements Serializable, HasLogger
 			List< String > lstElementoNoGrupo = new ArrayList<>();
 			updateCreateElementos.forEach( p -> lstElementoNoGrupo.add( p.getGooglePerson().getResourceName() ) );
 			ModifyContactGroupMembersRequest contactGroupMembersRequest = new ModifyContactGroupMembersRequest();
-			List< String > namestoRemove = ListUtils
-							.subtract(	contactGroup.getMemberResourceNames() == null ? Arrays.asList() : contactGroup.getMemberResourceNames(),
-										lstElementoNoGrupo );
-			List< String > namesToAdd = ListUtils.subtract( lstElementoNoGrupo, contactGroup.getMemberResourceNames() );
+			List< String > lstMemberResourceNames =
+							contactGroup.getMemberResourceNames() == null ? Arrays.asList() : contactGroup.getMemberResourceNames();
+			List< String > namestoRemove = ListUtils.subtract( lstMemberResourceNames, lstElementoNoGrupo );
+			List< String > namesToAdd = ListUtils.subtract( lstElementoNoGrupo, lstMemberResourceNames );
 			if ( !namestoRemove.isEmpty() && !namesToAdd.isEmpty() )
 			{
 				contactGroupMembersRequest.setResourceNamesToRemove( namestoRemove );

@@ -43,7 +43,7 @@
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 
 		<!-- Dependencies -->
-		<vaadin.version>14.0.5</vaadin.version>
+		<vaadin.version>19.0.6</vaadin.version>
 		<google.oauth.client.version>1.23.0</google.oauth.client.version>
 	</properties>
 

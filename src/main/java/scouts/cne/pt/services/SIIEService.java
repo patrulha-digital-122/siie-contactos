@@ -222,20 +222,25 @@ public class SIIEService implements Serializable, HasLogger
 				String encodeToString =
 								"{\"take\":" + iTake + ",\"skip\":" + iSkip + ",\"page\":" + iPage + ",\"pageSize\":" + iTake + ",\"sort\":[]}";
 				String strWSApi = StringUtils.substringBetween( forEntity.getBody(), "wsapi: \"", "\"," );
-				URI uriElementos;
-				uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi + "&" + URLEncoder.encode( encodeToString, "UTF-8" ) );
-				restTemplate.setAcessToken( siieSessionData.getAcessToken() );
-				restTemplate.setCookies( siieSessionData.getOriginalCookies() );
-				ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
-
-				if ( iCount == null )
+				if ( StringUtils.isNotBlank( strWSApi ) )
 				{
-					iCount = elementosFor.getBody().getCount();
+					URI uriElementos;
+					uriElementos = new URI( "https://siie.escutismo.pt" + strWSApi + "&" + URLEncoder.encode( encodeToString, "UTF-8" ) );
+					restTemplate.setAcessToken( siieSessionData.getAcessToken() );
+					restTemplate.setCookies( siieSessionData.getOriginalCookies() );
+					ResponseEntity< SIIEElementos > elementosFor = restTemplate.getForEntity( uriElementos, SIIEElementos.class );
+					if ( iCount == null )
+					{
+						iCount = elementosFor.getBody().getCount();
+					}
+					mergeSIIElementos( elementosFor.getBody() );
+					getLogger().info( siieOptions.getName() + " :: " + eSiieElementos.getData().size() + "/" + iCount );
 				}
-
-				mergeSIIElementos( elementosFor.getBody() );
-
-				getLogger().info( siieOptions.getName() + " :: " + eSiieElementos.getData().size() + "/" + iCount );
+				else
+				{
+					getLogger().info( "Problemas a obter dados de " + siieOptions.getName() );
+					return;
+				}
 			}
 		}
 	}
